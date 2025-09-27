@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            </tr>`;
         table.appendChild(thead);
         const tbody = document.createElement("tbody");
-        const handOrder = ["North", "East", "South", "West"];
+        const handOrder = ["North", "South", "East", "West"];
         const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
         handOrder.forEach((hand) => {
             const row = document.createElement("tr");
