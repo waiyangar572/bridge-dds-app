@@ -12,6 +12,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let activeMobileHand = null;
     let analysisMode = "double"; // 'double' or 'single'
+    let translations = {};
+
+    // --- I18n (Internationalization) ---
+    async function setLanguage(lang) {
+        try {
+            const response = await fetch(`lang/${lang}.json`);
+            if (!response.ok) {
+                throw new Error("Language file not found");
+            }
+            translations = await response.json();
+            console.log(translations);
+
+            document.documentElement.lang = lang;
+            localStorage.setItem("userLanguage", lang);
+
+            // Update all static text
+            document.querySelectorAll("[data-i18n]").forEach((el) => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[key]) {
+                    el.textContent = translations[key];
+                }
+            });
+
+            // Update text in HTML tags
+            document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+                const key = el.getAttribute("data-i18n-html");
+                if (translations[key]) {
+                    el.innerHTML = translations[key];
+                }
+            });
+
+            // Update attributes like meta description
+            document.querySelectorAll("[data-i18n-attr]").forEach((el) => {
+                const attrs = el.getAttribute("data-i18n-attr").split(";");
+                attrs.forEach((attr) => {
+                    const [attrName, key] = attr.split(":");
+                    if (translations[key.trim()]) {
+                        el.setAttribute(attrName.trim(), translations[key.trim()]);
+                    }
+                });
+            });
+
+            // Highlight active language button
+            document.querySelectorAll("[data-lang]").forEach((btn) => {
+                btn.classList.toggle("active", btn.dataset.lang === lang);
+            });
+        } catch (error) {
+            console.error("Could not set language:", error);
+            // Fallback to Japanese if English file fails
+            if (lang !== "ja") await setLanguage("ja");
+        }
+    }
 
     // --- Element References ---
     const pbnInputDesktop = document.getElementById("pbnInputDesktop");
@@ -219,7 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Mobile Editor ---
     function openMobileEditor(hand) {
-        // ... (この関数に変更はありません)
         if (activeMobileHand === hand) {
             closeMobileEditor();
             return;
@@ -238,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mobileEditorContent.appendChild(handContainer);
         }
 
-        mobileEditorTitle.textContent = `Edit ${hand}'s Hand`;
+        mobileEditorTitle.textContent = translations.editHandTitle.replace("{hand}", hand);
         mobileHandEditor.classList.remove("d-none");
         const activePreview = document.getElementById(`mobile-preview-${hand}`);
         if (activePreview) {
@@ -247,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function closeMobileEditor() {
-        // ... (この関数に変更はありません)
         if (!activeMobileHand) return;
 
         const handContainer = mobileEditorContent.querySelector(".hand-container");
@@ -267,7 +317,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Event Handlers ---
     function handleCardClick(target) {
-        // ... (この関数に変更はありません)
         if (target.classList.contains("disabled")) return;
 
         const hand = target.dataset.hand;
@@ -370,7 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function runAnalysis() {
         const pbn = pbnInputDesktop.value.trim();
         if (!pbn) {
-            showError("PBN入力が空です。");
+            showError(translations.pbnEmptyError || "PBN input is empty.");
             return;
         }
 
@@ -448,6 +497,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Error:", error);
             });
     }
+
+    document.querySelectorAll("[data-lang]").forEach((button) => {
+        button.addEventListener("click", (e) => {
+            setLanguage(e.target.dataset.lang);
+        });
+    });
 
     // --- Attach Event Listeners ---
     document.body.addEventListener("click", (e) => {
@@ -545,7 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
         handOrder.forEach((hand) => {
             const row = document.createElement("tr");
-            let rowHtml = `<td class="fw-bold">${hand}</td>`;
+            let rowHtml = `<td class="fw-bold">${translations[hand.toLowerCase()]}</td>`;
             suitOrder.forEach((suit) => {
                 const trickCount = tricks[suit] ? tricks[suit][hand] : "-";
                 rowHtml += `<td>${trickCount}</td>`;
@@ -554,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tbody.appendChild(row);
         });
         table.appendChild(tbody);
-        resultsContainer.innerHTML = "";
+        resultsContainer.innerHTML = `<h5 data-i18n="resultsTitleDD">${translations.resultsTitleDD}</h5>`;
         resultsContainer.appendChild(table);
     }
 
@@ -591,7 +646,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tbody.appendChild(row);
         });
         table.appendChild(tbody);
-        resultsContainer.innerHTML = `<h5>NS 平均トリック数 (${simulationsRun} パターン)</h5>`;
+        resultsContainer.innerHTML = `<h5>${translations.resultsTitleSD.replace(
+            "{simulations}",
+            simulationsRun
+        )}</h5>`;
         resultsContainer.appendChild(table);
     }
 
@@ -601,7 +659,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Initialisation ---
-    function initialize() {
+    async function initialize() {
+        const userLang =
+            localStorage.getItem("userLanguage") ||
+            (navigator.language.startsWith("ja") ? "ja" : "en");
+        await setLanguage(userLang);
+
         createDesktopUI();
         createMobileUI();
         updatePbnAndSync();
