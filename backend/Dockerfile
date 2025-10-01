@@ -1,3 +1,16 @@
+FROM continuumio/miniconda3
+# Dealerのビルドに必要なツールをインストール
+RUN apt-get update && apt-get install -y build-essential wget unzip tcl-dev
+
+# Dealerのソースコードをダウンロード、ビルド、インストール
+WORKDIR /tmp
+RUN wget --no-check-certificate https://bridge.thomasoandrews.com/deal/deal319.zip && \
+    unzip deal319.zip && \
+    cd deal319 && \
+    sed -i 's/-fast//g' Make.mac-osx && \
+    make CFLAGS="-I/usr/include/tcl" LDFLAGS="-ltcl" && \
+    [ -f deal ] && chmod +x deal && cp deal /usr/local/bin/
+
 # --- STAGE 1: Builder ---
 # 公式手順に従い、ソースコードから libdds.so をコンパイルするための一時的な環境
 FROM debian:bullseye AS builder
@@ -34,6 +47,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+
+
+ENV PATH="/usr/local/bin:${PATH}"
+
 # 1. アプリケーションの作業ディレクトリを設定
 WORKDIR /app
 
@@ -44,6 +61,8 @@ COPY --from=builder /usr/src/dds/src/libdds.so .
 COPY requirements.txt .
 COPY main.py .
 COPY dds.py .
+COPY leadsolver-deb leadsolver.deb
+RUN dpkg -i leadsolver.deb || apt-get -f install -y
 
 # 4. Pythonの依存ライブラリをインストール
 RUN pip install --no-cache-dir -r requirements.txt
