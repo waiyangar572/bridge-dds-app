@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM debian:bullseye AS dealBuilder
 # Dealerのビルドに必要なツールをインストール
 RUN apt-get update && apt-get install -y build-essential wget unzip tcl-dev
 
@@ -8,8 +8,7 @@ RUN wget --no-check-certificate https://bridge.thomasoandrews.com/deal/deal319.z
     unzip deal319.zip && \
     cd deal319 && \
     sed -i 's/-fast//g' Make.mac-osx && \
-    make CFLAGS="-I/usr/include/tcl" LDFLAGS="-ltcl" && \
-    [ -f deal ] && chmod +x deal && cp deal /usr/local/bin/
+    make CFLAGS="-I/usr/include/tcl" LDFLAGS="-ltcl"
 
 # --- STAGE 1: Builder ---
 # 公式手順に従い、ソースコードから libdds.so をコンパイルするための一時的な環境
@@ -52,20 +51,40 @@ RUN apt-get update && \
 ENV PATH="/usr/local/bin:${PATH}"
 
 # 1. アプリケーションの作業ディレクトリを設定
-WORKDIR /app
+ENV APP_HOME /app
+WORKDIR $APP_HOME
 
 # 2. Builderステージから、コンパイル済みのライブラリファイルだけをコピー
 COPY --from=builder /usr/src/dds/src/libdds.so .
+COPY --from=dealBuilder /tmp/deal319/deal /usr/local/bin/
+COPY --from=dealBuilder /tmp/deal319/deal.tcl .
+COPY --from=dealBuilder /tmp/deal319/lib/ ./lib/
+COPY --from=dealBuilder /tmp/deal319/format/ ./format/
+COPY --from=dealBuilder /tmp/deal319/input/ ./input/
 
 # 3. アプリケーションのコードと設定ファイルをコピー
 COPY requirements.txt .
 COPY main.py .
 COPY dds.py .
-COPY leadsolver-deb leadsolver.deb
-RUN dpkg -i leadsolver.deb || apt-get -f install -y
+COPY leadsolver.cpp .
+COPY dll.h .
+# RUN apt-get install -y ./leadsolver-deb && apt-get -f install -y
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends g++ && \
+    rm -rf /var/lib/apt/lists/*
+RUN g++ -O2 -o leadsolver leadsolver.cpp -L. -ldds
 
 # 4. Pythonの依存ライブラリをインストール
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Set the library path for DDS
+ENV LD_LIBRARY_PATH $APP_HOME
+ENV PATH $APP_HOME:$PATH
+
+# Ensure 'deal' is executable
+RUN chmod +x /usr/local/bin/deal
+RUN chmod +x /app/leadsolver
 
 # 5. コンテナの公開ポートと起動コマンドを設定
 EXPOSE 8080

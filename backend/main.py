@@ -1,12 +1,14 @@
 import json
 import random
+import re
 import subprocess
 from ctypes import byref
 from typing import Dict, List, Optional, Tuple
 
 import dds
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, constr
 
 app = FastAPI()
@@ -38,12 +40,26 @@ class SingleDummyRequest(BaseModel):
 class LeadSolverRequest(BaseModel):
     leader_hand_pbn: str
     shapes: Dict[str, str]
-    hcp: Dict[str, List[int]]
+    hcp: Dict[str, str]
     contract: str
     leader: str
-    declarer: str
-    vulnerability: str
-    simulations: int = Field(default=100, ge=10, le=500)
+    simulations: int = Field(default=1000, ge=10, le=10000)
+    advanced_tcl: Optional[str] = ""
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        # Return a JSON response with CORS headers when an unhandled error occurs
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": f"An unexpected server error occurred: {str(e)}"
+            },
+        )
 
 
 @app.get("/")
@@ -88,115 +104,228 @@ def analyse_deal(deal_pbn: DealPBN):
 
 @app.post("/api/analyse_single_dummy")
 def analyse_single_dummy(request: SingleDummyRequest):
-    # (変更なし)
+    # ... (このエンドポイントのコードは変更なし)
     try:
         pbn_parts = request.pbn[2:].split()
-        north_hand_str, south_hand_str = pbn_parts[0], pbn_parts[2]
+        north_hand_str = pbn_parts[0]
+        south_hand_str = pbn_parts[2]
+
         all_ranks = "AKQJT98765432"
         remaining_cards = []
-        for i in range(4):
-            ns_suit_cards = set(north_hand_str.split(".")[i]) | set(
-                south_hand_str.split(".")[i]
-            )
+        for suit_idx in range(4):
+            north_suit = north_hand_str.split(".")[suit_idx]
+            south_suit = south_hand_str.split(".")[suit_idx]
+            ns_suit_cards = set(north_suit) | set(south_suit)
             for rank in all_ranks:
                 if rank not in ns_suit_cards:
-                    remaining_cards.append((i, rank))
+                    remaining_cards.append((suit_idx, rank))
+
         if len(remaining_cards) != 26:
-            return {"error": "Invalid number of cards for North and South."}
-        dist = {s: {"North": [0] * 14, "South": [0] * 14} for s in range(5)}
-        valid_sims = 0
-        for _ in range(request.simulations):
+            return {
+                "error": "Invalid number of cards for North and South. Must be 26 total."
+            }
+
+        trick_distribution = {
+            suit: {"North": [0] * 14, "South": [0] * 14}
+            for suit in [
+                dds.SUIT_NT,
+                dds.SUIT_SPADE,
+                dds.SUIT_HEART,
+                dds.SUIT_DIAMOND,
+                dds.SUIT_CLUB,
+            ]
+        }
+
+        num_simulations = request.simulations
+        valid_simulations = 0
+
+        for _ in range(num_simulations):
             random.shuffle(remaining_cards)
-            east_cards, west_cards = sorted(remaining_cards[:13]), sorted(
-                remaining_cards[13:]
-            )
+            east_cards = sorted(remaining_cards[:13])
+            west_cards = sorted(remaining_cards[13:])
+
             east_hand = [
                 "".join(r for s, r in east_cards if s == i) for i in range(4)
             ]
             west_hand = [
                 "".join(r for s, r in west_cards if s == i) for i in range(4)
             ]
-            east_str = ".".join(
-                "".join(sorted(s, key=lambda x: all_ranks.find(x))) or "-"
-                for s in east_hand
+
+            east_hand_str = ".".join(
+                s if s else "-"
+                for s in [
+                    "".join(sorted(s, key=lambda x: all_ranks.find(x)))
+                    for s in east_hand
+                ]
             )
-            west_str = ".".join(
-                "".join(sorted(s, key=lambda x: all_ranks.find(x))) or "-"
-                for s in west_hand
+            west_hand_str = ".".join(
+                s if s else "-"
+                for s in [
+                    "".join(sorted(s, key=lambda x: all_ranks.find(x)))
+                    for s in west_hand
+                ]
             )
-            full_pbn = (
-                f"N:{north_hand_str} {east_str} {south_hand_str} {west_str}"
-            )
-            # ... (DDS計算部分は変更なし) ...
-        # ... (結果整形部分は変更なし) ...
+
+            full_pbn = f"N:{north_hand_str} {east_hand_str} {south_hand_str} {west_hand_str}"
+
+            table_deal_pbn = dds.ddTableDealPBN()
+            table_deal_pbn.cards = full_pbn.encode("utf-8")
+            results = dds.ddTableResults()
+            ret = dds.CalcDDtablePBN(table_deal_pbn, byref(results))
+
+            if ret == dds.RETURN_NO_FAULT:
+                valid_simulations += 1
+                for suit_idx in trick_distribution:
+                    north_tricks = results.resTable[suit_idx][dds.HAND_NORTH]
+                    south_tricks = results.resTable[suit_idx][dds.HAND_SOUTH]
+                    trick_distribution[suit_idx]["North"][north_tricks] += 1
+                    trick_distribution[suit_idx]["South"][south_tricks] += 1
+
+        if valid_simulations == 0:
+            return {"error": "All DDS simulations failed."}
+
+        suit_map_rev = {
+            dds.SUIT_SPADE: "Spades",
+            dds.SUIT_HEART: "Hearts",
+            dds.SUIT_DIAMOND: "Diamonds",
+            dds.SUIT_CLUB: "Clubs",
+            dds.SUIT_NT: "No-Trump",
+        }
+
+        response_dist = {}
+        for suit_idx, hands in trick_distribution.items():
+            suit_name = suit_map_rev[suit_idx]
+            response_dist[suit_name] = {
+                "North": [
+                    (count / valid_simulations) * 100
+                    for count in hands["North"]
+                ],
+                "South": [
+                    (count / valid_simulations) * 100
+                    for count in hands["South"]
+                ],
+            }
+
+        return {
+            "trick_distribution": response_dist,
+            "simulations_run": valid_simulations,
+        }
+
     except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
-    return {
-        "trick_distribution": response_dist,
-        "simulations_run": valid_simulations,
-    }
+        return {
+            "error": f"An error occurred during single dummy analysis: {str(e)}"
+        }
 
 
 @app.post("/api/solve_lead")
 def solve_opening_lead(request: LeadSolverRequest):
     aggregated_results, valid_simulations = {}, 0
 
-    # 1. Construct the condition string for the 'dealer' command
-    conditions = []
+    # 1. Construct the conditions for the 'deal' script file
+    leader_hand_setup = ""
+    other_player_conditions = []
 
-    # Leader's hand condition
-    # Convert PBN to dealer format: SAKQ.HJ.D54.CQT98
-    leader_hand_dealer = "".join(
-        [
-            f"S{request.leader_hand_pbn.split('.')[0]}."
-            f"H{request.leader_hand_pbn.split('.')[1]}."
-            f"D{request.leader_hand_pbn.split('.')[2]}."
-            f"C{request.leader_hand_pbn.split('.')[3]}"
-        ]
-    ).replace("-", "")
-    conditions.append(f"hand({request.leader},{leader_hand_dealer})")
+    # Leader's hand setup using the 'is' command
+    pbn_parts = request.leader_hand_pbn.split(".")
+    # The format needs spaces, not dots, and no hyphens for voids. e.g., {AKQ JT9 876 ""}
+    deal_hand_string = (
+        "{"
+        + " ".join(part if part != "-" else '""' for part in pbn_parts)
+        + "}"
+    )
+    map = {"N": "north", "S": "south", "E": "east", "W": "west"}
+    leader_hand_setup = f"{map[request.leader]} is {deal_hand_string}"
 
-    # Other players' conditions
+    # Other players' conditions for the 'reject' expression
     other_players = [
-        p for p in ["north", "south", "east", "west"] if p != request.leader
+        p
+        for p in ["north", "south", "east", "west"]
+        if p != map[request.leader]
     ]
+
+    def splitRange(range, min=0, max=40):
+        if range.find("-") == -1:
+            return int(range), int(range)
+        else:
+            [part1, part2, *_] = range.split("-")
+            print(f"{part1},{part2}")
+            if part1 == "":
+                part1 = min
+            if part2 == "":
+                part2 = max
+
+            return part1, part2
+
     for p in other_players:
-        # Shape condition
-        # Input: "5-5,3-3,3-3,2-2" -> Output: "shape(p, 5,3,3,2)" (if ranges are single values)
-        # or "shape(p, 4-5, 3-4, 2-3, 1-2)"
         shape_parts = request.shapes[p].split(",")
-        shape_str = ",".join(shape_parts)
-        conditions.append(f"shape({p},{shape_str})")
+        suits = ["spades", "hearts", "diamonds", "clubs"]
+        for i, part in enumerate(shape_parts):
+            min_len, max_len = splitRange(part)
+            suit_name = suits[i]
+            if min_len == max_len:
+                other_player_conditions.append(
+                    f"[{suit_name} {p}] == {min_len}"
+                )
+            else:
+                if int(min_len) > 0:
+                    other_player_conditions.append(
+                        f"[{suit_name} {p}] >= {min_len}"
+                    )
+                if int(max_len) < 13:
+                    other_player_conditions.append(
+                        f"[{suit_name} {p}] <= {max_len}"
+                    )
 
-        # HCP condition
-        hcp_range = request.hcp[p]
-        conditions.append(f"hcp({p}, {hcp_range[0]}, {hcp_range[1]})")
+        hcp_range = splitRange(request.hcp[p])
+        other_player_conditions.append(f"[hcp {p}] >= {hcp_range[0]}")
+        other_player_conditions.append(f"[hcp {p}] <= {hcp_range[1]}")
 
-    condition_string = " and ".join(conditions)
+    # Combine into the script file content
+    boolean_expression = " && ".join(other_player_conditions)
 
-    # 2. Call the 'dealer' command to generate hands
+    script_content = f"""
+{leader_hand_setup}
+main {"{"}
+reject unless {{ {boolean_expression} }}
+{request.advanced_tcl or ""}
+accept
+{"}"}
+"""
+
+    # Write the script to a temporary file
+    script_filename = "deal_conditions.tcl"
+    print(script_content)
+    with open(script_filename, "w") as f:
+        f.write(script_content)
+
+    # 2. Call the 'deal' command using the script file
     try:
         command = [
             "deal",
-            "-n",
+            "-i",
+            script_filename,
+            "-i",
+            "format/pbn",
             str(request.simulations),
-            "-p",  # Print PBN format
-            "-c",
-            condition_string,
         ]
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
-        stdout, stderr = process.communicate(timeout=60)  # 60-second timeout
+        stdout, stderr = process.communicate(timeout=800)
 
         if process.returncode != 0:
-            return {"error": f"Dealer command failed: {stderr}"}
+            return {"error": f"Deal command failed: {stderr}"}
+
+        print(stdout)
 
         generated_pbns = stdout.strip().split("\n")
+        pbn_filename = "deals.pbn"
+        with open(pbn_filename, "w") as f:
+            f.write(stdout)
 
     except FileNotFoundError:
         return {
-            "error": "The 'dealer' command is not found. Please ensure it is installed and in the system's PATH."
+            "error": "The 'deal' command is not found. Please ensure it is installed and in the system's PATH."
         }
     except subprocess.TimeoutExpired:
         return {
@@ -206,53 +335,77 @@ def solve_opening_lead(request: LeadSolverRequest):
         return {"error": f"An error occurred during hand generation: {str(e)}"}
 
     # 3. Process each generated PBN with 'leadsolver'
-    for pbn in generated_pbns:
-        if not pbn.startswith("N:"):
-            continue
+    final_leads = []
+    try:
+        print(f"{request.leader} {request.contract}")
+        command = [
+            "leadsolver",
+            "-l",
+            request.leader,
+            request.contract.replace("NT", "N").replace("nt", "n"),
+            "deals.pbn",
+        ]
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        stdout, stderr = process.communicate(timeout=2000)
 
-        try:
-            command = [
-                "leadsolver",
-                "--pbn",
-                pbn,
-                "--contract",
-                request.contract,
-                "--leader",
-                request.leader,
-                "--declarer",
-                request.declarer,
-                "--vul",
-                request.vulnerability,
-            ]
-            process = subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            stdout, stderr = process.communicate(timeout=30)
+        if process.returncode == 0:
+            print(stdout)
+            # テキストテーブルの解析
+            lines = stdout.strip().split("\n")
+            # データ行は 'SA' のようにスートとランクで始まる行
+            data_started = False
+            for line in lines:
+                if re.match(r"^[SHDC][AKQJT0-9]", line.strip()):
+                    data_started = True
 
-            if process.returncode == 0:
-                result = json.loads(stdout)
-                for lead in result.get("leads", []):
-                    card, tricks = lead.get("card"), lead.get("tricks")
-                    if card and tricks is not None:
-                        if card not in aggregated_results:
-                            aggregated_results[card] = []
-                        aggregated_results[card].append(tricks)
-                valid_simulations += 1
-        except Exception:
-            # Continue to the next PBN even if one fails
-            continue
+                if data_started:
+                    parts = (
+                        line.strip().replace("[", "").replace("]", "").split()
+                    )
+                    if len(parts) >= 2:
+                        try:
+                            card = parts[0]
+                            tricks = float(parts[1])
+                            per_of_set = float(parts[2].replace("*", ""))
+                            per_of_trick = [0] * 14
+                            per_of_trick[0] = int(parts[3])
+                            per_of_trick[1] = int(parts[4])
+                            per_of_trick[2] = int(parts[5])
+                            per_of_trick[3] = int(parts[6])
+                            per_of_trick[4] = int(parts[7])
+                            per_of_trick[5] = int(parts[8])
+                            per_of_trick[6] = int(parts[9])
+                            per_of_trick[7] = int(parts[10])
+                            per_of_trick[8] = int(parts[11])
+                            per_of_trick[9] = int(parts[12])
+                            per_of_trick[10] = int(parts[13])
+                            per_of_trick[11] = int(parts[14])
+                            per_of_trick[12] = int(parts[15])
+                            per_of_trick[13] = int(parts[16])
+                            final_leads.append(
+                                {
+                                    "card": card,
+                                    "tricks": tricks,
+                                    "per_of_set": per_of_set,
+                                    "per_of_trick": per_of_trick,
+                                }
+                            )
+                        except (ValueError, IndexError) as e:
+                            # 解析できない行はスキップ
+                            print(e)
+                            continue
+        else:
+            return {
+                "error": f"Lead solver failed for all generated hands. Please check contract and vulnerability settings. process returned code{process.returncode}. {stdout},{stderr}"
+            }
+    except Exception as e:
+        return {"error": f"An error occurred during hand generation: {str(e)}"}
 
-    if valid_simulations == 0:
-        return {
-            "error": "Lead solver failed for all generated hands. Please check contract and vulnerability settings."
-        }
-
-    final_leads = [
-        {"card": c, "tricks": sum(t) / len(t)}
-        for c, t in aggregated_results.items()
-    ]
     final_leads.sort(key=lambda x: x["tricks"])
-    return {"leads": final_leads[:15], "simulations_run": valid_simulations}
+    print(final_leads)
+    return {"leads": final_leads, "simulations_run": len(generated_pbns)}

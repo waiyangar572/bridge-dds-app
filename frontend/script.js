@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const leaderSelectMobile = getEl("lead-leader-mobile");
     const leadMobileAllHandsContainer = getEl("lead-mobile-all-hands-container");
 
+    const directionMap = { N: "north", S: "south", E: "east", W: "west" };
+
     // --- 多言語対応 (I18n) ---
     async function setLanguage(lang) {
         try {
@@ -137,7 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function renderLeadSolverUI() {
-        const leader = leaderSelect.value;
+        const leader = directionMap[leaderSelect.value];
         leadMobileAllHandsContainer.innerHTML = "";
 
         HANDS.forEach((player) => {
@@ -168,7 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function syncLeadUIState() {
-        const leader = leaderSelect.value;
+        const leader = directionMap[leaderSelect.value];
         const allSelected = new Set();
 
         HANDS.forEach((player) => {
@@ -292,15 +294,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         const fullPrefix = prefix ? `${prefix}-` : "";
         HANDS.forEach((hand) => {
             const handContainer = getEl(`${fullPrefix}${hand}-container`);
-            if (!handContainer?.querySelector(".card-rank")) return;
+            if (!handContainer) return;
             const count = handContainer.querySelectorAll(`.card-rank.selected`).length;
-            const countEl = handContainer.querySelector(".card-count");
-            if (countEl) {
-                countEl.textContent = `(${count}/13)`;
-                countEl.classList.toggle("valid", count === 13);
-                countEl.classList.toggle("invalid", count !== 13);
+            console.log(`${fullPrefix}${hand}-card-count`);
+
+            if (getEl(`${fullPrefix}${hand}-card-count`)) {
+                getEl(`${fullPrefix}${hand}-card-count`).classList.toggle("valid", count === 13);
+                getEl(`${fullPrefix}${hand}-card-count`).textContent = `(${count}/13)`;
             }
-            handContainer.classList.toggle("hand-complete", count === 13);
+
+            const mobilePreview = getEl(`mobile-preview-${hand}`);
+            if (mobilePreview) {
+                mobilePreview.classList.toggle("hand-complete", count === 13);
+                mobilePreview.querySelector(".mobile-preview-count").textContent = `(${count}/13)`;
+                mobilePreview.querySelector(".mobile-preview-cards").innerHTML = Object.keys(SUITS)
+                    .map((suit) => {
+                        const selectedRanks = Array.from(
+                            handContainer.querySelectorAll(
+                                `.card-rank.selected[data-suit="${suit}"]`
+                            )
+                        )
+                            .sort(
+                                (a, b) =>
+                                    RANKS.indexOf(a.dataset.rank) - RANKS.indexOf(b.dataset.rank)
+                            )
+                            .map((el) => el.dataset.rank)
+                            .join(" ");
+                        return `<div><span class="${SUIT_COLORS[suit]}">${SUITS[suit]}</span> ${
+                            selectedRanks || "-"
+                        }</div>`;
+                    })
+                    .join("");
+            }
         });
     }
 
@@ -424,15 +449,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (target.classList.contains("disabled")) return;
 
         const { prefix } = target.dataset;
-        const isSelected = !target.classList.contains("selected");
+        const isSelected = target.classList.contains("selected");
+        console.log(isSelected);
+
         const isMobile = prefix.includes("mobile");
 
-        const masterPrefix = isMobile ? "lead" : prefix;
-        const slavePrefix = isMobile ? prefix : "lead";
+        const masterPrefix = prefix == "" ? "" : prefix + "-";
+        const masterContainer = getEl(`${masterPrefix}${target.dataset.hand}-container`);
+        console.log(`${masterPrefix}${target.dataset.hand}-container`);
 
-        const masterContainer = getEl(`${masterPrefix}-${target.dataset.hand}-container`);
-
-        if (isSelected && masterContainer.querySelectorAll(".card-rank.selected").length >= 13) {
+        if (!isSelected && masterContainer.querySelectorAll(".card-rank.selected").length >= 13) {
             const countEl = target.closest(".hand-container").querySelector(".card-count");
             if (countEl) {
                 countEl.classList.add("flash-warning");
@@ -442,10 +468,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const allCardsSelector = `[data-suit="${target.dataset.suit}"][data-rank="${target.dataset.rank}"]`;
-        document
-            .querySelectorAll(`#lead-analysis-section ${allCardsSelector}`)
-            .forEach((card) => card.classList.toggle("selected", isSelected));
-        syncLeadUIState();
+        const section = prefix ? "lead-analysis-section" : "dds-analysis-section";
+        console.log(`#${section} ${allCardsSelector}`);
+
+        // document
+        //     .querySelectorAll(`#${section} ${allCardsSelector}`)
+        //     .forEach((card) => card.classList.toggle("selected", !isSelected));
+
+        document.querySelectorAll(`#${section} ${allCardsSelector}`).forEach((card) => {
+            if (card === target || prefix) {
+                console.log(!isSelected);
+
+                card.classList.toggle("selected", !isSelected);
+            } else if (!prefix) {
+                card.classList.toggle("disabled", !isSelected);
+            }
+        });
+
+        updateAllCardCounts(prefix);
+        if (!prefix) {
+            updatePbnAndSync();
+            attemptAutoComplete();
+        } else {
+            syncLeadUIState();
+        }
     }
 
     function runDDSAnalysis() {
@@ -502,7 +548,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function runLeadAnalysis() {
         clearResultsAndErrors();
         const isMobile = window.innerWidth < 992;
-        const leader = (isMobile ? leaderSelectMobile : leaderSelect).value;
+        const leader = directionMap[(isMobile ? leaderSelectMobile : leaderSelect).value];
         const leaderHandContainer = getEl(`lead-${leader}-container`);
         if (leaderHandContainer.querySelectorAll(".card-rank.selected").length !== 13) {
             return showError(
@@ -531,10 +577,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             shapes: {},
             hcp: {},
             contract: getVal("lead-contract"),
-            declarer: getVal("lead-declarer"),
-            leader: leader,
-            vulnerability: getVal("lead-vul"),
+            leader: (isMobile ? leaderSelectMobile : leaderSelect).value,
             simulations: parseInt(getVal("lead-simulations"), 10) || 100,
+            advanced_tcl: getVal("advanced-tcl") || "",
         };
         let valid = true;
         HANDS.forEach((p) => {
@@ -543,7 +588,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const hcp = getVal(`hcp-${p}`);
                 if (shapeValues.every((v) => v) && hcp) {
                     requestData.shapes[p] = shapeValues.join(",");
-                    requestData.hcp[p] = hcp.split("-").map(Number);
+                    requestData.hcp[p] = hcp;
                 } else {
                     showError(`Could not find conditions for player ${p}`);
                     valid = false;
@@ -650,31 +695,69 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function displayLeadResults(leads) {
-        if (!leads) return;
-        const sortedLeads = [...leads].sort((a, b) => a.tricks - b.tricks);
+        if (!leads || leads.length === 0) return;
+
+        const sortedLeads = [...leads].sort((a, b) => b.tricks - a.tricks);
+
+        const tableHeader = `
+            <thead>
+                <tr>
+                    <th style="width: 10%;">${translations.card || "Card"}</th>
+                    <th style="width: 10%;">${translations.expectedTricks || "Avg Tricks"}</th>
+                    <th style="width: 10%;">${translations.setPercentage || "Set %"}</th>
+                    <th style="width: 70%;">${
+                        translations.trickDistribution || "Trick Distribution (0-13)"
+                    }</th>
+                </tr>
+            </thead>`;
+
         const tableBody = sortedLeads
             .map((lead) => {
                 const suitChar = lead.card.charAt(0).toUpperCase();
                 const rank = lead.card.charAt(1).toUpperCase();
                 const suitName = { S: "spades", H: "hearts", D: "diamonds", C: "clubs" }[suitChar];
-                return `<tr><td class="fw-bold fs-5"><span class="${SUIT_COLORS[suitName]}">${
+
+                const perOfTrick = lead.per_of_trick || [];
+                let sum = 0;
+                perOfTrick.forEach((v) => (sum += v));
+
+                const distributionText = perOfTrick
+                    .map((p, i) => {
+                        // 確率が0より大きい場合のみ表示
+                        if (p > 0) {
+                            return `<span class="me-2" style="white-space: nowrap;"><b>${i}</b>:${(
+                                p / sum
+                            ).toFixed(1)}%</span>`;
+                        }
+                        return "";
+                    })
+                    .join(" ");
+
+                return `
+                <tr>
+                    <td class="fw-bold fs-5"><span class="${SUIT_COLORS[suitName]}">${
                     SUITS[suitName]
-                }</span> ${rank}</td><td class="fs-5 text-end">${lead.tricks.toFixed(
-                    2
-                )}</td></tr>`;
+                }</span> ${rank}</td>
+                    <td class="text-end">${lead.tricks.toFixed(2)}</td>
+                    <td class="text-end">${lead.per_of_set.toFixed(1)}%</td>
+                    <td>
+                        <div class="d-flex flex-wrap" style="font-size: 0.75rem; letter-spacing: -0.5px;">
+                           ${distributionText}
+                        </div>
+                    </td>
+                </tr>`;
             })
             .join("");
+
         leadResultsContainer.innerHTML = `
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-10">
                 <h5 class="text-center">${translations.optimalLeads}</h5>
-                <table class="table table-sm table-striped">
-                    <thead><tr><th style="width: 50%;">${
-                        translations.card || "Card"
-                    }</th><th class="text-end">${
-            translations.expectedTricks || "Expected Tricks"
-        }</th></tr></thead>
-                    <tbody>${tableBody}</tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        ${tableHeader}
+                        <tbody>${tableBody}</tbody>
+                    </table>
+                </div>
             </div>`;
     }
 
