@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             leadMobileAllHandsContainer.appendChild(mobilePlayerContainer);
         });
 
-        syncLeadUIState();
+        // syncLeadUIState();
     }
 
     function syncLeadUIState() {
@@ -185,14 +185,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 });
             } else {
-                SUIT_KEYS.forEach((suit) => {
-                    const dInput = getEl(`shape-${player}-${suit}`);
-                    const mInput = getEl(`shape-${player}-${suit}-mobile`);
-                    if (dInput && mInput) mInput.value = dInput.value;
-                });
-                const dHcp = getEl(`hcp-${player}`);
-                const mHcp = getEl(`hcp-${player}-mobile`);
-                if (dHcp && mHcp) mHcp.value = dHcp.value;
+                // SUIT_KEYS.forEach((suit) => {
+                //     const dInput = getEl(`shape-${player}-${suit}`);
+                //     const mInput = getEl(`shape-${player}-${suit}-mobile`);
+                //     if (dInput && mInput) mInput.value = dInput.value;
+                // });
+                // const dHcp = getEl(`hcp-${player}`);
+                // const mHcp = getEl(`hcp-${player}-mobile`);
+                // if (dHcp && mHcp) mHcp.value = dHcp.value;
             }
         });
 
@@ -490,7 +490,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             updatePbnAndSync();
             attemptAutoComplete();
         } else {
-            syncLeadUIState();
+            // syncLeadUIState();
         }
     }
 
@@ -549,7 +549,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         clearResultsAndErrors();
         const isMobile = window.innerWidth < 992;
         const leader = directionMap[(isMobile ? leaderSelectMobile : leaderSelect).value];
-        const leaderHandContainer = getEl(`lead-${leader}-container`);
+        const leaderHandContainer = getEl(`lead-${isMobile ? "mobile-" : ""}${leader}-container`);
         if (leaderHandContainer.querySelectorAll(".card-rank.selected").length !== 13) {
             return showError(
                 translations.leader13CardsError || "Leader must have 13 cards selected."
@@ -576,16 +576,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             leader_hand_pbn: leaderHandPbn,
             shapes: {},
             hcp: {},
-            contract: getVal("lead-contract"),
+            contract: getVal(`lead-contract`),
             leader: (isMobile ? leaderSelectMobile : leaderSelect).value,
-            simulations: parseInt(getVal("lead-simulations"), 10) || 100,
-            advanced_tcl: getVal("advanced-tcl") || "",
+            simulations: parseInt(getVal(`lead-simulations`), 10) || 100,
+            advanced_tcl: getVal(`advanced-tcl`) || "",
         };
         let valid = true;
         HANDS.forEach((p) => {
             if (p !== leader) {
                 const shapeValues = SUIT_KEYS.map((suit) => getVal(`shape-${p}-${suit}`));
                 const hcp = getVal(`hcp-${p}`);
+                console.log(`${p}:${shapeValues},${hcp}`);
+
                 if (shapeValues.every((v) => v) && hcp) {
                     requestData.shapes[p] = shapeValues.join(",");
                     requestData.hcp[p] = hcp;
@@ -611,7 +613,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }">♠</span></th><th><span class="${SUIT_COLORS.hearts}">♥</span></th><th><span class="${
             SUIT_COLORS.diamonds
         }">♦</span></th><th><span class="${SUIT_COLORS.clubs}">♣</span></th></tr></thead>
-            <tbody>${["North", "East", "South", "West"]
+            <tbody>${["North", "South", "East", "West"]
                 .map(
                     (hand) => `
                 <tr><td class="fw-bold">${translations[hand.toLowerCase()]}</td>${[
@@ -720,14 +722,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const perOfTrick = lead.per_of_trick || [];
                 let sum = 0;
                 perOfTrick.forEach((v) => (sum += v));
+                console.log(perOfTrick, sum);
 
                 const distributionText = perOfTrick
                     .map((p, i) => {
                         // 確率が0より大きい場合のみ表示
                         if (p > 0) {
                             return `<span class="me-2" style="white-space: nowrap;"><b>${i}</b>:${(
-                                p / sum
-                            ).toFixed(1)}%</span>`;
+                                (p / sum) *
+                                100
+                            ).toFixed()}%</span>`;
                         }
                         return "";
                     })

@@ -428,7 +428,7 @@ int main(int argc, char* argv[]) {
     boards.noOfBoards = nbatch;
     rs = SolveAllBoards(&boards, &sol);
     if (rs != 1) {
-      fprintf(stderr, "SolveAllBoards() returned error: %d  (quitting)\n", rs); return(rs);
+      fprintf(stderr, "SolveAllBoards() returned error: %d (quitting)\n", rs); return(rs);
     }
     else {
       nboards += nbatch;
