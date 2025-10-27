@@ -4,7 +4,9 @@ import os
 import random
 import re
 import subprocess
+import threading
 import time
+from contextlib import asynccontextmanager
 from ctypes import byref, c_int
 from typing import Dict, List, Optional, Tuple
 
@@ -14,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, constr
 
+dds_lock = threading.Lock()
 app = FastAPI()
 
 origins = [
@@ -64,6 +67,25 @@ async def add_process_time_header(request: Request, call_next):
                 "error": f"An unexpected server error occurred: {str(e)}"
             },
         )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # アプリケーション起動時に実行される処理
+    print("Application startup: Initializing DDS library...")
+    with dds_lock:
+        # この関数は、他のDDS関数を呼び出す前に一度だけ呼び出す必要がある
+        # ライブラリの内部スレッド管理を初期化する
+        dds.SetMaxThreads(0)
+    print("DDS library initialized.")
+
+    yield  # ここでアプリケーションが実行される
+
+    # アプリケーション終了時に実行される処理
+    print("Application shutdown: Freeing DDS resources...")
+    with dds_lock:
+        dds.FreeResources()
+    print("DDS resources freed.")
 
 
 # PBN文字列のリストを渡すと、各ディールの解決済みのトリックを返す
@@ -167,7 +189,7 @@ def analyse_deal(deal_pbn: DealPBN):
 def runDeal(tcl_text, num):
     # Write the script to a temporary file
     script_filename = "_deal.tcl"
-    print(tcl_text)
+    print(tcl_text, num)
     with open(script_filename, "w") as f:
         f.write(tcl_text)
 
@@ -220,23 +242,20 @@ def analyse_single_dummy(request: SingleDummyRequest):
         #     for rank in all_ranks:
         #         if rank not in ns_suit_cards:
         #             remaining_cards.append((suit_idx, rank))
-        north_hand_tcl = (
-            "{"
-            + " ".join(
-                part if part != "-" else '""'
-                for part in north_hand_str.split(".")
-            )
-            + "}"
-        )
-        south_hand_tcl = (
-            "{"
-            + " ".join(
-                part if part != "-" else '""'
-                for part in south_hand_str.split(".")
-            )
-            + "}"
-        )
+        def get_cards(text):
+            cards_list = []
+            suits = ["S", "H", "D", "C"]
+            for i in range(4):
+                cards = text.split(".")[i]
+                if cards == "-":
+                    continue
+                for card in cards.split(""):
+                    cards_list.append(card + suits)
 
+            return " ".join(cards_list)
+
+        north_hand_tcl = get_cards(north_hand_str)
+        south_hand_tcl = get_cards(south_hand_str)
         # if len(remaining_cards) != 26:
         #     return {
         #         "error": "Invalid number of cards for North and South. Must be 26 total."
@@ -299,95 +318,131 @@ def analyse_single_dummy(request: SingleDummyRequest):
         #             trick_distribution[suit_idx]["South"][south_tricks] += 1
 
         tcl_text = f"""
-north is {north_hand_tcl}
-south is {south_hand_tcl}
+{"" if north_hand_tcl=="" else f"north gets {north_hand_tcl}"}
+{"" if south_hand_tcl=="" else f"south gets {south_hand_tcl}"}
 main {"{"}
 {request.advanced_tcl or ""}
 accept
 {"}"}
         """
-        deal_pbn = runDeal(tcl_text, request.simulations)
-        # print(deal_pbn)
-        deals = deal_pbn.splitlines()
-        deals = list(filter(lambda x: x != "", deals))
 
-        print(len(deals))
-        print(deals)
+        with dds_lock:
+            deal_pbn = runDeal(tcl_text, request.simulations)
+            print(deal_pbn)
+            deals = deal_pbn.splitlines()
+            deals = list(filter(lambda x: x != "", deals))
 
-        batch_num = math.ceil(len(deals) / dds.MAXNOOFBOARDS)
-        all_results = []
-        for batch in range(batch_num):
-            table_deals_pbn = dds.ddTableDealsPBN()
-            table_deals_pbn.noOfTables = (
-                len(deals) - batch * dds.MAXNOOFBOARDS
-                if len(deals) - batch * dds.MAXNOOFBOARDS < dds.MAXNOOFBOARDS
-                else dds.MAXNOOFBOARDS
-            )
-            for i, pbn in enumerate(
-                deals[
-                    batch * dds.MAXNOOFBOARDS : (batch + 1) * dds.MAXNOOFBOARDS
-                ]
-            ):
-                # table_deal_pbn = dds.ddTableDealPBN()
-                hand = (
-                    pbn.replace('[Deal "', "")
+            print(len(deals))
+
+            # batch_size = 10
+            # batch_num = math.ceil(len(deals) / batch_size)
+            # all_results = []
+            # for batch in range(batch_num):
+            #     table_deals_pbn = dds.ddTableDealsPBN()
+            #     table_deals_pbn.noOfTables = (
+            #         len(deals) - batch * batch_size
+            #         if len(deals) - batch * batch_size < batch_size
+            #         else batch_size
+            #     )
+            #     print(
+            #         len(deals) - batch * batch_size
+            #         if len(deals) - batch * batch_size < batch_size
+            #         else batch_size
+            #     )
+            #     print("aaaa")
+            #     enumerated = enumerate(
+            #         deals[batch * batch_size : (batch + 1) * batch_size]
+            #     )
+            #     print("cccc")
+            #     for i, pbn in enumerated:
+            #         # table_deal_pbn = dds.ddTableDealPBN()
+            #         print("bbbb")
+            #         hand = (
+            #             pbn.replace('[Deal "', "").replace('"]', "")
+            #             # .replace(". ", ".- ")
+            #             # .replace("..", ".-.")
+            #             # .replace(" .", " -.")
+            #         )
+            #         print(i, hand)
+            #         if hand != "":
+            #             table_deals_pbn.deals[i].cards = hand.encode("utf-8")
+            #             print(i)
+
+            #         # deals.append(table_deal_pbn)
+
+            #     print("set deals")
+            #     results = dds.ddTablesRes()
+            #     per_results = dds.allParResults()
+            #     print("run calc all tables")
+            #     ret = dds.CalcAllTablesPBN(
+            #         table_deals_pbn,
+            #         (c_int * 5)(0, 0, 0, 0, 0),
+            #         0,
+            #         byref(results),
+            #         byref(per_results),
+            #     )
+            #     print(ret)
+            #     print(results)
+            #     print(per_results)
+            #     if ret != dds.RETURN_NO_FAULT:
+            #         return {
+            #             "error": f"DDS library failed with return code: {ret}"
+            #         }
+
+            #     all_results.append(results)
+            valid_simulations = 0
+            for deal in deals:
+                table_deal_pbn = dds.ddTableDealPBN()
+                table_deal_pbn.cards = (
+                    deal.replace('[Deal "', "")
                     .replace('"]', "")
-                    .replace(". ", ".- ")
-                    .replace("..", ".-.")
-                    .replace(" .", " -.")
+                    .encode("utf-8")
                 )
-                print(i, hand)
-                if hand != "":
-                    table_deals_pbn.deals[i].cards = hand.encode("utf-8")
-                    print(i)
+                results = dds.ddTableResults()
+                ret = dds.CalcDDtablePBN(table_deal_pbn, byref(results))
 
-                # deals.append(table_deal_pbn)
+                if ret == dds.RETURN_NO_FAULT:
+                    valid_simulations += 1
+                    for suit_idx in trick_distribution:
+                        north_tricks = results.resTable[suit_idx][
+                            dds.HAND_NORTH
+                        ]
+                        south_tricks = results.resTable[suit_idx][
+                            dds.HAND_SOUTH
+                        ]
+                        trick_distribution[suit_idx]["North"][
+                            north_tricks
+                        ] += 1
+                        trick_distribution[suit_idx]["South"][
+                            south_tricks
+                        ] += 1
 
-            results = dds.ddTablesRes()
-            per_results = dds.allParResults()
-            print("run calc all tables")
-            ret = dds.CalcAllTablesPBN(
-                table_deals_pbn,
-                (c_int * 5)(0, 0, 0, 0, 0),
-                0,
-                byref(results),
-                byref(per_results),
-            )
-            print(ret)
-            print(results)
-            print(per_results)
-            if ret != dds.RETURN_NO_FAULT:
-                return {"error": f"DDS library failed with return code: {ret}"}
-
-            all_results += results
-
-        suit_map_rev = {
-            dds.SUIT_SPADE: "Spades",
-            dds.SUIT_HEART: "Hearts",
-            dds.SUIT_DIAMOND: "Diamonds",
-            dds.SUIT_CLUB: "Clubs",
-            dds.SUIT_NT: "No-Trump",
-        }
-
-        response_dist = {}
-        valid_simulations = len(deal_pbn.splitlines())
-        for suit_idx, hands in trick_distribution.items():
-            suit_name = suit_map_rev[suit_idx]
-            response_dist[suit_name] = {
-                "North": [
-                    (count / valid_simulations) * 100
-                    for count in hands["North"]
-                ],
-                "South": [
-                    (count / valid_simulations) * 100
-                    for count in hands["South"]
-                ],
+            suit_map_rev = {
+                dds.SUIT_SPADE: "Spades",
+                dds.SUIT_HEART: "Hearts",
+                dds.SUIT_DIAMOND: "Diamonds",
+                dds.SUIT_CLUB: "Clubs",
+                dds.SUIT_NT: "No-Trump",
             }
 
-        return {
-            "trick_distribution": response_dist,
-            "simulations_run": valid_simulations,
-        }
+            response_dist = {}
+            for suit_idx, hands in trick_distribution.items():
+                suit_name = suit_map_rev[suit_idx]
+                response_dist[suit_name] = {
+                    "North": [
+                        (count / valid_simulations) * 100
+                        for count in hands["North"]
+                    ],
+                    "South": [
+                        (count / valid_simulations) * 100
+                        for count in hands["South"]
+                    ],
+                }
+
+            return {
+                "trick_distribution": response_dist,
+                "simulations_run": valid_simulations,
+            }
 
     except Exception as e:
         return {

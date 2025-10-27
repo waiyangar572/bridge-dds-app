@@ -113,6 +113,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const isSingleDummy = mode === "singleDummy";
             getEl("simulations-container-desktop").classList.toggle("d-none", !isSingleDummy);
             getEl("simulations-container-mobile").classList.toggle("d-none", !isSingleDummy);
+            getEl("single-dds-advanced-tcl").classList.toggle("d-none", !isSingleDummy);
+            getEl("single-dds-advanced-tcl-mobile").classList.toggle("d-none", !isSingleDummy);
             [
                 "east-container",
                 "west-container",
@@ -539,9 +541,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     async function runSingleDummyAnalysis(pbn, simulations) {
+        const isMobile = window.innerWidth < 992;
+        const getVal = (id) => getEl(id + (isMobile ? "-mobile" : ""))?.value;
         const pbnParts = pbn.substring(2).split(" ");
         const ns_pbn = `N:${pbnParts[0]} .. ${pbnParts[2]} .`;
-        const data = await fetchAPI("analyse_single_dummy", { pbn: ns_pbn, simulations });
+        console.log(getVal("single-dds-advanced-tcl"));
+
+        const data = await fetchAPI("analyse_single_dummy", {
+            pbn: ns_pbn,
+            advanced_tcl: getVal("single-dds-advanced-tcl"),
+            simulations: simulations,
+        });
         if (data) displaySingleDummyDistribution(data.trick_distribution, data.simulations_run);
     }
 
