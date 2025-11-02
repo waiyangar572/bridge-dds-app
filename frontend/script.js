@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 if (!desktopContainer.querySelector(`#hcp-${player}`)) {
                     desktopContainer.innerHTML = createConditionInputsHTML(player, false);
+                    setLanguage()
                 }
             }
 
@@ -276,6 +277,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             translations.hcp || "HCP"
         }</label>
                 <input type="text" class="form-control form-control-sm" id="hcp-${player}${idSuffix}" value="0-37">
+                <label for="shape-preset-${player}${idSuffix}" class="form-label" data-i18n="shapePresetSelector">Shape preset:</label>
+                <select id="shape-preset-${player}${idSuffix}" class="shape-preset-selector form-select form-select-sm mb-2" data-player="${player}">
+                    <option value="all" data-i18n="shapePresetAll">All shapes</option>
+                    <option value="balanced" data-i18n="shapePresetBalanced">Balanced</option>
+                    <option value="semiBalanced" data-i18n="shapePresetSemiBalanced">SemiBalanced</option>
+                    <option value="unbalanced" data-i18n="shapePresetUnbalanced">Unbalanced</option>
+                    <option value="balanced-without-major" data-i18n="shapePresetBalancedWithoutMajor">BalancedWithout5Major</option>
+                </select>
             </div>`;
     }
 
@@ -588,6 +597,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             hcp: {},
             contract: getVal(`lead-contract`),
             leader: (isMobile ? leaderSelectMobile : leaderSelect).value,
+            shapePreset: {},
             simulations: parseInt(getVal(`lead-simulations`), 10) || 100,
             advanced_tcl: getVal(`advanced-tcl`) || "",
         };
@@ -596,11 +606,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (p !== leader) {
                 const shapeValues = SUIT_KEYS.map((suit) => getVal(`shape-${p}-${suit}`));
                 const hcp = getVal(`hcp-${p}`);
+                const shapePreset = getVal(`shape-preset-${p}`);
                 console.log(`${p}:${shapeValues},${hcp}`);
 
                 if (shapeValues.every((v) => v) && hcp) {
                     requestData.shapes[p] = shapeValues.join(",");
                     requestData.hcp[p] = hcp;
+                    requestData.shapePreset[p] = shapePreset;
                 } else {
                     showError(`Could not find conditions for player ${p}`);
                     valid = false;

@@ -36,7 +36,8 @@
     "grandSlam": "グランドスラム",
     "makeRateHeader": "メイク",
     "shape": "シェイプ (S-H-D-C)",
-    "hcp": "点数 (最小-最大)",
+    "shapeRange": "シェイプ",
+    "hcp": "HCP (min-max)",
     "contract": "コントラクト",
     "leader": "リードする人",
     "declarer": "デクレアラー",
@@ -47,5 +48,11 @@
     "optimalLeads": "最適なオープニングリード (期待トリック数が少ない順)",
     "dealConditions": "ディールの条件",
     "playerConditions": "プレイヤーの条件 (リーダー以外)",
-    "leadersHandTitle": "リーダーのハンド"
+    "leadersHandTitle": "リーダーのハンド",
+    "shapePresetSelector": "ハンドタイプ",
+    "shapePresetAll": "指定なし",
+    "shapePresetBalanced": "バランス",
+    "shapePresetSemiBalanced": "セミバランス",
+    "shapePresetUnbalanced": "アンバランス",
+    "shapePresetBalancedWithoutMajor": "バランス(5枚メジャーなし)"
 }

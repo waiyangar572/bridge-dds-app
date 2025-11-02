@@ -47,6 +47,7 @@ class SingleDummyRequest(BaseModel):
 class LeadSolverRequest(BaseModel):
     leader_hand_pbn: str
     shapes: Dict[str, str]
+    shapePreset: Dict[str, str]
     hcp: Dict[str, str]
     contract: str
     leader: str
@@ -512,6 +513,19 @@ def solve_opening_lead(request: LeadSolverRequest):
         hcp_range = splitRange(request.hcp[p])
         other_player_conditions.append(f"[hcp {p}] >= {hcp_range[0]}")
         other_player_conditions.append(f"[hcp {p}] <= {hcp_range[1]}")
+
+        if request.shapePreset[p] == "balanced":
+            other_player_conditions.append(
+                f"([{p} pattern] == [list 4 3 3 3] || [{p} pattern] == [list 4 4 3 2] || [{p} pattern] == [list 5 3 3 2])"
+            )
+        elif request.shapePreset[p] == "unbalanced":
+            other_player_conditions.append(
+                f"([{p} pattern] != [list 4 3 3 3] && [{p} pattern] != [list 4 4 3 2] && [{p} pattern] != [list 5 3 3 2])"
+            )
+        elif request.shapePreset[p] == "semiBalanced":
+            other_player_conditions.append(f"[semibalanced {p}]")
+        elif request.shapePreset[p] == "balanced-without-major":
+            other_player_conditions.append(f"[balanced {p}]")
 
     # Combine into the script file content
     boolean_expression = " && ".join(other_player_conditions)

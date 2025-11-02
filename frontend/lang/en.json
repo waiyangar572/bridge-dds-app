@@ -47,5 +47,11 @@
     "optimalLeads": "Optimal Opening Leads (sorted by lowest expected tricks)",
     "dealConditions": "Deal Conditions",
     "playerConditions": "Player Conditions (excluding Leader)",
-    "leadersHandTitle": "Leader's Hand"
+    "leadersHandTitle": "Leader's Hand",
+    "shapePresetSelector": "Hand type",
+    "shapePresetAll": "no specification",
+    "shapePresetBalanced": "balanced",
+    "shapePresetSemiBalanced": "semibalanced",
+    "shapePresetUnbalanced": "unbalanced",
+    "shapePresetBalancedWithoutMajor": "balanced without 5-major"
 }
