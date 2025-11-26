@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title data-i18n="pageTitle"></title>
+        <meta name="description" content="" data-i18n-attr="content:metaDescription" />
+        <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <style>
+            body {
+                padding-bottom: 5rem;
+            }
+            .card-rank {
+                position: relative;
+                display: inline-block;
+                width: 28px;
+                height: 28px;
+                line-height: 26px;
+                text-align: center;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                margin: 1px;
+                cursor: pointer;
+                user-select: none;
+                font-weight: bold;
+                font-size: 0.8rem;
+                transition: all 0.1s ease-in-out;
+            }
+            .card-rank.selected {
+                background-color: #0d6efd;
+                color: white;
+                border-color: #0a58ca;
+                transform: scale(1.1);
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            }
+            .card-rank.disabled {
+                background-color: #e9ecef;
+                color: #adb5bd;
+                cursor: not-allowed;
+                border-color: #dee2e6;
+                opacity: 0.7;
+            }
+            .suit-symbol {
+                font-size: 1rem;
+                width: 30px;
+            }
+            .card-count {
+                font-weight: bold;
+                margin-left: 8px;
+                transition: transform 0.1s;
+            }
+            .card-count.invalid {
+                color: #dc3545;
+            }
+            .card-count.valid {
+                color: #198754;
+            }
+            .suit-spades {
+                color: #0d6efd;
+            }
+            .suit-hearts {
+                color: #dc3545;
+            }
+            .suit-diamonds {
+                color: #fd7e14;
+            }
+            .suit-clubs {
+                color: #198754;
+            }
+            @keyframes flash-warning {
+                50% {
+                    transform: scale(1.3);
+                    background-color: #fff3cd;
+                }
+            }
+            .flash-warning {
+                animation: flash-warning 0.3s ease-in-out;
+            }
+            .cruciform-container {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 1rem;
+                max-width: 1400px;
+                margin: auto;
+            }
+            #north-container,
+            #lead-north-container {
+                grid-area: 1 / 2 / 2 / 3;
+            }
+            #west-container,
+            #lead-west-container {
+                grid-area: 2 / 1 / 3 / 2;
+            }
+            #center-container,
+            #lead-center-container {
+                grid-area: 2 / 2 / 3 / 3;
+            }
+            #east-container,
+            #lead-east-container {
+                grid-area: 2 / 3 / 3 / 4;
+            }
+            #south-container,
+            #lead-south-container {
+                grid-area: 3 / 2 / 4 / 3;
+            }
+            .hand-title {
+                text-transform: capitalize;
+            }
+            .hand-container {
+                padding: 0.5rem;
+            }
+            .hand-container .form-control {
+                height: auto !important;
+            }
+            .hand-container.hand-complete {
+                background-color: #dcfce7;
+                border: 1px solid #15803d;
+                border-radius: 0.5rem;
+            }
+            @media (max-width: 991.98px) {
+                .cruciform-container {
+                    display: none;
+                }
+                .card-rank {
+                    width: 26px;
+                    height: 26px;
+                    line-height: 24px;
+                    font-size: 0.75rem;
+                }
+            }
+            #mobile-ui-container,
+            #lead-mobile-ui-container {
+                position: relative;
+            }
+            .mobile-hand-preview-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(3, auto);
+                gap: 0.25rem;
+                padding: 0.5rem;
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
+            }
+            #mobile-preview-north {
+                grid-area: 1 / 2 / 2 / 3;
+            }
+            #mobile-preview-west {
+                grid-area: 2 / 1 / 3 / 2;
+            }
+            #mobile-preview-east {
+                grid-area: 2 / 3 / 3 / 4;
+            }
+            #mobile-preview-south {
+                grid-area: 3 / 2 / 4 / 3;
+            }
+            .mobile-preview {
+                padding: 0.5rem;
+                border: 1px solid #ccc;
+                border-radius: 0.375rem;
+                cursor: pointer;
+                background-color: #fff;
+                transition: background-color 0.2s;
+                display: flex;
+                flex-direction: column;
+            }
+            .mobile-preview.hand-complete {
+                background-color: #dcfce7;
+                border-color: #15803d;
+            }
+            .mobile-preview.active-editor {
+                background-color: #cfe2ff;
+                border-color: #0d6efd;
+                font-weight: bold;
+            }
+            .mobile-preview-title {
+                font-weight: bold;
+                text-transform: capitalize;
+                text-align: center;
+            }
+            .mobile-preview-cards {
+                font-size: 0.75rem;
+                text-align: left;
+                padding: 0.25rem 0.5rem;
+                flex-grow: 1;
+                min-height: 50px;
+            }
+            .mobile-preview-count {
+                font-size: 0.8rem;
+                text-align: center;
+            }
+            #mobile-hand-editor {
+                background-color: #fff;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                margin: 1rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            #mobile-editor-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .wide-popover {
+                max-width: 600px;
+            }
+            .shape-input-group .input-group-text {
+                width: 40px;
+            }
+        </style>
+    </head>
+    <body class="pb-5">
+        <div class="container-fluid mt-4">
+            <div class="d-flex justify-content-end align-items-center mb-2">
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-secondary" data-lang="ja">
+                        JA</button
+                    ><button type="button" class="btn btn-outline-secondary" data-lang="en">
+                        EN
+                    </button>
+                </div>
+                <a id="help-icon" class="ms-3 fs-4 text-primary" href="#" role="button"
+                    ><i class="bi bi-question-circle-fill"></i
+                ></a>
+            </div>
+            <h1 class="text-center mb-4" data-i18n="mainTitle"></h1>
+            <div class="text-center my-3">
+                <div class="btn-group" role="group" aria-label="Main analysis mode toggle">
+                    <input
+                        type="radio"
+                        class="btn-check"
+                        name="mainMode"
+                        id="doubleDummyToggle"
+                        autocomplete="off"
+                        checked /><label
+                        class="btn btn-outline-primary"
+                        for="doubleDummyToggle"
+                        data-i18n="doubleDummyMode"></label>
+                    <input
+                        type="radio"
+                        class="btn-check"
+                        name="mainMode"
+                        id="singleDummyToggle"
+                        autocomplete="off" /><label
+                        class="btn btn-outline-primary"
+                        for="singleDummyToggle"
+                        data-i18n="singleDummyMode"></label>
+                    <input
+                        type="radio"
+                        class="btn-check"
+                        name="mainMode"
+                        id="leadSolverToggle"
+                        autocomplete="off" /><label
+                        class="btn btn-outline-primary"
+                        for="leadSolverToggle"
+                        data-i18n="leadAnalysisMode"></label>
+                </div>
+            </div>
+            <div id="analysis-content">
+                <div id="dds-analysis-section">
+                    <div class="cruciform-container">
+                        <div id="north-container" class="hand-container"></div>
+                        <div id="west-container" class="hand-container"></div>
+                        <div
+                            id="center-container"
+                            class="d-flex flex-column justify-content-center">
+                            <div class="d-none d-lg-block">
+                                <div id="simulations-container-desktop" class="mb-3 d-none">
+                                    <label
+                                        for="simulationsInputDesktop"
+                                        class="form-label fw-bold"
+                                        data-i18n="simulationsLabel"></label
+                                    ><input
+                                        type="number"
+                                        class="form-control"
+                                        id="simulationsInputDesktop"
+                                        value="1000"
+                                        min="1"
+                                        max="10000" />
+                                </div>
+                                <div class="mt-3">
+                                    <label
+                                        for="single-dds-advanced-tcl"
+                                        class="form-label fw-bold"
+                                        data-i18n="advancedTclLabel"></label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        id="single-dds-advanced-tcl"
+                                        rows="2"
+                                        placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
+                                </div>
+                                <div id="pbn-container-desktop" class="pbn-area mb-3">
+                                    <h6 data-i18n="pbnLabel"></h6>
+                                    <textarea
+                                        class="form-control"
+                                        id="pbnInputDesktop"
+                                        rows="3"></textarea
+                                    ><small
+                                        class="form-text text-muted"
+                                        data-i18n="pbnPlaceholder"></small>
+                                </div>
+                                <div class="action-area">
+                                    <button
+                                        id="analyzeBtnDesktop"
+                                        class="btn btn-primary w-100"
+                                        data-i18n="analyzeButton"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="east-container" class="hand-container"></div>
+                        <div id="south-container" class="hand-container"></div>
+                    </div>
+                    <div id="mobile-ui-container" class="d-lg-none">
+                        <div id="mobile-hand-previews" class="mobile-hand-preview-grid"></div>
+                        <div id="mobile-hand-editor" class="d-none">
+                            <div id="mobile-editor-header" class="p-2 bg-light border-bottom">
+                                <h5 id="mobile-editor-title" class="m-0"></h5>
+                                <button
+                                    id="mobile-editor-close"
+                                    type="button"
+                                    class="btn-close"></button>
+                            </div>
+                            <div id="mobile-editor-content" class="p-2"></div>
+                        </div>
+                        <div id="mobile-controls" class="p-3">
+                            <div id="simulations-container-mobile" class="mb-3 d-none">
+                                <label
+                                    for="simulationsInputMobile"
+                                    class="form-label fw-bold"
+                                    data-i18n="simulationsLabel"></label
+                                ><input
+                                    type="number"
+                                    class="form-control"
+                                    id="simulationsInputMobile"
+                                    value="1000"
+                                    min="1"
+                                    max="10000" />
+                            </div>
+                            <div class="mt-3">
+                                <label
+                                    for="sige-dds-advanced-tcl-mobile"
+                                    class="form-label fw-bold"
+                                    data-i18n="advancedTclLabel"></label>
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    id="single-dds-advanced-tcl-mobile"
+                                    rows="2"
+                                    placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
+                            </div>
+                            <div id="pbn-container-mobile" class="pbn-area mb-3">
+                                <h6 data-i18n="pbnLabel"></h6>
+                                <textarea
+                                    class="form-control"
+                                    id="pbnInputMobile"
+                                    rows="2"></textarea>
+                            </div>
+                            <div class="action-area">
+                                <button
+                                    id="analyzeBtnMobile"
+                                    class="btn btn-primary w-100"
+                                    data-i18n="analyzeButton"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="lead-analysis-section" class="d-none">
+                    <div class="cruciform-container">
+                        <div id="lead-north-container" class="hand-container"></div>
+                        <div id="lead-west-container" class="hand-container"></div>
+                        <div
+                            id="lead-center-container"
+                            class="d-flex flex-column justify-content-center p-3">
+                            <h5 data-i18n="dealConditions"></h5>
+                            <div class="mb-2 row">
+                                <label
+                                    class="col-sm-4 col-form-label"
+                                    data-i18n="contract"></label>
+                                <div class="col-sm-8">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="lead-contract"
+                                        value="4S" />
+                                </div>
+                            </div>
+                            <div class="mb-2 row">
+                                <label class="col-sm-4 col-form-label" data-i18n="leader"></label>
+                                <div class="col-sm-8">
+                                    <select class="form-select" id="lead-leader">
+                                        <option value="N">North</option>
+                                        <option value="S">South</option>
+                                        <option value="E">East</option>
+                                        <option value="W" selected>West</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-2 row">
+                                <label
+                                    class="col-sm-4 col-form-label"
+                                    data-i18n="simulationsLabel"></label>
+                                <div class="col-sm-8">
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="lead-simulations"
+                                        value="1000"
+                                        min="10"
+                                        max="5000" />
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label
+                                    for="advanced-tcl"
+                                    class="form-label fw-bold"
+                                    data-i18n="advancedTclLabel"></label>
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    id="advanced-tcl"
+                                    rows="2"
+                                    placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
+                            </div>
+                            <button
+                                id="solveLeadBtn"
+                                class="btn btn-primary w-100 mt-3"
+                                data-i18n="solveLeadButton"></button>
+                        </div>
+                        <div id="lead-east-container" class="hand-container"></div>
+                        <div id="lead-south-container" class="hand-container"></div>
+                    </div>
+                    <div id="lead-mobile-ui-container" class="d-lg-none">
+                        <div id="lead-mobile-all-hands-container" class="p-2"></div>
+                        <div id="lead-mobile-controls" class="p-3">
+                            <h5 data-i18n="dealConditions"></h5>
+                            <div class="mb-2 row">
+                                <label class="col-4 col-form-label" data-i18n="contract"></label>
+                                <div class="col-8">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="lead-contract-mobile"
+                                        value="4S" />
+                                </div>
+                            </div>
+                            <div class="mb-2 row">
+                                <label class="col-4 col-form-label" data-i18n="leader"></label>
+                                <div class="col-8">
+                                    <select class="form-select" id="lead-leader-mobile">
+                                        <option value="N">North</option>
+                                        <option value="S">South</option>
+                                        <option value="E">East</option>
+                                        <option value="W" selected>West</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-2 row">
+                                <label
+                                    class="col-4 col-form-label"
+                                    data-i18n="simulationsLabel"></label>
+                                <div class="col-8">
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="lead-simulations-mobile"
+                                        value="1000"
+                                        min="10"
+                                        max="5000" />
+                                </div>
+                                <div class="mt-3">
+                                    <label
+                                        for="advanced-tcl-mobile"
+                                        class="form-label fw-bold"
+                                        data-i18n="advancedTclLabel"></label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        id="advanced-tcl-mobile"
+                                        rows="2"
+                                        placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
+                                </div>
+                            </div>
+                            <button
+                                id="solveLeadBtnMobile"
+                                class="btn btn-primary w-100 mt-3"
+                                data-i18n="solveLeadButton"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="resultsContainer" class="mt-4 container"></div>
+            <div id="leadResultsContainer" class="mt-4 row justify-content-center"></div>
+            <div
+                id="global-spinner"
+                class="d-none spinner-border text-primary mt-3 mx-auto"
+                role="status">
+                <span class="visually-hidden" data-i18n="loadingMessage"></span>
+            </div>
+            <div id="global-error" class="d-none alert alert-danger mt-3" role="alert"></div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>
