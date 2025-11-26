@@ -94,7 +94,7 @@
                 color: #16a34a;
             }
 
-            /* テーブルスタイル */
+            /* 基本テーブルスタイル */
             .result-table th {
                 @apply px-4 py-2 text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200;
             }
@@ -103,6 +103,36 @@
             }
             .result-table tr:last-child td {
                 border-bottom: none;
+            }
+
+            /* 分布表示用テーブル (New) */
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.75rem;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: #f8fafc;
+                color: #64748b;
+                padding: 4px;
+                border: 1px solid #e2e8f0;
+                font-weight: normal;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: 1px solid #e2e8f0;
+                color: #cbd5e1;
+            }
+            .dist-table td.has-val {
+                color: #1e293b;
+                font-weight: bold;
+                background-color: #f0f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #e0f2fe;
+                color: #0369a1;
             }
 
             /* モバイルキーボード */

@@ -106,9 +106,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function toggleCardSD(hand, cardId) {
+        // Single Dummy Hand Toggle with Ownership Check (N vs S)
+        const otherHand = hand === "north" ? "south" : "north";
+
+        // 1. If I already have it, remove it
         if (sdState[hand].includes(cardId)) {
             sdState[hand] = sdState[hand].filter((c) => c !== cardId);
-        } else {
+        }
+        // 2. If opponent has it, steal it (remove from them, add to me)
+        else if (sdState[otherHand].includes(cardId)) {
+            if (sdState[hand].length >= 13) {
+                showToast("13枚制限です");
+                return;
+            }
+            sdState[otherHand] = sdState[otherHand].filter((c) => c !== cardId);
+            sdState[hand].push(cardId);
+        }
+        // 3. Else, just add it
+        else {
             if (sdState[hand].length >= 13) {
                 showToast("13枚制限です");
                 return;
@@ -218,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateCardUI(containerPrefix, stateObj, handsToRender = HANDS) {
         handsToRender.forEach((hand) => {
             // Update Badges
-            // DD
             const ddBadge = document.querySelector(`#hand-${hand} .count-badge`);
             if (ddBadge && containerPrefix === "container") {
                 ddBadge.innerText = stateObj[hand].length;
@@ -226,7 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     ddBadge.classList.replace("bg-slate-400", "bg-emerald-500");
                 else ddBadge.classList.replace("bg-emerald-500", "bg-slate-400");
             }
-            // SD
             const sdBadge = document.querySelector(`#sd-mode-hand-${hand} .sd-count-badge`);
             if (sdBadge && containerPrefix === "sd-container") {
                 sdBadge.innerText = `${stateObj[hand].length} / 13`;
@@ -234,7 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     sdBadge.classList.replace("bg-slate-400", "bg-emerald-500");
                 else sdBadge.classList.replace("bg-emerald-500", "bg-slate-400");
             }
-            // Lead
             const leadBadge = document.querySelector(`#lead-panel-${hand} .lead-count-badge`);
             if (leadBadge && containerPrefix === "lead-container") {
                 leadBadge.innerText = `${stateObj[hand].length} / 13`;
@@ -255,9 +267,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.classList.remove("selected", "taken");
                     if (myCards.includes(cardId)) {
                         btn.classList.add("selected");
-                    } else if (containerPrefix === "container") {
-                        // For DD, show taken
-                        if (findCardOwner(stateObj, cardId)) btn.classList.add("taken");
+                    } else {
+                        // Logic to show 'taken' grey out
+                        if (containerPrefix === "container") {
+                            // Double Dummy: Check any other hand
+                            if (findCardOwner(stateObj, cardId)) btn.classList.add("taken");
+                        } else if (containerPrefix === "sd-container") {
+                            // Single Dummy: Check opponent (N vs S)
+                            const other = hand === "north" ? "south" : "north";
+                            if (stateObj[other].includes(cardId)) btn.classList.add("taken");
+                        }
                     }
                 });
             });
@@ -417,16 +436,11 @@ document.addEventListener("DOMContentLoaded", () => {
     async function runSingleDummy() {
         setLoading(true);
         try {
-            // Build TCL
             const tclParts = [];
-            // Build PBN Parts (For hand inputs)
             const pbnParts = { north: ".", south: ".", east: ".", west: "." };
 
-            // Loop all hands to build constraints or PBN
             ["north", "south", "east", "west"].forEach((hand) => {
-                // If it's N/S and mode is Hand
                 if ((hand === "north" || hand === "south") && sdModes[hand] === "hand") {
-                    // Build PBN part for this hand
                     if (sdState[hand].length === 13) {
                         const suitsStr = SUITS.map((suit) => {
                             return sdState[hand]
@@ -437,14 +451,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         }).join(".");
                         pbnParts[hand] = suitsStr;
                     } else {
-                        // If not 13 cards, treat as constraint? Or just fail?
-                        // Let's assume user wants full hand if selected.
                         if (sdState[hand].length > 0)
                             throw new Error(`${hand}の手札が13枚ではありません`);
-                        // if 0, treat as empty (unknown)
                     }
                 } else {
-                    // Feature Mode
                     const minH = document.getElementById(`sd-${hand}-hcp-min`).value || 0;
                     const maxH = document.getElementById(`sd-${hand}-hcp-max`).value || 37;
                     tclParts.push(`[hcp ${hand}] >= ${minH}`);
@@ -487,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({
                     pbn: finalPBN,
                     advanced_tcl: tclStr,
-                    simulations: 100,
+                    simulations: 1000,
                 }),
             });
             const data = await res.json();
@@ -529,7 +539,7 @@ document.addEventListener("DOMContentLoaded", () => {
             shapes: {},
             hcp: {},
             shapePreset: {},
-            simulations: 100,
+            simulations: 1000,
         };
 
         HANDS.forEach((h) => {
@@ -566,6 +576,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // --- Shared Helper for Distribution Table ---
+    function createDistributionTable(dist) {
+        // dist: array of 14 numbers (percentages)
+        let tableHtml = '<table class="dist-table"><thead><tr>';
+        for (let i = 0; i <= 13; i++) tableHtml += `<th>${i}</th>`;
+        tableHtml += "</tr></thead><tbody><tr>";
+
+        dist.forEach((pct) => {
+            let cls = "";
+            if (pct > 0) cls = "has-val";
+            if (pct >= 20) cls = "high-val";
+            tableHtml += `<td class="${cls}">${pct > 0 ? Math.round(pct) : ""}</td>`;
+        });
+
+        tableHtml += "</tr></tbody></table>";
+        return tableHtml;
+    }
+
     // --- Rendering Results ---
     function renderDDResults(tricks) {
         const tbody = document.getElementById("result-body-double");
@@ -591,32 +619,41 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("sd-sim-count").innerText = `Samples: ${count}`;
         container.innerHTML = "";
 
-        Object.keys(distribution).forEach((suit) => {
-            const dist = distribution[suit];
-            const div = document.createElement("div");
-            div.innerHTML = `<h5 class="font-bold text-slate-700 mb-2">${suit}</h5>`;
+        const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
 
-            const table = document.createElement("table");
-            table.className = "w-full result-table text-xs border";
-            let headHtml = "<thead><tr><th>Pl</th>";
-            for (let i = 0; i <= 13; i++) headHtml += `<th>${i}</th>`;
-            headHtml += "</tr></thead>";
+        suitOrder.forEach((suit) => {
+            if (!distribution[suit]) return;
 
-            let bodyHtml = "<tbody>";
-            ["North", "South"].forEach((pl) => {
-                bodyHtml += `<tr><td class="font-bold">${pl[0]}</td>`;
-                dist[pl].forEach((pct, i) => {
-                    const bg =
-                        pct > 50 ? "bg-emerald-500 text-white" : pct > 10 ? "bg-emerald-100" : "";
-                    bodyHtml += `<td class="${bg}">${pct > 0 ? Math.round(pct) : "."}</td>`;
-                });
-                bodyHtml += "</tr>";
+            const distData = distribution[suit];
+            const card = document.createElement("div");
+            card.className = "bg-white border border-slate-200 rounded-lg p-4 mb-4 shadow-sm";
+
+            const suitInfo = SUITS.find((s) => s.name === suit) || {
+                color: "text-indigo-600",
+                label: "NT",
+            };
+            const suitLabel = suit === "No-Trump" ? "NT" : suitInfo.label;
+            const suitColor = suit === "No-Trump" ? "text-indigo-700" : suitInfo.color;
+
+            let html = `<h5 class="font-bold text-lg mb-3 flex items-center gap-2 ${suitColor}"><span class="text-xl">${suitLabel}</span> ${suit}</h5>`;
+
+            ["North", "South"].forEach((player) => {
+                const dist = distData[player]; // Array of percentages
+                const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
+
+                html += `<div class="mb-4 last:mb-0">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="font-bold text-sm text-slate-700">${player}</span>
+                        <span class="text-xs font-bold text-slate-500">Avg: <span class="text-indigo-600 text-sm">${exp.toFixed(
+                            2
+                        )}</span></span>
+                    </div>
+                    ${createDistributionTable(dist)}
+                </div>`;
             });
-            bodyHtml += "</tbody>";
 
-            table.innerHTML = headHtml + bodyHtml;
-            div.appendChild(table);
-            container.appendChild(div);
+            card.innerHTML = html;
+            container.appendChild(card);
         });
 
         document.getElementById("result-single").classList.remove("hidden");
@@ -638,48 +675,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 label: suitChar,
             };
 
-            let barHtml =
-                '<div class="h-6 w-full bg-slate-100 rounded-full flex overflow-hidden font-bold text-white text-[10px] leading-6 mt-2">';
-            const colors = [
-                "bg-slate-300",
-                "bg-orange-200",
-                "bg-orange-300",
-                "bg-orange-400",
-                "bg-orange-500",
-                "bg-orange-600",
-            ];
-
-            const dist = lead.per_of_trick;
+            // Normalize to percentages
+            let dist = lead.per_of_trick;
             const total = dist.reduce((a, b) => a + b, 0);
-
-            dist.forEach((count, tricks) => {
-                if (count === 0) return;
-                const pct = (count / total) * 100;
-                if (pct < 3) return;
-                const colorClass = tricks === 0 ? colors[0] : colors[Math.min(tricks, 5)];
-                barHtml += `<div style="width: ${pct}%" class="${colorClass} text-center shadow-[inset_-1px_0_0_rgba(0,0,0,0.1)]" title="${tricks} Tricks: ${Math.round(
-                    pct
-                )}%">${tricks}</div>`;
-            });
-            barHtml += "</div>";
+            if (total > 0) {
+                dist = dist.map((v) => (v / total) * 100);
+            }
 
             const row = document.createElement("div");
-            row.className = "group border-b border-slate-100 pb-4 last:border-0";
+            row.className = "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3";
             row.innerHTML = `
-                <div class="flex justify-between items-end mb-1">
+                <div class="flex justify-between items-end mb-2">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-bold text-xl ${suitInfo.color} w-8">${
+                        <span class="font-bold text-2xl ${
+                            suitInfo.color
+                        } w-10 text-center bg-white border border-slate-200 rounded shadow-sm h-10 leading-10">${
                 suitInfo.label
             }${rankChar}</span>
-                        <span class="text-xs font-bold text-slate-400">Exp: ${lead.tricks.toFixed(
-                            2
-                        )}</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">Exp Tricks</span>
+                            <span class="text-lg font-bold text-slate-700 leading-none">${lead.tricks.toFixed(
+                                2
+                            )}</span>
+                        </div>
                     </div>
-                    <div class="text-xs text-orange-600 font-bold">Set: ${lead.per_of_set.toFixed(
-                        1
-                    )}%</div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Set Prob</span>
+                        <span class="text-sm font-bold text-orange-600">${lead.per_of_set.toFixed(
+                            1
+                        )}%</span>
+                    </div>
                 </div>
-                ${barHtml}
+                ${createDistributionTable(dist)}
             `;
             container.appendChild(row);
         });
