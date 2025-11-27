@@ -75,28 +75,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.querySelectorAll("[data-lang]").forEach((btn) => {
             btn.classList.toggle("active", btn.dataset.lang === document.documentElement.lang);
         });
-        const helpIcon = getEl("help-icon");
-        if (helpIcon) {
-            const existingPopover = bootstrap.Popover.getInstance(helpIcon);
-            if (existingPopover) existingPopover.dispose();
-            const popoverContent = `<p>${translations.helpIntro || ""}</p><strong>${
-                translations.featuresTitle || ""
-            }</strong><ul><li>${translations.featureDD || ""}</li><li>${
-                translations.featureSD || ""
-            }</li><li>${translations.featureLead || ""}</li><li>${
-                translations.featurePBN || ""
-            }</li><li>${translations.featureUI || ""}</li></ul><strong>${
-                translations.whatIsDDTitle || ""
-            }</strong><p>${translations.whatIsDDText || ""}</p>`;
-            new bootstrap.Popover(helpIcon, {
-                title: translations.helpTitle || "Help",
-                content: popoverContent,
-                html: true,
-                trigger: "focus",
-                placement: "bottom",
-                customClass: "wide-popover",
-            });
-        }
+        // const helpIcon = getEl("help-icon");
+        // if (helpIcon) {
+        //     const existingPopover = bootstrap.Popover.getInstance(helpIcon);
+        //     if (existingPopover) existingPopover.dispose();
+        //     const popoverContent = `<p>${translations.helpIntro || ""}</p><strong>${
+        //         translations.featuresTitle || ""
+        //     }</strong><ul><li>${translations.featureDD || ""}</li><li>${
+        //         translations.featureSD || ""
+        //     }</li><li>${translations.featureLead || ""}</li><li>${
+        //         translations.featurePBN || ""
+        //     }</li><li>${translations.featureUI || ""}</li></ul><strong>${
+        //         translations.whatIsDDTitle || ""
+        //     }</strong><p>${translations.whatIsDDText || ""}</p>`;
+        //     new bootstrap.Popover(helpIcon, {
+        //         title: translations.helpTitle || "Help",
+        //         content: popoverContent,
+        //         html: true,
+        //         trigger: "focus",
+        //         placement: "bottom",
+        //         customClass: "wide-popover",
+        //     });
+        // }
     }
 
     // --- UIモード管理 ---
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 if (!desktopContainer.querySelector(`#hcp-${player}`)) {
                     desktopContainer.innerHTML = createConditionInputsHTML(player, false);
-                    setLanguage()
+                    setLanguage();
                 }
             }
 
@@ -168,6 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             leadMobileAllHandsContainer.appendChild(mobilePlayerContainer);
         });
+        updateAllText();
 
         // syncLeadUIState();
     }

@@ -96,6 +96,7 @@ function alphaBetaSearch(state, alpha, beta) {
 
     state_hash = JSON.stringify([state, alpha, beta]);
     if (state_hash in transposition_table) {
+        console.log("load from transposition table");
         return transposition_table[state_hash];
     }
 
