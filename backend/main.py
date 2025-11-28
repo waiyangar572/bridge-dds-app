@@ -41,6 +41,9 @@ class DealPBN(BaseModel):
 class SingleDummyRequest(BaseModel):
     pbn: constr(max_length=80)
     advanced_tcl: Optional[str] = ""
+    shapes: Dict[str, str]
+    shapePreset: Dict[str, str]
+    hcp: Dict[str, str]
     simulations: int = Field(default=1000, ge=1, le=5000)
 
 
@@ -273,6 +276,63 @@ def analyse_single_dummy(request: SingleDummyRequest):
             ]
         }
 
+        def splitRange(range, min=0, max=40):
+            if range.find("-") == -1:
+                return int(range), int(range)
+            else:
+                [part1, part2, *_] = range.split("-")
+                print(f"{part1},{part2}")
+                if part1 == "":
+                    part1 = min
+                if part2 == "":
+                    part2 = max
+
+                return part1, part2
+
+        player_conditions = []
+        for p in request.shapes:
+            shape_parts = request.shapes[p].split(",")
+            suits = ["spades", "hearts", "diamonds", "clubs"]
+            for i, part in enumerate(shape_parts):
+                min_len, max_len = splitRange(part)
+                suit_name = suits[i]
+                if min_len == max_len:
+                    player_conditions.append(f"[{suit_name} {p}] == {min_len}")
+                else:
+                    if int(min_len) > 0:
+                        player_conditions.append(
+                            f"[{suit_name} {p}] >= {min_len}"
+                        )
+                    if int(max_len) < 13:
+                        player_conditions.append(
+                            f"[{suit_name} {p}] <= {max_len}"
+                        )
+
+            hcp_min, hcp_max = splitRange(request.hcp[p])
+            if hcp_min == hcp_max:
+                player_conditions.append(f"[hcp {p}] == {hcp_min}")
+            else:
+                if hcp_min > 0:
+                    player_conditions.append(f"[hcp {p}] >= {hcp_min}")
+                if hcp_max < 37:
+                    player_conditions.append(f"[hcp {p}] <= {hcp_max}")
+
+            if request.shapePreset[p] == "balanced":
+                player_conditions.append(
+                    f"([{p} pattern] == [list 4 3 3 3] || [{p} pattern] == [list 4 4 3 2] || [{p} pattern] == [list 5 3 3 2])"
+                )
+            elif request.shapePreset[p] == "unbalanced":
+                player_conditions.append(
+                    f"([{p} pattern] != [list 4 3 3 3] && [{p} pattern] != [list 4 4 3 2] && [{p} pattern] != [list 5 3 3 2])"
+                )
+            elif request.shapePreset[p] == "semiBalanced":
+                player_conditions.append(f"[semibalanced {p}]")
+            elif request.shapePreset[p] == "balanced-without-major":
+                player_conditions.append(f"[balanced {p}]")
+
+        # Combine into the script file content
+        boolean_expression = " && ".join(player_conditions)
+
         # num_simulations = request.simulations
         # valid_simulations = 0
 
@@ -323,6 +383,7 @@ def analyse_single_dummy(request: SingleDummyRequest):
 {"" if south_hand_tcl=="" else f"south gets {south_hand_tcl}"}
 main {"{"}
 {request.advanced_tcl or ""}
+reject unless {{{boolean_expression}}}
 accept
 {"}"}
         """

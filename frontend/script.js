@@ -437,7 +437,16 @@ document.addEventListener("DOMContentLoaded", () => {
         setLoading(true);
         try {
             const tclParts = [];
-            const pbnParts = { north: ".", south: ".", east: ".", west: "." };
+            const pbnParts = { north: "...", south: "...", east: "...", west: "..." };
+
+            const requestData = {
+                pbn: "",
+                advanced_tcl: "",
+                shapes: {},
+                hcp: {},
+                shapePreset: {},
+                simulations: 1000,
+            };
 
             ["north", "south", "east", "west"].forEach((hand) => {
                 if ((hand === "north" || hand === "south") && sdModes[hand] === "hand") {
@@ -457,48 +466,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const minH = document.getElementById(`sd-${hand}-hcp-min`).value || 0;
                     const maxH = document.getElementById(`sd-${hand}-hcp-max`).value || 37;
-                    tclParts.push(`[hcp ${hand}] >= ${minH}`);
-                    tclParts.push(`[hcp ${hand}] <= ${maxH}`);
+                    requestData.hcp[hand] = `${minH}-${maxH}`;
 
-                    const s = document.getElementById(`sd-${hand}-s`).value;
-                    const h = document.getElementById(`sd-${hand}-h`).value;
-                    const d = document.getElementById(`sd-${hand}-d`).value;
-                    const c = document.getElementById(`sd-${hand}-c`).value;
-
-                    const parseRange = (val, suitName) => {
-                        if (!val) return;
-                        if (val.includes("-")) {
-                            const [min, max] = val.split("-");
-                            tclParts.push(`[${suitName} ${hand}] >= ${min || 0}`);
-                            tclParts.push(`[${suitName} ${hand}] <= ${max || 13}`);
-                        } else {
-                            tclParts.push(`[${suitName} ${hand}] == ${val}`);
-                        }
-                    };
-                    parseRange(s, "spades");
-                    parseRange(h, "hearts");
-                    parseRange(d, "diamonds");
-                    parseRange(c, "clubs");
+                    const sVal = document.getElementById(`sd-${hand}-s`).value || "0-13";
+                    const hVal = document.getElementById(`sd-${hand}-h`).value || "0-13";
+                    const dVal = document.getElementById(`sd-${hand}-d`).value || "0-13";
+                    const cVal = document.getElementById(`sd-${hand}-c`).value || "0-13";
+                    requestData.shapes[hand] = `${sVal},${hVal},${dVal},${cVal}`;
 
                     const preset = document.getElementById(`sd-${hand}-preset`).value;
-                    if (preset === "balanced") tclParts.push(`[balanced ${hand}]`);
-                    if (preset === "semibalanced") tclParts.push(`[semibalanced ${hand}]`);
-                    if (preset === "unbalanced")
-                        tclParts.push(`!([balanced ${hand}] || [semibalanced ${hand}])`);
+                    requestData.shapePreset[hand] = preset;
                 }
             });
 
-            const tclStr = `reject unless { ${tclParts.join(" && ")} }`;
+            // const tclStr = `reject unless { ${tclParts.join(" && ")} }`;
             const finalPBN = `N:${pbnParts.north} ${pbnParts.east} ${pbnParts.south} ${pbnParts.west}`;
+            requestData.pbn = finalPBN;
 
             const res = await fetch(`${API_BASE}/analyse_single_dummy`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    pbn: finalPBN,
-                    advanced_tcl: tclStr,
-                    simulations: 1000,
-                }),
+                body: JSON.stringify(requestData),
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
@@ -587,7 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let cls = "";
             if (pct > 0) cls = "has-val";
             if (pct >= 20) cls = "high-val";
-            tableHtml += `<td class="${cls}">${pct > 0 ? Math.round(pct) : ""}</td>`;
+            tableHtml += `<td class="${cls}">${pct > 0 ? pct.toFixed(1) : ""}</td>`;
         });
 
         tableHtml += "</tr></tbody></table>";

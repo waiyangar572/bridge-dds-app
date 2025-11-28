@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Bridge Lab - Solver</title>
+        <title>Bridge Solver</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <style>
@@ -154,7 +154,7 @@
                             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
                         </div>
                         <span class="font-bold text-xl tracking-tight text-slate-900"
-                            >Bridge Lab</span
+                            >Bridge Solver</span
                         >
                     </div>
 
@@ -450,14 +450,11 @@
                                 <select
                                     id="sd-north-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced" selected>
-                                        バランスハンド (Balanced)
-                                    </option>
-                                    <option value="semibalanced">
-                                        セミバランス (Semi-Balanced)
-                                    </option>
-                                    <option value="unbalanced">アンバランス (Unbalanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -537,8 +534,11 @@
                             <select
                                 id="sd-west-preset"
                                 class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                <option value="any">指定なし (Any)</option>
-                                <option value="balanced">バランスハンド (Balanced)</option>
+                                <option value="any">指定なし</option>
+                                <option value="balanced">バランスハンド</option>
+                                <option value="semiBalanced">セミバランスハンド</option>
+                                <option value="unbalanced">アンバランスハンド</option>
+                                <option value="balanced-without-major">バランスハンド</option>
                             </select>
                         </div>
                     </div>
@@ -617,8 +617,11 @@
                             <select
                                 id="sd-east-preset"
                                 class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                <option value="any">指定なし (Any)</option>
-                                <option value="balanced">バランスハンド (Balanced)</option>
+                                <option value="any">指定なし</option>
+                                <option value="balanced">バランスハンド</option>
+                                <option value="semiBalanced">セミバランスハンド</option>
+                                <option value="unbalanced">アンバランスハンド</option>
+                                <option value="balanced-without-major">バランスハンド</option>
                             </select>
                         </div>
                     </div>
@@ -722,12 +725,11 @@
                                 <select
                                     id="sd-south-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced">バランスハンド (Balanced)</option>
-                                    <option value="semibalanced">
-                                        セミバランス (Semi-Balanced)
-                                    </option>
-                                    <option value="unbalanced">アンバランス (Unbalanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -738,7 +740,7 @@
                     <button
                         id="btn-run-single"
                         class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 inline-flex items-center gap-2">
-                        <i data-lucide="search" class="w-5 h-5"></i> パラメータ探索実行
+                        <i data-lucide="search" class="w-5 h-5"></i> 分析実行
                     </button>
                 </div>
 
@@ -907,8 +909,11 @@
                                 <select
                                     id="lead-north-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -1000,8 +1005,11 @@
                                 <select
                                     id="lead-west-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -1093,8 +1101,11 @@
                                 <select
                                     id="lead-east-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -1186,8 +1197,11 @@
                                 <select
                                     id="lead-south-preset"
                                     class="w-full p-2 border rounded text-sm bg-white text-slate-700">
-                                    <option value="any">指定なし (Any)</option>
-                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
                                 </select>
                             </div>
                         </div>
@@ -1198,7 +1212,7 @@
                     <button
                         id="btn-run-lead"
                         class="bg-orange-600 hover:bg-orange-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 inline-flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5"></i> ベストリードを解析
+                        <i data-lucide="zap" class="w-5 h-5"></i> 分析実行
                     </button>
                 </div>
 
@@ -1225,7 +1239,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                     <div>
-                        <h3 class="text-white text-lg font-bold mb-4">Bridge Lab</h3>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
                         <p class="text-sm leading-relaxed mb-4">
                             モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。
                         </p>
@@ -1241,7 +1255,7 @@
                 </div>
                 <div
                     class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-                    &copy; 2024 Bridge Lab
+                    &copy; 2024 Bridge Solver
                 </div>
             </div>
         </footer>
