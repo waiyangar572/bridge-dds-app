@@ -250,8 +250,8 @@ def analyse_single_dummy(request: SingleDummyRequest):
                 cards = text.split(".")[i]
                 if cards == "-":
                     continue
-                for card in cards.split(""):
-                    cards_list.append(card + suits)
+                for card in cards:
+                    cards_list.append(card + suits[i])
 
             return " ".join(cards_list)
 

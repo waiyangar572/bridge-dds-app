@@ -3,505 +3,1304 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title data-i18n="pageTitle"></title>
-        <meta name="description" content="" data-i18n-attr="content:metaDescription" />
-        <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet" />
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <title>Bridge Lab - Solver</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
         <style>
             body {
-                padding-bottom: 5rem;
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
             }
-            .card-rank {
-                position: relative;
-                display: inline-block;
-                width: 28px;
-                height: 28px;
-                line-height: 26px;
-                text-align: center;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                margin: 1px;
-                cursor: pointer;
-                user-select: none;
-                font-weight: bold;
-                font-size: 0.8rem;
-                transition: all 0.1s ease-in-out;
+
+            /* タブのスタイル */
+            .tab-active {
+                border-bottom-color: #4f46e5;
+                color: #4f46e5;
+                background-color: #eef2ff;
             }
-            .card-rank.selected {
-                background-color: #0d6efd;
-                color: white;
-                border-color: #0a58ca;
-                transform: scale(1.1);
-                box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            .tab-inactive {
+                border-bottom-color: transparent;
+                color: #64748b;
             }
-            .card-rank.disabled {
-                background-color: #e9ecef;
-                color: #adb5bd;
-                cursor: not-allowed;
-                border-color: #dee2e6;
-                opacity: 0.7;
+            .tab-inactive:hover {
+                color: #334155;
+                background-color: #f1f5f9;
             }
-            .suit-symbol {
-                font-size: 1rem;
-                width: 30px;
-            }
-            .card-count {
-                font-weight: bold;
-                margin-left: 8px;
-                transition: transform 0.1s;
-            }
-            .card-count.invalid {
-                color: #dc3545;
-            }
-            .card-count.valid {
-                color: #198754;
-            }
-            .suit-spades {
-                color: #0d6efd;
-            }
-            .suit-hearts {
-                color: #dc3545;
-            }
-            .suit-diamonds {
-                color: #fd7e14;
-            }
-            .suit-clubs {
-                color: #198754;
-            }
-            @keyframes flash-warning {
-                50% {
-                    transform: scale(1.3);
-                    background-color: #fff3cd;
-                }
-            }
-            .flash-warning {
-                animation: flash-warning 0.3s ease-in-out;
-            }
-            .cruciform-container {
-                display: grid;
-                grid-template-columns: 1fr auto 1fr;
-                grid-template-rows: auto auto auto;
-                gap: 1rem;
-                max-width: 1400px;
-                margin: auto;
-            }
-            #north-container,
-            #lead-north-container {
-                grid-area: 1 / 2 / 2 / 3;
-            }
-            #west-container,
-            #lead-west-container {
-                grid-area: 2 / 1 / 3 / 2;
-            }
-            #center-container,
-            #lead-center-container {
-                grid-area: 2 / 2 / 3 / 3;
-            }
-            #east-container,
-            #lead-east-container {
-                grid-area: 2 / 3 / 3 / 4;
-            }
-            #south-container,
-            #lead-south-container {
-                grid-area: 3 / 2 / 4 / 3;
-            }
-            .hand-title {
-                text-transform: capitalize;
-            }
-            .hand-container {
-                padding: 0.5rem;
-            }
-            .hand-container .form-control {
-                height: auto !important;
-            }
-            .hand-container.hand-complete {
-                background-color: #dcfce7;
-                border: 1px solid #15803d;
-                border-radius: 0.5rem;
-            }
-            @media (max-width: 991.98px) {
-                .cruciform-container {
-                    display: none;
-                }
-                .card-rank {
-                    width: 26px;
-                    height: 26px;
-                    line-height: 24px;
-                    font-size: 0.75rem;
-                }
-            }
-            #mobile-ui-container,
-            #lead-mobile-ui-container {
-                position: relative;
-            }
-            .mobile-hand-preview-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(3, auto);
-                gap: 0.25rem;
-                padding: 0.5rem;
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
-            }
-            #mobile-preview-north {
-                grid-area: 1 / 2 / 2 / 3;
-            }
-            #mobile-preview-west {
-                grid-area: 2 / 1 / 3 / 2;
-            }
-            #mobile-preview-east {
-                grid-area: 2 / 3 / 3 / 4;
-            }
-            #mobile-preview-south {
-                grid-area: 3 / 2 / 4 / 3;
-            }
-            .mobile-preview {
-                padding: 0.5rem;
-                border: 1px solid #ccc;
-                border-radius: 0.375rem;
-                cursor: pointer;
-                background-color: #fff;
-                transition: background-color 0.2s;
-                display: flex;
-                flex-direction: column;
-            }
-            .mobile-preview.hand-complete {
-                background-color: #dcfce7;
-                border-color: #15803d;
-            }
-            .mobile-preview.active-editor {
-                background-color: #cfe2ff;
-                border-color: #0d6efd;
-                font-weight: bold;
-            }
-            .mobile-preview-title {
-                font-weight: bold;
-                text-transform: capitalize;
-                text-align: center;
-            }
-            .mobile-preview-cards {
+
+            /* PCカードボタン */
+            .pc-rank-btn {
                 font-size: 0.75rem;
-                text-align: left;
-                padding: 0.25rem 0.5rem;
-                flex-grow: 1;
-                min-height: 50px;
-            }
-            .mobile-preview-count {
-                font-size: 0.8rem;
-                text-align: center;
-            }
-            #mobile-hand-editor {
-                background-color: #fff;
-                border: 1px solid #dee2e6;
-                border-radius: 0.5rem;
-                margin: 1rem;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
-            #mobile-editor-header {
+                width: 1.6rem;
+                height: 1.6rem;
+                border-radius: 4px;
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.1s;
+                border: 1px solid #e2e8f0;
+                background: white;
+                user-select: none;
             }
-            .wide-popover {
-                max-width: 600px;
+            .pc-rank-btn:hover {
+                background-color: #f8fafc;
+                border-color: #cbd5e1;
             }
-            .shape-input-group .input-group-text {
-                width: 40px;
+            .pc-rank-btn.selected {
+                background-color: #4f46e5;
+                color: white;
+                border-color: #4f46e5;
+                font-weight: bold;
+            }
+            .pc-rank-btn.taken {
+                background-color: #f1f5f9;
+                color: #cbd5e1;
+                cursor: not-allowed;
+                border-color: transparent;
+            }
+
+            /* モバイル用フォーカス */
+            .hand-card-mobile-active {
+                border-color: #4f46e5 !important;
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            }
+
+            /* アニメーション */
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* スート色 */
+            .suit-s {
+                color: #1e293b;
+            }
+            .suit-h {
+                color: #ef4444;
+            }
+            .suit-d {
+                color: #f97316;
+            }
+            .suit-c {
+                color: #16a34a;
+            }
+
+            /* 基本テーブルスタイル */
+            .result-table th {
+                @apply px-4 py-2 text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200;
+            }
+            .result-table td {
+                @apply px-4 py-3 text-sm font-medium text-center border-b border-slate-100;
+            }
+            .result-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            /* 分布表示用テーブル (New) */
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.75rem;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: #f8fafc;
+                color: #64748b;
+                padding: 4px;
+                border: 1px solid #e2e8f0;
+                font-weight: normal;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: 1px solid #e2e8f0;
+                color: #cbd5e1;
+            }
+            .dist-table td.has-val {
+                color: #1e293b;
+                font-weight: bold;
+                background-color: #f0f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #e0f2fe;
+                color: #0369a1;
+            }
+
+            /* モバイルキーボード */
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
             }
         </style>
     </head>
-    <body class="pb-5">
-        <div class="container-fluid mt-4">
-            <div class="d-flex justify-content-end align-items-center mb-2">
-                <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-outline-secondary" data-lang="ja">
-                        JA</button
-                    ><button type="button" class="btn btn-outline-secondary" data-lang="en">
-                        EN
+    <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-indigo-600 text-white p-1.5 rounded-lg">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-slate-900"
+                            >Bridge Lab</span
+                        >
+                    </div>
+
+                    <nav class="hidden md:flex space-x-8">
+                        <button
+                            id="nav-double"
+                            class="tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                            ダブルダミー分析
+                        </button>
+                        <button
+                            id="nav-single"
+                            class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                            シングルダミー分析
+                        </button>
+                        <button
+                            id="nav-lead"
+                            class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                            オープニングリード分析
+                        </button>
+                    </nav>
+
+                    <div class="md:hidden">
+                        <button id="mobile-menu-btn" class="p-2">
+                            <i data-lucide="menu" class="text-slate-500"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
+                <div class="flex flex-col p-2 space-y-1">
+                    <button
+                        id="mob-nav-double"
+                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-indigo-600">
+                        ダブルダミー分析
+                    </button>
+                    <button
+                        id="mob-nav-single"
+                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        シングルダミー分析
+                    </button>
+                    <button
+                        id="mob-nav-lead"
+                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        オープニングリード分析
                     </button>
                 </div>
-                <a id="help-icon" class="ms-3 fs-4 text-primary" href="help.html" rel="noopener noreferrer" target="_blank" role="button"
-                    ><i class="bi bi-question-circle-fill"></i
-                ></a>
             </div>
-            <h1 class="text-center mb-4" data-i18n="mainTitle"></h1>
-            <div class="text-center my-3">
-                <div class="btn-group" role="group" aria-label="Main analysis mode toggle">
-                    <input
-                        type="radio"
-                        class="btn-check"
-                        name="mainMode"
-                        id="doubleDummyToggle"
-                        autocomplete="off"
-                        checked /><label
-                        class="btn btn-outline-primary"
-                        for="doubleDummyToggle"
-                        data-i18n="doubleDummyMode"></label>
-                    <input
-                        type="radio"
-                        class="btn-check"
-                        name="mainMode"
-                        id="singleDummyToggle"
-                        autocomplete="off" /><label
-                        class="btn btn-outline-primary"
-                        for="singleDummyToggle"
-                        data-i18n="singleDummyMode"></label>
-                    <input
-                        type="radio"
-                        class="btn-check"
-                        name="mainMode"
-                        id="leadSolverToggle"
-                        autocomplete="off" /><label
-                        class="btn btn-outline-primary"
-                        for="leadSolverToggle"
-                        data-i18n="leadAnalysisMode"></label>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+            <div id="view-double" class="flex-grow flex flex-col fade-in">
+                <div class="flex justify-between items-center mb-6 px-1">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-indigo-100 text-indigo-700 p-1 rounded"
+                            ><i data-lucide="grid" class="w-5 h-5"></i
+                        ></span>
+                        Double Dummy
+                    </h2>
+                    <div
+                        class="text-xs font-mono text-slate-500 bg-white px-3 py-1.5 rounded border shadow-sm flex items-center gap-2">
+                        <i data-lucide="layers" class="w-3 h-3"></i>
+                        <span id="total-count" class="font-bold text-indigo-600">0</span> / 52
+                        cards
+                    </div>
+                </div>
+
+                <div
+                    class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-center items-center mb-4">
+                    <div class="w-full md:col-start-2 md:row-start-1 z-10 md:-mb-6">
+                        <div
+                            id="hand-north"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default relative bg-white z-10">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >North</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-north" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-1 md:row-start-2">
+                        <div
+                            id="hand-west"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >West</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-west" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-3 md:row-start-2">
+                        <div
+                            id="hand-east"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >East</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-east" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-2 md:row-start-3 md:-mt-6">
+                        <div
+                            id="hand-south"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default relative bg-white z-10">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >South</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-south" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-double"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i> 分析実行
+                    </button>
+                </div>
+
+                <div
+                    id="result-double"
+                    class="hidden mt-8 max-w-2xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                    <div
+                        class="bg-indigo-50 px-4 py-3 border-b border-indigo-100 flex justify-between items-center">
+                        <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+                            <i data-lucide="table" class="w-4 h-4"></i> メイク数分析結果
+                        </h3>
+                        <span class="text-xs text-indigo-500 font-mono">DDS Engine</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full result-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-left w-20">Player</th>
+                                    <th class="text-indigo-600">NT</th>
+                                    <th class="text-slate-900">♠</th>
+                                    <th class="text-red-500">♥</th>
+                                    <th class="text-orange-500">♦</th>
+                                    <th class="text-green-600">♣</th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                id="result-body-double"
+                                class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div id="analysis-content">
-                <div id="dds-analysis-section">
-                    <div class="cruciform-container">
-                        <div id="north-container" class="hand-container"></div>
-                        <div id="west-container" class="hand-container"></div>
-                        <div
-                            id="center-container"
-                            class="d-flex flex-column justify-content-center">
-                            <div class="d-none d-lg-block">
-                                <div id="simulations-container-desktop" class="mb-3 d-none">
-                                    <label
-                                        for="simulationsInputDesktop"
-                                        class="form-label fw-bold"
-                                        data-i18n="simulationsLabel"></label
-                                    ><input
-                                        type="number"
-                                        class="form-control"
-                                        id="simulationsInputDesktop"
-                                        value="1000"
-                                        min="1"
-                                        max="10000" />
-                                </div>
-                                <div class="mt-3">
-                                    <label
-                                        for="single-dds-advanced-tcl"
-                                        class="form-label fw-bold"
-                                        data-i18n="advancedTclLabel"></label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        id="single-dds-advanced-tcl"
-                                        rows="2"
-                                        placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
-                                </div>
-                                <div id="pbn-container-desktop" class="pbn-area mb-3">
-                                    <h6 data-i18n="pbnLabel"></h6>
-                                    <textarea
-                                        class="form-control"
-                                        id="pbnInputDesktop"
-                                        rows="3"></textarea
-                                    ><small
-                                        class="form-text text-muted"
-                                        data-i18n="pbnPlaceholder"></small>
-                                </div>
-                                <div class="action-area">
-                                    <button
-                                        id="analyzeBtnDesktop"
-                                        class="btn btn-primary w-100"
-                                        data-i18n="analyzeButton"></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="east-container" class="hand-container"></div>
-                        <div id="south-container" class="hand-container"></div>
+
+            <div id="view-single" class="hidden fade-in">
+                <div
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="settings" class="text-emerald-500"></i> Single Dummy Solver
+                    </h2>
+                    <div
+                        class="text-xs text-slate-500 bg-emerald-50 px-3 py-1 rounded border border-emerald-100">
+                        <i data-lucide="info" class="inline w-3 h-3 mr-1"></i>
+                        条件を指定してシミュレーションを行います
                     </div>
-                    <div id="mobile-ui-container" class="d-lg-none">
-                        <div id="mobile-hand-previews" class="mobile-hand-preview-grid"></div>
-                        <div id="mobile-hand-editor" class="d-none">
-                            <div id="mobile-editor-header" class="p-2 bg-light border-bottom">
-                                <h5 id="mobile-editor-title" class="m-0"></h5>
+                </div>
+
+                <div
+                    class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
+                    <div
+                        class="w-full md:col-start-2 md:row-start-1 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mb-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h4 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4"></i> North
+                            </h4>
+                            <div class="flex bg-slate-100 rounded p-0.5">
                                 <button
-                                    id="mobile-editor-close"
-                                    type="button"
-                                    class="btn-close"></button>
+                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded shadow-sm bg-white text-indigo-600"
+                                    data-hand="north"
+                                    data-mode="hand">
+                                    Hand
+                                </button>
+                                <button
+                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded text-slate-500 hover:text-slate-700"
+                                    data-hand="north"
+                                    data-mode="feature">
+                                    Feature
+                                </button>
                             </div>
-                            <div id="mobile-editor-content" class="p-2"></div>
                         </div>
-                        <div id="mobile-controls" class="p-3">
-                            <div id="simulations-container-mobile" class="mb-3 d-none">
+
+                        <div id="sd-mode-hand-north" class="sd-content-hand">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 sd-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="sd-container-north" class="space-y-1"></div>
+                        </div>
+
+                        <div id="sd-mode-feature-north" class="sd-content-feature hidden">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="sd-north-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="15" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="sd-north-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="17" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
                                 <label
-                                    for="simulationsInputMobile"
-                                    class="form-label fw-bold"
-                                    data-i18n="simulationsLabel"></label
-                                ><input
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-s"
+                                            value="2-5"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="sd-north-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced" selected>
+                                        バランスハンド (Balanced)
+                                    </option>
+                                    <option value="semibalanced">
+                                        セミバランス (Semi-Balanced)
+                                    </option>
+                                    <option value="unbalanced">アンバランス (Unbalanced)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-1 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> West
+                        </h4>
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold text-slate-500 uppercase"
+                                >HCP Range</label
+                            >
+                            <div class="flex items-center gap-2 mt-1">
+                                <input
                                     type="number"
-                                    class="form-control"
-                                    id="simulationsInputMobile"
-                                    value="1000"
-                                    min="1"
-                                    max="10000" />
+                                    id="sd-west-hcp-min"
+                                    placeholder="Min"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="0" />
+                                <span class="text-slate-400">-</span>
+                                <input
+                                    type="number"
+                                    id="sd-west-hcp-max"
+                                    placeholder="Max"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="37" />
                             </div>
-                            <div class="mt-3">
-                                <label
-                                    for="sige-dds-advanced-tcl-mobile"
-                                    class="form-label fw-bold"
-                                    data-i18n="advancedTclLabel"></label>
-                                <textarea
-                                    class="form-control form-control-sm"
-                                    id="single-dds-advanced-tcl-mobile"
-                                    rows="2"
-                                    placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Range</label
+                            >
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-black">♠</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-s"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-red-500">♥</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-h"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-orange-500">♦</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-d"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-green-600">♣</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-c"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
                             </div>
-                            <div id="pbn-container-mobile" class="pbn-area mb-3">
-                                <h6 data-i18n="pbnLabel"></h6>
-                                <textarea
-                                    class="form-control"
-                                    id="pbnInputMobile"
-                                    rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Type</label
+                            >
+                            <select
+                                id="sd-west-preset"
+                                class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                <option value="any">指定なし (Any)</option>
+                                <option value="balanced">バランスハンド (Balanced)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-3 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> East
+                        </h4>
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold text-slate-500 uppercase"
+                                >HCP Range</label
+                            >
+                            <div class="flex items-center gap-2 mt-1">
+                                <input
+                                    type="number"
+                                    id="sd-east-hcp-min"
+                                    placeholder="Min"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="0" />
+                                <span class="text-slate-400">-</span>
+                                <input
+                                    type="number"
+                                    id="sd-east-hcp-max"
+                                    placeholder="Max"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="37" />
                             </div>
-                            <div class="action-area">
+                        </div>
+                        <div class="mb-4">
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Range</label
+                            >
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-black">♠</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-s"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-red-500">♥</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-h"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-orange-500">♦</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-d"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-green-600">♣</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-c"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Type</label
+                            >
+                            <select
+                                id="sd-east-preset"
+                                class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                <option value="any">指定なし (Any)</option>
+                                <option value="balanced">バランスハンド (Balanced)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-2 md:row-start-3 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mt-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h4 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4"></i> South
+                            </h4>
+                            <div class="flex bg-slate-100 rounded p-0.5">
                                 <button
-                                    id="analyzeBtnMobile"
-                                    class="btn btn-primary w-100"
-                                    data-i18n="analyzeButton"></button>
+                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded shadow-sm bg-white text-indigo-600"
+                                    data-hand="south"
+                                    data-mode="hand">
+                                    Hand
+                                </button>
+                                <button
+                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded text-slate-500 hover:text-slate-700"
+                                    data-hand="south"
+                                    data-mode="feature">
+                                    Feature
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="sd-mode-hand-south" class="sd-content-hand">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 sd-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="sd-container-south" class="space-y-1"></div>
+                        </div>
+
+                        <div id="sd-mode-feature-south" class="sd-content-feature hidden">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="sd-south-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="sd-south-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="10" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="sd-south-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                    <option value="semibalanced">
+                                        セミバランス (Semi-Balanced)
+                                    </option>
+                                    <option value="unbalanced">アンバランス (Unbalanced)</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="lead-analysis-section" class="d-none">
-                    <div class="cruciform-container">
-                        <div id="lead-north-container" class="hand-container"></div>
-                        <div id="lead-west-container" class="hand-container"></div>
-                        <div
-                            id="lead-center-container"
-                            class="d-flex flex-column justify-content-center p-3">
-                            <h5 data-i18n="dealConditions"></h5>
-                            <div class="mb-2 row">
-                                <label
-                                    class="col-sm-4 col-form-label"
-                                    data-i18n="contract"></label>
-                                <div class="col-sm-8">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="lead-contract"
-                                        value="4S" />
-                                </div>
-                            </div>
-                            <div class="mb-2 row">
-                                <label class="col-sm-4 col-form-label" data-i18n="leader"></label>
-                                <div class="col-sm-8">
-                                    <select class="form-select" id="lead-leader">
-                                        <option value="N">North</option>
-                                        <option value="S">South</option>
-                                        <option value="E">East</option>
-                                        <option value="W" selected>West</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-2 row">
-                                <label
-                                    class="col-sm-4 col-form-label"
-                                    data-i18n="simulationsLabel"></label>
-                                <div class="col-sm-8">
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        id="lead-simulations"
-                                        value="1000"
-                                        min="10"
-                                        max="5000" />
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <label
-                                    for="advanced-tcl"
-                                    class="form-label fw-bold"
-                                    data-i18n="advancedTclLabel"></label>
-                                <textarea
-                                    class="form-control form-control-sm"
-                                    id="advanced-tcl"
-                                    rows="2"
-                                    placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
-                            </div>
-                            <button
-                                id="solveLeadBtn"
-                                class="btn btn-primary w-100 mt-3"
-                                data-i18n="solveLeadButton"></button>
-                        </div>
-                        <div id="lead-east-container" class="hand-container"></div>
-                        <div id="lead-south-container" class="hand-container"></div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-single"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5"></i> パラメータ探索実行
+                    </button>
+                </div>
+
+                <div
+                    id="result-single"
+                    class="hidden mt-8 max-w-4xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                    <div
+                        class="bg-emerald-50 px-4 py-3 border-b border-emerald-100 flex justify-between items-center">
+                        <h3 class="font-bold text-emerald-900 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 期待トリック数 (N/S)
+                        </h3>
+                        <span
+                            id="sd-sim-count"
+                            class="text-xs text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-200"
+                            >Samples: -</span
+                        >
                     </div>
-                    <div id="lead-mobile-ui-container" class="d-lg-none">
-                        <div id="lead-mobile-all-hands-container" class="p-2"></div>
-                        <div id="lead-mobile-controls" class="p-3">
-                            <h5 data-i18n="dealConditions"></h5>
-                            <div class="mb-2 row">
-                                <label class="col-4 col-form-label" data-i18n="contract"></label>
-                                <div class="col-8">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="lead-contract-mobile"
-                                        value="4S" />
-                                </div>
-                            </div>
-                            <div class="mb-2 row">
-                                <label class="col-4 col-form-label" data-i18n="leader"></label>
-                                <div class="col-8">
-                                    <select class="form-select" id="lead-leader-mobile">
-                                        <option value="N">North</option>
-                                        <option value="S">South</option>
-                                        <option value="E">East</option>
-                                        <option value="W" selected>West</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-2 row">
-                                <label
-                                    class="col-4 col-form-label"
-                                    data-i18n="simulationsLabel"></label>
-                                <div class="col-8">
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        id="lead-simulations-mobile"
-                                        value="1000"
-                                        min="10"
-                                        max="5000" />
-                                </div>
-                                <div class="mt-3">
-                                    <label
-                                        for="advanced-tcl-mobile"
-                                        class="form-label fw-bold"
-                                        data-i18n="advancedTclLabel"></label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        id="advanced-tcl-mobile"
-                                        rows="2"
-                                        placeholder="e.g. reject if {[spades south] > [hearts south]}"></textarea>
-                                </div>
-                            </div>
-                            <button
-                                id="solveLeadBtnMobile"
-                                class="btn btn-primary w-100 mt-3"
-                                data-i18n="solveLeadButton"></button>
-                        </div>
-                    </div>
+                    <div id="result-single-content" class="p-4 space-y-4"></div>
                 </div>
             </div>
-            <div id="resultsContainer" class="mt-4 container"></div>
-            <div id="leadResultsContainer" class="mt-4 row justify-content-center"></div>
+
+            <div id="view-lead" class="hidden fade-in">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i data-lucide="search" class="text-orange-500"></i> Opening Lead Analyzer
+                </h2>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                    <h3 class="font-bold text-lg mb-4 text-slate-700 border-b pb-2">基本設定</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                                >オープニングリーダー</label
+                            >
+                            <select id="lead-leader" class="w-full p-2 border rounded bg-slate-50">
+                                <option value="West">West</option>
+                                <option value="East">East</option>
+                                <option value="North">North</option>
+                                <option value="South">South</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                                >コントラクト</label
+                            >
+                            <div class="flex gap-2">
+                                <select
+                                    id="lead-level"
+                                    class="w-20 p-2 border rounded bg-slate-50">
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option selected>4</option>
+                                    <option>5</option>
+                                    <option>6</option>
+                                    <option>7</option>
+                                </select>
+                                <select
+                                    id="lead-suit"
+                                    class="flex-1 p-2 border rounded bg-slate-50">
+                                    <option value="S">Spades (♠)</option>
+                                    <option value="H">Hearts (♥)</option>
+                                    <option value="D">Diamonds (♦)</option>
+                                    <option value="C">Clubs (♣)</option>
+                                    <option value="NT">No Trump (NT)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                                >宣言側 (Declarer)</label
+                            >
+                            <div
+                                id="lead-declarer-display"
+                                class="p-2 text-slate-500 text-sm bg-slate-50 rounded border border-slate-200">
+                                South (自動設定)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
+                    <div
+                        id="lead-panel-north"
+                        class="w-full md:col-start-2 md:row-start-1 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mb-6">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> North
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <p class="text-xs text-slate-500 mb-2">
+                                正確なハンドを選択してください (13枚)
+                            </p>
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-north" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-north-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-north-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-north-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-west"
+                        class="w-full md:col-start-1 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> West
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <p class="text-xs text-slate-500 mb-2">
+                                正確なハンドを選択してください (13枚)
+                            </p>
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-west" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-west-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-west-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-west-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-east"
+                        class="w-full md:col-start-3 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> East
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <p class="text-xs text-slate-500 mb-2">
+                                正確なハンドを選択してください (13枚)
+                            </p>
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-east" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-east-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-east-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-east-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-south"
+                        class="w-full md:col-start-2 md:row-start-3 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mt-6">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> South
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <p class="text-xs text-slate-500 mb-2">
+                                正確なハンドを選択してください (13枚)
+                            </p>
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-south" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-south-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-south-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-black">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-south-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし (Any)</option>
+                                    <option value="balanced">バランスハンド (Balanced)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-lead"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i> ベストリードを解析
+                    </button>
+                </div>
+
+                <div
+                    id="result-lead"
+                    class="hidden mt-8 w-full bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                    <div
+                        class="bg-orange-50 px-4 py-3 border-b border-orange-100 flex justify-between items-center">
+                        <h3 class="font-bold text-orange-900 flex items-center gap-2">
+                            <i data-lucide="bar-chart" class="w-4 h-4"></i> 獲得トリック確率分布
+                        </h3>
+                        <div class="flex gap-2 text-[10px] md:text-xs">
+                            <span class="text-orange-600 font-bold"
+                                >Simulations: <span id="lead-sim-count">-</span></span
+                            >
+                        </div>
+                    </div>
+                    <div id="result-lead-content" class="p-4 space-y-6"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Lab</h3>
+                        <p class="text-sm leading-relaxed mb-4">
+                            モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>Double Dummy Solver</li>
+                            <li>Single Dummy Solver</li>
+                            <li>Opening Lead Analyzer</li>
+                        </ul>
+                    </div>
+                </div>
+                <div
+                    class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                    &copy; 2024 Bridge Lab
+                </div>
+            </div>
+        </footer>
+
+        <div
+            id="toast"
+            class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 transition-all duration-300 translate-x-full opacity-0">
             <div
-                id="global-spinner"
-                class="d-none spinner-border text-primary mt-3 mx-auto"
-                role="status">
-                <span class="visually-hidden" data-i18n="loadingMessage"></span>
+                class="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+                <span id="toast-msg">Notification</span>
             </div>
-            <div id="global-error" class="d-none alert alert-danger mt-3" role="alert"></div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <div
+            id="loading-overlay"
+            class="hidden fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                <div
+                    class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                <span class="font-bold text-slate-700">Analyzing...</span>
+            </div>
+        </div>
+
+        <div
+            id="mobile-keyboard"
+            class="md:hidden bg-white border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 right-0 z-40 pb-6 pt-2 transition-transform duration-300 translate-y-full">
+            <div class="px-2">
+                <div class="flex justify-between items-center mb-2 px-2">
+                    <span
+                        class="text-xs font-bold text-indigo-600 uppercase tracking-wider"
+                        id="mobile-active-label"
+                        >Editing: North</span
+                    >
+                    <div class="flex gap-2">
+                        <button
+                            onclick="document.getElementById('btn-run-double').click()"
+                            class="text-xs bg-indigo-600 text-white px-3 py-1 rounded shadow">
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-1 select-none">
+                    <div
+                        id="mobile-keys-s"
+                        class="flex gap-1 overflow-x-auto pb-1 no-scrollbar"></div>
+                    <div
+                        id="mobile-keys-h"
+                        class="flex gap-1 overflow-x-auto pb-1 no-scrollbar"></div>
+                    <div
+                        id="mobile-keys-d"
+                        class="flex gap-1 overflow-x-auto pb-1 no-scrollbar"></div>
+                    <div
+                        id="mobile-keys-c"
+                        class="flex gap-1 overflow-x-auto pb-1 no-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+
         <script src="script.js"></script>
     </body>
 </html>

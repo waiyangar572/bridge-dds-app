@@ -1,901 +1,765 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    // --- 定数と状態管理 ---
-    const HANDS = ["north", "east", "south", "west"];
-    const SUITS = { spades: "♠", hearts: "♥", diamonds: "♦", clubs: "♣" };
-    const SUIT_KEYS = Object.keys(SUITS);
-    const SUIT_COLORS = {
-        spades: "suit-spades",
-        hearts: "suit-hearts",
-        diamonds: "suit-diamonds",
-        clubs: "suit-clubs",
-    };
+document.addEventListener("DOMContentLoaded", () => {
+    // --- Constants ---
+    const API_BASE = "https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api";
+    const SUITS = [
+        { id: "s", label: "♠", color: "suit-s", name: "Spades" },
+        { id: "h", label: "♥", color: "suit-h", name: "Hearts" },
+        { id: "d", label: "♦", color: "suit-d", name: "Diamonds" },
+        { id: "c", label: "♣", color: "suit-c", name: "Clubs" },
+    ];
     const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
-    let activeMobileHand = null;
-    let translations = {};
+    const HANDS = ["north", "west", "east", "south"];
+    const DIRECTION_MAP = { North: "north", South: "south", East: "east", West: "west" };
 
-    // --- エレメント参照 ---
-    const getEl = (id) => document.getElementById(id);
-    const pbnInputDesktop = getEl("pbnInputDesktop");
-    const pbnInputMobile = getEl("pbnInputMobile");
-    const simulationsInputDesktop = getEl("simulationsInputDesktop");
-    const simulationsInputMobile = getEl("simulationsInputMobile");
-    const analyzeBtnDesktop = getEl("analyzeBtnDesktop");
-    const analyzeBtnMobile = getEl("analyzeBtnMobile");
-    const resultsContainer = getEl("resultsContainer");
-    const mobileHandPreviews = getEl("mobile-hand-previews");
-    const mobileHandEditor = getEl("mobile-hand-editor");
-    const mobileEditorTitle = getEl("mobile-editor-title");
-    const mobileEditorContent = getEl("mobile-editor-content");
-    const mobileEditorClose = getEl("mobile-editor-close");
-    const solveLeadBtn = getEl("solveLeadBtn");
-    const solveLeadBtnMobile = getEl("solveLeadBtnMobile");
-    const leadResultsContainer = getEl("leadResultsContainer");
-    const globalSpinner = getEl("global-spinner");
-    const globalError = getEl("global-error");
-    const ddsAnalysisSection = getEl("dds-analysis-section");
-    const leadAnalysisSection = getEl("lead-analysis-section");
-    const leaderSelect = getEl("lead-leader");
-    const leaderSelectMobile = getEl("lead-leader-mobile");
-    const leadMobileAllHandsContainer = getEl("lead-mobile-all-hands-container");
+    // --- State ---
+    let currentTab = "double";
+    let activeMobileHand = "north";
+    // State for Double Dummy
+    let ddState = { north: [], south: [], east: [], west: [] };
+    // State for Lead Solver
+    let leadState = { north: [], south: [], east: [], west: [] };
+    // State for Single Dummy
+    let sdState = { north: [], south: [] }; // Only N/S allow hand input
+    let sdModes = { north: "hand", south: "hand" }; // 'hand' or 'feature'
 
-    const directionMap = { N: "north", S: "south", E: "east", W: "west" };
+    // --- Init ---
+    lucide.createIcons();
+    initDoubleDummyUI();
+    initSingleDummyUI();
+    initLeadSolverUI();
+    setupEventListeners();
 
-    // --- 多言語対応 (I18n) ---
-    async function setLanguage(lang) {
-        try {
-            const response = await fetch(`lang/${lang}.json`);
-            if (!response.ok) throw new Error("Language file not found");
-            translations = await response.json();
-            document.documentElement.lang = lang;
-            localStorage.setItem("userLanguage", lang);
-            updateAllText();
-        } catch (error) {
-            console.error("Could not set language:", error);
-            if (lang !== "ja") await setLanguage("ja");
+    // --- Tab Switching ---
+    function switchTab(tabName) {
+        currentTab = tabName;
+        // Hide views
+        ["double", "single", "lead"].forEach((t) => {
+            document.getElementById("view-" + t).classList.add("hidden");
+            const navBtn = document.getElementById("nav-" + t);
+            if (navBtn) {
+                navBtn.classList.replace("tab-active", "tab-inactive");
+                navBtn.classList.remove("text-indigo-600", "border-indigo-600");
+            }
+        });
+
+        // Show View
+        document.getElementById("view-" + tabName).classList.remove("hidden");
+
+        // Update Nav
+        const activeNav = document.getElementById("nav-" + tabName);
+        if (activeNav) {
+            activeNav.classList.replace("tab-inactive", "tab-active");
+            activeNav.classList.add("text-indigo-600", "border-indigo-600");
         }
-    }
 
-    function updateAllText() {
-        document.querySelectorAll("[data-i18n]").forEach((el) => {
-            const key = el.getAttribute("data-i18n");
-            if (translations[key]) el.textContent = translations[key];
-        });
-        document.querySelectorAll("[data-i18n-html]").forEach((el) => {
-            const key = el.getAttribute("data-i18n-html");
-            if (translations[key]) el.innerHTML = translations[key];
-        });
-        document.querySelectorAll("[data-i18n-attr]").forEach((el) => {
-            const attrs = el.getAttribute("data-i18n-attr").split(";");
-            attrs.forEach((attr) => {
-                const [attrName, key] = attr.split(":");
-                if (translations[key.trim()])
-                    el.setAttribute(attrName.trim(), translations[key.trim()]);
-            });
-        });
-        document.querySelectorAll("[data-lang]").forEach((btn) => {
-            btn.classList.toggle("active", btn.dataset.lang === document.documentElement.lang);
-        });
-        // const helpIcon = getEl("help-icon");
-        // if (helpIcon) {
-        //     const existingPopover = bootstrap.Popover.getInstance(helpIcon);
-        //     if (existingPopover) existingPopover.dispose();
-        //     const popoverContent = `<p>${translations.helpIntro || ""}</p><strong>${
-        //         translations.featuresTitle || ""
-        //     }</strong><ul><li>${translations.featureDD || ""}</li><li>${
-        //         translations.featureSD || ""
-        //     }</li><li>${translations.featureLead || ""}</li><li>${
-        //         translations.featurePBN || ""
-        //     }</li><li>${translations.featureUI || ""}</li></ul><strong>${
-        //         translations.whatIsDDTitle || ""
-        //     }</strong><p>${translations.whatIsDDText || ""}</p>`;
-        //     new bootstrap.Popover(helpIcon, {
-        //         title: translations.helpTitle || "Help",
-        //         content: popoverContent,
-        //         html: true,
-        //         trigger: "focus",
-        //         placement: "bottom",
-        //         customClass: "wide-popover",
-        //     });
-        // }
-    }
-
-    // --- UIモード管理 ---
-    function setAnalysisMode(mode) {
-        ddsAnalysisSection.classList.toggle(
-            "d-none",
-            mode !== "doubleDummy" && mode !== "singleDummy"
-        );
-        leadAnalysisSection.classList.toggle("d-none", mode !== "leadSolver");
-
-        if (mode === "leadSolver") {
-            renderLeadSolverUI();
+        // Mobile Keyboard Logic
+        const kb = document.getElementById("mobile-keyboard");
+        if (tabName === "double") {
+            if (window.innerWidth < 768) kb.classList.remove("translate-y-full");
         } else {
-            const isSingleDummy = mode === "singleDummy";
-            getEl("simulations-container-desktop").classList.toggle("d-none", !isSingleDummy);
-            getEl("simulations-container-mobile").classList.toggle("d-none", !isSingleDummy);
-            getEl("single-dds-advanced-tcl").classList.toggle("d-none", !isSingleDummy);
-            getEl("single-dds-advanced-tcl-mobile").classList.toggle("d-none", !isSingleDummy);
-            [
-                "east-container",
-                "west-container",
-                "mobile-preview-east",
-                "mobile-preview-west",
-            ].forEach((id) => {
-                getEl(id)?.classList.toggle("d-none", isSingleDummy);
-            });
-            if (isSingleDummy) {
-                ["east", "west"].forEach((hand) =>
-                    document
-                        .querySelectorAll(`#${hand}-container .card-rank.selected`)
-                        .forEach((card) => card.classList.remove("selected"))
-                );
-                document
-                    .querySelectorAll(".card-rank.disabled")
-                    .forEach((card) => card.classList.remove("disabled"));
-                if (pbnInputDesktop) handlePbnInput(pbnInputDesktop.value);
-            }
+            kb.classList.add("translate-y-full");
         }
-        updatePbnAndSync();
-        updateCardCounts();
-        clearResultsAndErrors();
     }
 
-    function renderLeadSolverUI() {
-        const leader = directionMap[leaderSelect.value];
-        leadMobileAllHandsContainer.innerHTML = "";
+    // --- Double Dummy Logic ---
+    function initDoubleDummyUI() {
+        renderCardInterface("container", toggleCardDD, ddState);
+        renderMobileKeyboard();
+        updateDDUI();
+        setMobileActive("north");
+    }
 
-        HANDS.forEach((player) => {
-            const isLeader = player === leader;
-            const desktopContainer = getEl(`lead-${player}-container`);
+    // --- Single Dummy Logic ---
+    function initSingleDummyUI() {
+        renderCardInterface("sd-container", toggleCardSD, sdState, ["north", "south"]);
+        updateSDUI();
+        // Set default modes
+        updateSDModeUI("north");
+        updateSDModeUI("south");
+    }
 
-            if (isLeader) {
-                if (!desktopContainer.querySelector(".card-rank"))
-                    createCardSelector(player, desktopContainer, "lead");
+    function toggleSDMode(hand, mode) {
+        sdModes[hand] = mode;
+        updateSDModeUI(hand);
+    }
+
+    function updateSDModeUI(hand) {
+        const mode = sdModes[hand];
+        const panel = document.getElementById(`sd-mode-${mode}-${hand}`);
+        const otherMode = mode === "hand" ? "feature" : "hand";
+        const otherPanel = document.getElementById(`sd-mode-${otherMode}-${hand}`);
+
+        if (panel) panel.classList.remove("hidden");
+        if (otherPanel) otherPanel.classList.add("hidden");
+
+        // Update Toggle Buttons Style
+        const btns = document.querySelectorAll(`.sd-mode-switch[data-hand="${hand}"]`);
+        btns.forEach((btn) => {
+            if (btn.dataset.mode === mode) {
+                btn.classList.add("bg-white", "text-indigo-600", "shadow-sm");
+                btn.classList.remove("text-slate-500", "hover:text-slate-700");
             } else {
-                if (!desktopContainer.querySelector(`#hcp-${player}`)) {
-                    desktopContainer.innerHTML = createConditionInputsHTML(player, false);
-                    setLanguage();
-                }
+                btn.classList.remove("bg-white", "text-indigo-600", "shadow-sm");
+                btn.classList.add("text-slate-500", "hover:text-slate-700");
             }
-
-            const mobilePlayerContainer = document.createElement("div");
-            mobilePlayerContainer.id = `lead-mobile-${player}-container`;
-            mobilePlayerContainer.className = "hand-container mb-3 p-2 border rounded";
-            if (isLeader) {
-                createCardSelector(player, mobilePlayerContainer, "lead-mobile");
-            } else {
-                mobilePlayerContainer.innerHTML = createConditionInputsHTML(player, true);
-            }
-            leadMobileAllHandsContainer.appendChild(mobilePlayerContainer);
         });
-        updateAllText();
-
-        // syncLeadUIState();
     }
 
-    function syncLeadUIState() {
-        const leader = directionMap[leaderSelect.value];
-        const allSelected = new Set();
+    function toggleCardSD(hand, cardId) {
+        // Single Dummy Hand Toggle with Ownership Check (N vs S)
+        const otherHand = hand === "north" ? "south" : "north";
 
-        HANDS.forEach((player) => {
-            const isLeader = player === leader;
-            if (isLeader) {
-                const desktopCards = getEl(`lead-${player}-container`).querySelectorAll(
-                    ".card-rank"
-                );
-                desktopCards.forEach((dCard) => {
-                    if (dCard.classList.contains("selected")) {
-                        allSelected.add(`${dCard.dataset.suit}-${dCard.dataset.rank}`);
+        // 1. If I already have it, remove it
+        if (sdState[hand].includes(cardId)) {
+            sdState[hand] = sdState[hand].filter((c) => c !== cardId);
+        }
+        // 2. If opponent has it, steal it (remove from them, add to me)
+        else if (sdState[otherHand].includes(cardId)) {
+            if (sdState[hand].length >= 13) {
+                showToast("13枚制限です");
+                return;
+            }
+            sdState[otherHand] = sdState[otherHand].filter((c) => c !== cardId);
+            sdState[hand].push(cardId);
+        }
+        // 3. Else, just add it
+        else {
+            if (sdState[hand].length >= 13) {
+                showToast("13枚制限です");
+                return;
+            }
+            sdState[hand].push(cardId);
+        }
+        updateSDUI();
+    }
+
+    function updateSDUI() {
+        updateCardUI("sd-container", sdState, ["north", "south"]);
+    }
+
+    // --- Lead Solver Logic ---
+    function initLeadSolverUI() {
+        renderCardInterface("lead-container", toggleCardLead, leadState);
+        updateLeadUI();
+        updateLeadModeUI();
+    }
+
+    function updateLeadModeUI() {
+        const leader = document.getElementById("lead-leader").value.toLowerCase(); // 'west', etc.
+
+        HANDS.forEach((hand) => {
+            const panel = document.getElementById(`lead-panel-${hand}`);
+            const cardSelector = panel.querySelector(".lead-card-selector");
+            const featureInput = panel.querySelector(".lead-feature-input");
+
+            if (hand === leader) {
+                cardSelector.classList.remove("hidden");
+                featureInput.classList.add("hidden");
+                panel.classList.add("border-indigo-300", "bg-indigo-50");
+                panel.classList.remove("bg-white", "border-slate-200");
+            } else {
+                cardSelector.classList.add("hidden");
+                featureInput.classList.remove("hidden");
+                panel.classList.remove("border-indigo-300", "bg-indigo-50");
+                panel.classList.add("bg-white", "border-slate-200");
+            }
+        });
+
+        const mapping = { west: "South", east: "North", north: "East", south: "West" };
+        document.getElementById("lead-declarer-display").innerText =
+            mapping[leader] + " (自動設定)";
+    }
+
+    function toggleCardLead(hand, cardId) {
+        if (leadState[hand].includes(cardId)) {
+            leadState[hand] = leadState[hand].filter((c) => c !== cardId);
+        } else {
+            if (leadState[hand].length >= 13) {
+                showToast("13枚制限です");
+                return;
+            }
+            leadState[hand].push(cardId);
+        }
+        updateLeadUI();
+    }
+
+    function updateLeadUI() {
+        updateCardUI("lead-container", leadState);
+    }
+
+    // --- Shared Card Rendering ---
+    function renderCardInterface(
+        containerPrefix,
+        toggleCallback,
+        stateObj,
+        handsToRender = HANDS
+    ) {
+        handsToRender.forEach((hand) => {
+            const container = document.getElementById(`${containerPrefix}-${hand}`);
+            if (!container) return;
+            container.innerHTML = "";
+
+            SUITS.forEach((suit) => {
+                const row = document.createElement("div");
+                row.className = "flex items-center gap-1";
+
+                const icon = document.createElement("div");
+                icon.className = `w-5 font-bold ${suit.color} flex-shrink-0 text-center text-sm`;
+                icon.innerHTML = suit.label;
+                row.appendChild(icon);
+
+                const btnWrapper = document.createElement("div");
+                btnWrapper.className = "flex flex-wrap gap-0.5 flex-1";
+
+                RANKS.forEach((rank) => {
+                    const cardId = suit.id + rank;
+                    const btn = document.createElement("div");
+                    btn.id = `btn-${containerPrefix}-${hand}-${cardId}`;
+                    btn.innerText = rank;
+                    btn.className = "pc-rank-btn flex";
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleCallback(hand, cardId);
+                    };
+                    btnWrapper.appendChild(btn);
+                });
+
+                row.appendChild(btnWrapper);
+                container.appendChild(row);
+            });
+        });
+    }
+
+    function updateCardUI(containerPrefix, stateObj, handsToRender = HANDS) {
+        handsToRender.forEach((hand) => {
+            // Update Badges
+            const ddBadge = document.querySelector(`#hand-${hand} .count-badge`);
+            if (ddBadge && containerPrefix === "container") {
+                ddBadge.innerText = stateObj[hand].length;
+                if (stateObj[hand].length === 13)
+                    ddBadge.classList.replace("bg-slate-400", "bg-emerald-500");
+                else ddBadge.classList.replace("bg-emerald-500", "bg-slate-400");
+            }
+            const sdBadge = document.querySelector(`#sd-mode-hand-${hand} .sd-count-badge`);
+            if (sdBadge && containerPrefix === "sd-container") {
+                sdBadge.innerText = `${stateObj[hand].length} / 13`;
+                if (stateObj[hand].length === 13)
+                    sdBadge.classList.replace("bg-slate-400", "bg-emerald-500");
+                else sdBadge.classList.replace("bg-emerald-500", "bg-slate-400");
+            }
+            const leadBadge = document.querySelector(`#lead-panel-${hand} .lead-count-badge`);
+            if (leadBadge && containerPrefix === "lead-container") {
+                leadBadge.innerText = `${stateObj[hand].length} / 13`;
+                if (stateObj[hand].length === 13)
+                    leadBadge.classList.replace("bg-slate-400", "bg-emerald-500");
+                else leadBadge.classList.replace("bg-emerald-500", "bg-slate-400");
+            }
+
+            const myCards = stateObj[hand];
+            SUITS.forEach((suit) => {
+                RANKS.forEach((rank) => {
+                    const cardId = suit.id + rank;
+                    const btn = document.getElementById(
+                        `btn-${containerPrefix}-${hand}-${cardId}`
+                    );
+                    if (!btn) return;
+
+                    btn.classList.remove("selected", "taken");
+                    if (myCards.includes(cardId)) {
+                        btn.classList.add("selected");
+                    } else {
+                        // Logic to show 'taken' grey out
+                        if (containerPrefix === "container") {
+                            // Double Dummy: Check any other hand
+                            if (findCardOwner(stateObj, cardId)) btn.classList.add("taken");
+                        } else if (containerPrefix === "sd-container") {
+                            // Single Dummy: Check opponent (N vs S)
+                            const other = hand === "north" ? "south" : "north";
+                            if (stateObj[other].includes(cardId)) btn.classList.add("taken");
+                        }
                     }
                 });
-            } else {
-                // SUIT_KEYS.forEach((suit) => {
-                //     const dInput = getEl(`shape-${player}-${suit}`);
-                //     const mInput = getEl(`shape-${player}-${suit}-mobile`);
-                //     if (dInput && mInput) mInput.value = dInput.value;
-                // });
-                // const dHcp = getEl(`hcp-${player}`);
-                // const mHcp = getEl(`hcp-${player}-mobile`);
-                // if (dHcp && mHcp) mHcp.value = dHcp.value;
-            }
-        });
-
-        ["lead", "lead-mobile"].forEach((prefix) => {
-            const container = getEl(`${prefix}-${leader}-container`);
-            if (container) {
-                container.querySelectorAll(".card-rank").forEach((card) => {
-                    const cardID = `${card.dataset.suit}-${card.dataset.rank}`;
-                    const isSelected = allSelected.has(cardID);
-                    card.classList.toggle("selected", isSelected);
-                    card.classList.toggle(
-                        "disabled",
-                        isSelected && !card.classList.contains("selected")
-                    );
-                });
-            }
-        });
-
-        updateAllCardCounts("lead");
-        updateAllCardCounts("lead-mobile");
-    }
-
-    function clearResultsAndErrors() {
-        resultsContainer.innerHTML = "";
-        leadResultsContainer.innerHTML = "";
-        globalError.classList.add("d-none");
-    }
-
-    // --- UI生成 ---
-    function createCardSelector(hand, container, prefix = "") {
-        if (!container) return;
-        container.innerHTML = "";
-        const titleWrapper = document.createElement("div");
-        titleWrapper.className = "d-flex align-items-center justify-content-center";
-        titleWrapper.innerHTML = `<h5 class="hand-title m-0">${
-            translations[hand.toLowerCase()] || hand
-        }</h5><span id="${
-            prefix ? `${prefix}-` : ""
-        }${hand}-card-count" class="card-count"></span>`;
-        container.appendChild(titleWrapper);
-        Object.entries(SUITS).forEach(([suit, symbol]) => {
-            const suitGroup = document.createElement("div");
-            suitGroup.className = "input-group input-group-sm mb-1";
-            const cardContainer = document.createElement("div");
-            cardContainer.className =
-                "form-control d-flex justify-content-start align-items-center flex-wrap";
-            RANKS.forEach((rank) => {
-                cardContainer.innerHTML += `<span class="card-rank" data-hand="${hand}" data-suit="${suit}" data-rank="${rank}" data-prefix="${prefix}">${rank}</span>`;
             });
-            suitGroup.innerHTML = `<span class="input-group-text suit-symbol ${SUIT_COLORS[suit]}">${symbol}</span>`;
-            suitGroup.appendChild(cardContainer);
-            container.appendChild(suitGroup);
         });
     }
 
-    function createConditionInputsHTML(player, isMobile) {
-        const idSuffix = isMobile ? "-mobile" : "";
-        const title = `<h5 class="text-capitalize text-center">${
-            translations[player] || player
-        }</h5>`;
-
-        const shapeInputs = SUIT_KEYS.map(
-            (suit) => `
-            <div class="input-group input-group-sm mb-1 shape-input-group">
-                <span class="input-group-text suit-symbol ${SUIT_COLORS[suit]}">${SUITS[suit]}</span>
-                <input type="text" class="form-control" id="shape-${player}-${suit}${idSuffix}" value="0-13">
-            </div>
-        `
-        ).join("");
-
-        return `
-            ${title}
-            <label class="form-label small" data-i18n="shapeRange">${
-                translations.shapeRange || "Shape Range"
-            }</label>
-            ${shapeInputs}
-            <div class="mt-2">
-                <label for="hcp-${player}${idSuffix}" class="form-label small" data-i18n="hcp">${
-            translations.hcp || "HCP"
-        }</label>
-                <input type="text" class="form-control form-control-sm" id="hcp-${player}${idSuffix}" value="0-37">
-                <label for="shape-preset-${player}${idSuffix}" class="form-label" data-i18n="shapePresetSelector">Shape preset:</label>
-                <select id="shape-preset-${player}${idSuffix}" class="shape-preset-selector form-select form-select-sm mb-2" data-player="${player}">
-                    <option value="all" data-i18n="shapePresetAll">All shapes</option>
-                    <option value="balanced" data-i18n="shapePresetBalanced">Balanced</option>
-                    <option value="semiBalanced" data-i18n="shapePresetSemiBalanced">SemiBalanced</option>
-                    <option value="unbalanced" data-i18n="shapePresetUnbalanced">Unbalanced</option>
-                    <option value="balanced-without-major" data-i18n="shapePresetBalancedWithoutMajor">BalancedWithout5Major</option>
-                </select>
-            </div>`;
-    }
-
-    function createMobilePreview(container, hand) {
-        if (!container) return;
-        const preview = document.createElement("div");
-        preview.id = `mobile-preview-${hand}`;
-        preview.className = "mobile-preview";
-        preview.dataset.hand = hand;
-        preview.innerHTML = `
-            <div class="mobile-preview-title">${translations[hand.toLowerCase()] || hand}</div>
-            <div class="mobile-preview-cards"></div>
-            <div class="mobile-preview-count"></div>`;
-        container.appendChild(preview);
-    }
-
-    function updateAllCardCounts(prefix = "") {
-        const fullPrefix = prefix ? `${prefix}-` : "";
-        HANDS.forEach((hand) => {
-            const handContainer = getEl(`${fullPrefix}${hand}-container`);
-            if (!handContainer) return;
-            const count = handContainer.querySelectorAll(`.card-rank.selected`).length;
-            console.log(`${fullPrefix}${hand}-card-count`);
-
-            if (getEl(`${fullPrefix}${hand}-card-count`)) {
-                getEl(`${fullPrefix}${hand}-card-count`).classList.toggle("valid", count === 13);
-                getEl(`${fullPrefix}${hand}-card-count`).textContent = `(${count}/13)`;
+    // --- DD State Logic ---
+    function toggleCardDD(hand, cardId) {
+        const currentOwner = findCardOwner(ddState, cardId);
+        if (currentOwner === hand) {
+            ddState[hand] = ddState[hand].filter((c) => c !== cardId);
+        } else if (currentOwner) {
+            if (ddState[hand].length >= 13) {
+                showToast("このハンドは既に13枚です");
+                return;
             }
-
-            const mobilePreview = getEl(`mobile-preview-${hand}`);
-            if (mobilePreview) {
-                mobilePreview.classList.toggle("hand-complete", count === 13);
-                mobilePreview.querySelector(".mobile-preview-count").textContent = `(${count}/13)`;
-                mobilePreview.querySelector(".mobile-preview-cards").innerHTML = Object.keys(SUITS)
-                    .map((suit) => {
-                        const selectedRanks = Array.from(
-                            handContainer.querySelectorAll(
-                                `.card-rank.selected[data-suit="${suit}"]`
-                            )
-                        )
-                            .sort(
-                                (a, b) =>
-                                    RANKS.indexOf(a.dataset.rank) - RANKS.indexOf(b.dataset.rank)
-                            )
-                            .map((el) => el.dataset.rank)
-                            .join(" ");
-                        return `<div><span class="${SUIT_COLORS[suit]}">${SUITS[suit]}</span> ${
-                            selectedRanks || "-"
-                        }</div>`;
-                    })
-                    .join("");
+            ddState[currentOwner] = ddState[currentOwner].filter((c) => c !== cardId);
+            ddState[hand].push(cardId);
+        } else {
+            if (ddState[hand].length >= 13) {
+                showToast("13枚制限です");
+                return;
             }
-        });
-    }
-
-    // --- PBNとカード枚数更新 ---
-    function updatePbnAndSync() {
-        if (!getEl("north-container")) return;
-        const pbnOrder = ["north", "east", "south", "west"];
-        const handStrings = pbnOrder.map((hand) => {
-            const handContainer = getEl(`${hand}-container`);
-            if (getEl("singleDummyToggle").checked && (hand === "east" || hand === "west"))
-                return "..";
-            return Object.keys(SUITS)
-                .map(
-                    (suit) =>
-                        Array.from(
-                            handContainer.querySelectorAll(
-                                `.card-rank.selected[data-suit="${suit}"]`
-                            )
-                        )
-                            .sort(
-                                (a, b) =>
-                                    RANKS.indexOf(a.dataset.rank) - RANKS.indexOf(b.dataset.rank)
-                            )
-                            .map((el) => el.dataset.rank)
-                            .join("") || "-"
-                )
-                .join(".");
-        });
-        const pbnString = `N:${handStrings.join(" ")}`;
-        if (pbnInputDesktop) pbnInputDesktop.value = pbnString;
-        if (pbnInputMobile) pbnInputMobile.value = pbnString;
-    }
-
-    function updateCardCounts() {
-        HANDS.forEach((hand) => {
-            const handContainer = getEl(`${hand}-container`);
-            if (!handContainer) return;
-            const count = handContainer.querySelectorAll(`.card-rank.selected`).length;
-            getEl(`${hand}-card-count`)?.classList.toggle("valid", count === 13);
-
-            const mobilePreview = getEl(`mobile-preview-${hand}`);
-            if (mobilePreview) {
-                mobilePreview.classList.toggle("hand-complete", count === 13);
-                mobilePreview.querySelector(".mobile-preview-count").textContent = `(${count}/13)`;
-                mobilePreview.querySelector(".mobile-preview-cards").innerHTML = Object.keys(SUITS)
-                    .map((suit) => {
-                        const selectedRanks = Array.from(
-                            handContainer.querySelectorAll(
-                                `.card-rank.selected[data-suit="${suit}"]`
-                            )
-                        )
-                            .sort(
-                                (a, b) =>
-                                    RANKS.indexOf(a.dataset.rank) - RANKS.indexOf(b.dataset.rank)
-                            )
-                            .map((el) => el.dataset.rank)
-                            .join(" ");
-                        return `<div><span class="${SUIT_COLORS[suit]}">${SUITS[suit]}</span> ${
-                            selectedRanks || "-"
-                        }</div>`;
-                    })
-                    .join("");
-            }
-        });
-    }
-
-    function attemptAutoComplete() {
-        if (getEl("singleDummyToggle").checked) return;
-        const selectedCards = document.querySelectorAll(
-            "#dds-analysis-section .card-rank.selected"
-        );
-        if (selectedCards.length !== 39) return;
-        const incompleteHand = HANDS.find(
-            (hand) =>
-                getEl(`${hand}-container`).querySelectorAll(".card-rank.selected").length < 13
-        );
-        if (incompleteHand) {
-            document
-                .querySelectorAll(
-                    `#${incompleteHand}-container .card-rank:not(.selected):not(.disabled)`
-                )
-                .forEach((cardEl) => cardEl.classList.add("selected"));
-            updatePbnAndSync();
-            updateCardCounts();
+            ddState[hand].push(cardId);
         }
+        updateDDUI();
     }
 
-    // --- モバイルエディタ (DDS/SD用) ---
-    function openMobileEditor(hand) {
-        if (activeMobileHand) closeMobileEditor();
+    function findCardOwner(stateObj, cardId) {
+        for (let h of HANDS) if (stateObj[h].includes(cardId)) return h;
+        return null;
+    }
+
+    function updateDDUI() {
+        let total = 0;
+        HANDS.forEach((h) => (total += ddState[h].length));
+        document.getElementById("total-count").innerText = total;
+        updateCardUI("container", ddState);
+
+        HANDS.forEach((hand) => {
+            SUITS.forEach((suit) => {
+                const mobCards = ddState[hand]
+                    .filter((c) => c.startsWith(suit.id))
+                    .sort((a, b) => RANKS.indexOf(a.substr(1)) - RANKS.indexOf(b.substr(1)))
+                    .map((c) => c.substr(1))
+                    .join("");
+                const mobText = document.getElementById(`mobile-text-${hand}-${suit.id}`);
+                if (mobText) mobText.innerText = mobCards;
+            });
+        });
+
+        SUITS.forEach((suit) => {
+            RANKS.forEach((rank) => {
+                const cardId = suit.id + rank;
+                const mobBtn = document.getElementById(`mob-btn-${cardId}`);
+                if (!mobBtn) return;
+                const owner = findCardOwner(ddState, cardId);
+                mobBtn.className =
+                    "w-8 h-10 border rounded shadow-sm font-medium shrink-0 transition-colors ";
+                if (owner === activeMobileHand)
+                    mobBtn.classList.add("bg-indigo-600", "text-white", "border-indigo-600");
+                else if (owner)
+                    mobBtn.classList.add("bg-slate-100", "text-slate-300", "border-slate-100");
+                else mobBtn.classList.add("bg-white", "text-slate-800", "border-slate-200");
+            });
+        });
+    }
+
+    function renderMobileKeyboard() {
+        SUITS.forEach((suit) => {
+            const container = document.getElementById(`mobile-keys-${suit.id}`);
+            if (!container) return;
+            const label = document.createElement("div");
+            label.className = `w-8 h-10 flex items-center justify-center font-bold ${suit.color} bg-slate-50 border border-slate-200 rounded shrink-0 text-sm`;
+            label.innerHTML = suit.label;
+            container.appendChild(label);
+
+            RANKS.forEach((rank) => {
+                const cardId = suit.id + rank;
+                const btn = document.createElement("button");
+                btn.id = `mob-btn-${cardId}`;
+                btn.innerText = rank;
+                btn.className =
+                    "w-8 h-10 bg-white border border-slate-200 rounded shadow-sm font-medium active:bg-slate-100 shrink-0 text-slate-700 transition-colors";
+                btn.onclick = () => toggleCardDD(activeMobileHand, cardId);
+                container.appendChild(btn);
+            });
+        });
+    }
+
+    function setMobileActive(hand) {
         activeMobileHand = hand;
-        const handContainer = getEl(`${hand}-container`);
-        const placeholder = document.createElement("div");
-        placeholder.id = `${hand}-placeholder`;
-        handContainer.parentNode.insertBefore(placeholder, handContainer);
-        mobileEditorContent.appendChild(handContainer);
-        mobileEditorTitle.textContent = (translations.editHandTitle || "Edit {hand}").replace(
-            "{hand}",
-            translations[hand.toLowerCase()] || hand
-        );
-        mobileHandEditor.classList.remove("d-none");
-        getEl(`mobile-preview-${hand}`).classList.add("active-editor");
-    }
-
-    function closeMobileEditor() {
-        if (!activeMobileHand) return;
-        const handContainer = mobileEditorContent.querySelector(".hand-container");
-        const placeholder = getEl(`${activeMobileHand}-placeholder`);
-        if (handContainer && placeholder) {
-            placeholder.parentNode.insertBefore(handContainer, placeholder);
-            placeholder.remove();
-        }
-        mobileHandEditor.classList.add("d-none");
-        getEl(`mobile-preview-${activeMobileHand}`).classList.remove("active-editor");
-        activeMobileHand = null;
-        updateCardCounts();
-    }
-
-    // --- API通信と結果表示 ---
-    function handleCardClick(target) {
-        if (target.classList.contains("disabled")) return;
-
-        const { prefix } = target.dataset;
-        const isSelected = target.classList.contains("selected");
-        console.log(isSelected);
-
-        const isMobile = prefix.includes("mobile");
-
-        const masterPrefix = prefix == "" ? "" : prefix + "-";
-        const masterContainer = getEl(`${masterPrefix}${target.dataset.hand}-container`);
-        console.log(`${masterPrefix}${target.dataset.hand}-container`);
-
-        if (!isSelected && masterContainer.querySelectorAll(".card-rank.selected").length >= 13) {
-            const countEl = target.closest(".hand-container").querySelector(".card-count");
-            if (countEl) {
-                countEl.classList.add("flash-warning");
-                setTimeout(() => countEl.classList.remove("flash-warning"), 300);
+        document.getElementById("mobile-active-label").innerText = `Editing: ${hand}`;
+        HANDS.forEach((h) => {
+            const el = document.getElementById(`hand-${h}`);
+            if (!el) return;
+            if (h === hand) {
+                el.classList.add("hand-card-mobile-active");
+                el.classList.remove("border-transparent");
+            } else {
+                el.classList.remove("hand-card-mobile-active");
+                el.classList.add("border-transparent");
             }
+        });
+        updateDDUI();
+    }
+
+    function generatePBN(stateObj, isSingleDummy = false) {
+        const handsOrder = ["north", "east", "south", "west"];
+        const parts = [];
+        handsOrder.forEach((hand) => {
+            if (isSingleDummy && (hand === "east" || hand === "west")) {
+                parts.push("...");
+                return;
+            }
+            const handCards = stateObj[hand];
+            const suitsStr = SUITS.map((suit) => {
+                const cardsInSuit = handCards
+                    .filter((c) => c.startsWith(suit.id))
+                    .map((c) => c.substr(1))
+                    .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                    .join("");
+                return cardsInSuit || "";
+            }).join(".");
+            parts.push(suitsStr);
+        });
+        return `N:${parts.join(" ")}`;
+    }
+
+    // --- API Calls ---
+    async function runDoubleDummy() {
+        let total = 0;
+        HANDS.forEach((h) => (total += ddState[h].length));
+        if (total !== 52) {
+            showToast("カードが52枚選択されていません");
             return;
         }
 
-        const allCardsSelector = `[data-suit="${target.dataset.suit}"][data-rank="${target.dataset.rank}"]`;
-        const section = prefix ? "lead-analysis-section" : "dds-analysis-section";
-        console.log(`#${section} ${allCardsSelector}`);
-
-        // document
-        //     .querySelectorAll(`#${section} ${allCardsSelector}`)
-        //     .forEach((card) => card.classList.toggle("selected", !isSelected));
-
-        document.querySelectorAll(`#${section} ${allCardsSelector}`).forEach((card) => {
-            if (card === target || prefix) {
-                console.log(!isSelected);
-
-                card.classList.toggle("selected", !isSelected);
-            } else if (!prefix) {
-                card.classList.toggle("disabled", !isSelected);
-            }
-        });
-
-        updateAllCardCounts(prefix);
-        if (!prefix) {
-            updatePbnAndSync();
-            attemptAutoComplete();
-        } else {
-            // syncLeadUIState();
-        }
-    }
-
-    function runDDSAnalysis() {
-        const pbn = pbnInputDesktop.value.trim();
-        if (!pbn) return showError(translations.pbnEmptyError || "PBN input is empty.");
-        clearResultsAndErrors();
-        globalSpinner.classList.remove("d-none");
-        if (getEl("singleDummyToggle").checked) {
-            runSingleDummyAnalysis(pbn, parseInt(simulationsInputDesktop.value, 10) || 1000);
-        } else {
-            runDoubleDummyAnalysis(pbn);
-        }
-    }
-
-    function fetchAPI(url, body) {
-        return fetch(
-            `https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api/${url}`,
-            {
+        setLoading(true);
+        try {
+            const pbn = generatePBN(ddState);
+            const res = await fetch(`${API_BASE}/analyse`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            }
-        )
-            .then((response) => {
-                globalSpinner.classList.add("d-none");
-                if (!response.ok)
-                    return response.json().then((err) => {
-                        throw new Error(err.error || `Server error: ${response.status}`);
-                    });
-                return response.json();
-            })
-            .then((data) => {
-                if (data.error) throw new Error(data.error);
-                return data;
-            })
-            .catch((error) => {
-                showError(`Analysis failed: ${error.message}`);
-                return null;
+                body: JSON.stringify({ pbn }),
             });
-    }
-
-    async function runDoubleDummyAnalysis(pbn) {
-        const data = await fetchAPI("analyse", { pbn });
-        if (data) displayDoubleDummyResults(data.tricks);
-    }
-
-    async function runSingleDummyAnalysis(pbn, simulations) {
-        const isMobile = window.innerWidth < 992;
-        const getVal = (id) => getEl(id + (isMobile ? "-mobile" : ""))?.value;
-        const pbnParts = pbn.substring(2).split(" ");
-        const ns_pbn = `N:${pbnParts[0]} .. ${pbnParts[2]} .`;
-        console.log(getVal("single-dds-advanced-tcl"));
-
-        const data = await fetchAPI("analyse_single_dummy", {
-            pbn: ns_pbn,
-            advanced_tcl: getVal("single-dds-advanced-tcl"),
-            simulations: simulations,
-        });
-        if (data) displaySingleDummyDistribution(data.trick_distribution, data.simulations_run);
-    }
-
-    async function runLeadAnalysis() {
-        clearResultsAndErrors();
-        const isMobile = window.innerWidth < 992;
-        const leader = directionMap[(isMobile ? leaderSelectMobile : leaderSelect).value];
-        const leaderHandContainer = getEl(`lead-${isMobile ? "mobile-" : ""}${leader}-container`);
-        if (leaderHandContainer.querySelectorAll(".card-rank.selected").length !== 13) {
-            return showError(
-                translations.leader13CardsError || "Leader must have 13 cards selected."
-            );
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            renderDDResults(data.tricks);
+        } catch (e) {
+            showToast("Error: " + e.message);
+        } finally {
+            setLoading(false);
         }
-        const leaderHandPbn = Object.keys(SUITS)
-            .map(
-                (suit) =>
-                    Array.from(
-                        leaderHandContainer.querySelectorAll(
-                            `.card-rank.selected[data-suit="${suit}"]`
-                        )
-                    )
-                        .sort(
-                            (a, b) => RANKS.indexOf(a.dataset.rank) - RANKS.indexOf(b.dataset.rank)
-                        )
-                        .map((el) => el.dataset.rank)
-                        .join("") || "-"
-            )
-            .join(".");
+    }
 
-        const getVal = (id) => getEl(id + (isMobile ? "-mobile" : ""))?.value;
+    async function runSingleDummy() {
+        setLoading(true);
+        try {
+            const tclParts = [];
+            const pbnParts = { north: ".", south: ".", east: ".", west: "." };
+
+            ["north", "south", "east", "west"].forEach((hand) => {
+                if ((hand === "north" || hand === "south") && sdModes[hand] === "hand") {
+                    if (sdState[hand].length === 13) {
+                        const suitsStr = SUITS.map((suit) => {
+                            return sdState[hand]
+                                .filter((c) => c.startsWith(suit.id))
+                                .map((c) => c.substr(1))
+                                .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                                .join("");
+                        }).join(".");
+                        pbnParts[hand] = suitsStr;
+                    } else {
+                        if (sdState[hand].length > 0)
+                            throw new Error(`${hand}の手札が13枚ではありません`);
+                    }
+                } else {
+                    const minH = document.getElementById(`sd-${hand}-hcp-min`).value || 0;
+                    const maxH = document.getElementById(`sd-${hand}-hcp-max`).value || 37;
+                    tclParts.push(`[hcp ${hand}] >= ${minH}`);
+                    tclParts.push(`[hcp ${hand}] <= ${maxH}`);
+
+                    const s = document.getElementById(`sd-${hand}-s`).value;
+                    const h = document.getElementById(`sd-${hand}-h`).value;
+                    const d = document.getElementById(`sd-${hand}-d`).value;
+                    const c = document.getElementById(`sd-${hand}-c`).value;
+
+                    const parseRange = (val, suitName) => {
+                        if (!val) return;
+                        if (val.includes("-")) {
+                            const [min, max] = val.split("-");
+                            tclParts.push(`[${suitName} ${hand}] >= ${min || 0}`);
+                            tclParts.push(`[${suitName} ${hand}] <= ${max || 13}`);
+                        } else {
+                            tclParts.push(`[${suitName} ${hand}] == ${val}`);
+                        }
+                    };
+                    parseRange(s, "spades");
+                    parseRange(h, "hearts");
+                    parseRange(d, "diamonds");
+                    parseRange(c, "clubs");
+
+                    const preset = document.getElementById(`sd-${hand}-preset`).value;
+                    if (preset === "balanced") tclParts.push(`[balanced ${hand}]`);
+                    if (preset === "semibalanced") tclParts.push(`[semibalanced ${hand}]`);
+                    if (preset === "unbalanced")
+                        tclParts.push(`!([balanced ${hand}] || [semibalanced ${hand}])`);
+                }
+            });
+
+            const tclStr = `reject unless { ${tclParts.join(" && ")} }`;
+            const finalPBN = `N:${pbnParts.north} ${pbnParts.east} ${pbnParts.south} ${pbnParts.west}`;
+
+            const res = await fetch(`${API_BASE}/analyse_single_dummy`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    pbn: finalPBN,
+                    advanced_tcl: tclStr,
+                    simulations: 1000,
+                }),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            renderSDResults(data.trick_distribution, data.simulations_run);
+        } catch (e) {
+            showToast("Error: " + e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function runLeadSolver() {
+        const leader = document.getElementById("lead-leader").value;
+        const leaderKey = leader.toLowerCase();
+
+        const leaderCards = leadState[leaderKey];
+        if (leaderCards.length !== 13) {
+            showToast(`${leader}の手札は13枚である必要があります (現在: ${leaderCards.length}枚)`);
+            return;
+        }
+
+        const suitsStr = SUITS.map((suit) => {
+            const cardsInSuit = leaderCards
+                .filter((c) => c.startsWith(suit.id))
+                .map((c) => c.substr(1))
+                .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                .join("");
+            return cardsInSuit || "";
+        }).join(".");
+
+        const level = document.getElementById("lead-level").value;
+        const suit = document.getElementById("lead-suit").value;
+
         const requestData = {
-            leader_hand_pbn: leaderHandPbn,
+            leader_hand_pbn: suitsStr,
+            leader: leader[0],
+            contract: `${level}${suit}`,
             shapes: {},
             hcp: {},
-            contract: getVal(`lead-contract`),
-            leader: (isMobile ? leaderSelectMobile : leaderSelect).value,
             shapePreset: {},
-            simulations: parseInt(getVal(`lead-simulations`), 10) || 100,
-            advanced_tcl: getVal(`advanced-tcl`) || "",
+            simulations: 1000,
         };
-        let valid = true;
-        HANDS.forEach((p) => {
-            if (p !== leader) {
-                const shapeValues = SUIT_KEYS.map((suit) => getVal(`shape-${p}-${suit}`));
-                const hcp = getVal(`hcp-${p}`);
-                const shapePreset = getVal(`shape-preset-${p}`);
-                console.log(`${p}:${shapeValues},${hcp}`);
 
-                if (shapeValues.every((v) => v) && hcp) {
-                    requestData.shapes[p] = shapeValues.join(",");
-                    requestData.hcp[p] = hcp;
-                    requestData.shapePreset[p] = shapePreset;
-                } else {
-                    showError(`Could not find conditions for player ${p}`);
-                    valid = false;
-                }
+        HANDS.forEach((h) => {
+            if (h !== leaderKey) {
+                const minH = document.getElementById(`lead-${h}-hcp-min`).value || 0;
+                const maxH = document.getElementById(`lead-${h}-hcp-max`).value || 37;
+                requestData.hcp[h] = `${minH}-${maxH}`;
+
+                const sVal = document.getElementById(`lead-${h}-s`).value || "0-13";
+                const hVal = document.getElementById(`lead-${h}-h`).value || "0-13";
+                const dVal = document.getElementById(`lead-${h}-d`).value || "0-13";
+                const cVal = document.getElementById(`lead-${h}-c`).value || "0-13";
+                requestData.shapes[h] = `${sVal},${hVal},${dVal},${cVal}`;
+
+                const preset = document.getElementById(`lead-${h}-preset`).value;
+                requestData.shapePreset[h] = preset === "any" ? "" : preset;
             }
         });
-        if (!valid) return;
 
-        globalSpinner.classList.remove("d-none");
-        const data = await fetchAPI("solve_lead", requestData);
-        if (data) displayLeadResults(data.leads);
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/solve_lead`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestData),
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            renderLeadResults(data.leads, data.simulations_run);
+        } catch (e) {
+            showToast("Error: " + e.message);
+        } finally {
+            setLoading(false);
+        }
     }
 
-    // --- 結果表示 ---
-    function displayDoubleDummyResults(tricks) {
-        if (!tricks || !translations.hand) return;
-        const table = `<table class="table table-bordered table-striped table-sm">
-            <thead><tr><th>${translations.hand}</th><th>NT</th><th><span class="${
-            SUIT_COLORS.spades
-        }">♠</span></th><th><span class="${SUIT_COLORS.hearts}">♥</span></th><th><span class="${
-            SUIT_COLORS.diamonds
-        }">♦</span></th><th><span class="${SUIT_COLORS.clubs}">♣</span></th></tr></thead>
-            <tbody>${["North", "South", "East", "West"]
-                .map(
-                    (hand) => `
-                <tr><td class="fw-bold">${translations[hand.toLowerCase()]}</td>${[
-                        "No-Trump",
-                        "Spades",
-                        "Hearts",
-                        "Diamonds",
-                        "Clubs",
-                    ]
-                        .map(
-                            (suit) => `
-                    <td>${tricks[suit] ? tricks[suit][hand] : "-"}</td>`
-                        )
-                        .join("")}</tr>`
-                )
-                .join("")}
-            </tbody></table>`;
-        resultsContainer.innerHTML = `<h5>${translations.resultsTitleDD}</h5>${table}`;
+    // --- Shared Helper for Distribution Table ---
+    function createDistributionTable(dist) {
+        // dist: array of 14 numbers (percentages)
+        let tableHtml = '<table class="dist-table"><thead><tr>';
+        for (let i = 0; i <= 13; i++) tableHtml += `<th>${i}</th>`;
+        tableHtml += "</tr></thead><tbody><tr>";
+
+        dist.forEach((pct) => {
+            let cls = "";
+            if (pct > 0) cls = "has-val";
+            if (pct >= 20) cls = "high-val";
+            tableHtml += `<td class="${cls}">${pct > 0 ? Math.round(pct) : ""}</td>`;
+        });
+
+        tableHtml += "</tr></tbody></table>";
+        return tableHtml;
     }
 
-    function displaySingleDummyDistribution(distribution, simulationsRun) {
-        if (!distribution) return;
-        resultsContainer.innerHTML = `<h5>${(translations.resultsTitleSD || "").replace(
-            "{simulations}",
-            simulationsRun
-        )}</h5>`;
+    // --- Rendering Results ---
+    function renderDDResults(tricks) {
+        const tbody = document.getElementById("result-body-double");
+        tbody.innerHTML = "";
+        ["North", "South", "East", "West"].forEach((player) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="font-bold text-slate-700 bg-slate-50">${player}</td>
+                <td class="font-bold text-indigo-700 bg-indigo-50">${tricks["No-Trump"][player]}</td>
+                <td>${tricks["Spades"][player]}</td>
+                <td>${tricks["Hearts"][player]}</td>
+                <td>${tricks["Diamonds"][player]}</td>
+                <td>${tricks["Clubs"][player]}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById("result-double").classList.remove("hidden");
+        document.getElementById("result-double").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function renderSDResults(distribution, count) {
+        const container = document.getElementById("result-single-content");
+        document.getElementById("sd-sim-count").innerText = `Samples: ${count}`;
+        container.innerHTML = "";
+
         const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
-        const suitSymbols = {
-            "No-Trump": "NT",
-            Spades: "♠",
-            Hearts: "♥",
-            Diamonds: "♦",
-            Clubs: "♣",
-        };
+
         suitOrder.forEach((suit) => {
             if (!distribution[suit]) return;
-            const northPercentages = distribution[suit]["North"];
-            const southPercentages = distribution[suit]["South"];
-            const visibleTricks = Array.from({ length: 14 }, (_, i) => i).filter(
-                (i) => (northPercentages[i] || 0) > 0.01 || (southPercentages[i] || 0) > 0.01
-            );
-            if (visibleTricks.length === 0) return;
-            let tableHTML = `<h6 class="mt-4"><span class="${
-                SUIT_COLORS[suit.toLowerCase()] || ""
-            }">${suitSymbols[suit]}</span> ${suit}</h6>
-                <div class="table-responsive"><table class="table table-bordered table-sm text-center">
-                <thead><tr><th>N/S</th>${visibleTricks.map((i) => `<th>${i}</th>`).join("")}
-                <th class="table-info">${translations.game || "Game"}</th><th class="table-info">${
-                translations.smallSlam || "S.Slam"
-            }</th><th class="table-info">${
-                translations.grandSlam || "G.Slam"
-            }</th></tr></thead><tbody>`;
-            ["North", "South"].forEach((hand) => {
-                const percentages = distribution[suit][hand];
-                tableHTML += `<tr><td class="fw-bold">${hand.charAt(0)}</td>`;
-                visibleTricks.forEach((i) => {
-                    const pct = percentages[i] || 0;
-                    tableHTML += `<td style="background-color: ${
-                        pct > 0 ? `rgba(13, 110, 253, ${pct / 100})` : ""
-                    }" class="${pct > 40 ? "text-white" : ""}">${
-                        pct < 0.1 ? "-" : pct.toFixed(1)
-                    }</td>`;
-                });
-                const tricksNeeded = {
-                    game: suit === "No-Trump" ? 9 : /Spades|Hearts/.test(suit) ? 10 : 11,
-                    smallSlam: 12,
-                    grandSlam: 13,
-                };
-                const gameMake = percentages.slice(tricksNeeded.game).reduce((a, b) => a + b, 0);
-                const smallSlamMake = percentages
-                    .slice(tricksNeeded.smallSlam)
-                    .reduce((a, b) => a + b, 0);
-                tableHTML += `<td class="table-info">${gameMake.toFixed(
-                    1
-                )}%</td><td class="table-info">${smallSlamMake.toFixed(
-                    1
-                )}%</td><td class="table-info">${(percentages[13] || 0).toFixed(1)}%</td></tr>`;
-            });
-            resultsContainer.innerHTML += `${tableHTML}</tbody></table></div>`;
-        });
-    }
 
-    function displayLeadResults(leads) {
-        if (!leads || leads.length === 0) return;
+            const distData = distribution[suit];
+            const card = document.createElement("div");
+            card.className = "bg-white border border-slate-200 rounded-lg p-4 mb-4 shadow-sm";
 
-        const sortedLeads = [...leads].sort((a, b) => b.tricks - a.tricks);
-
-        const tableHeader = `
-            <thead>
-                <tr>
-                    <th style="width: 10%;">${translations.card || "Card"}</th>
-                    <th style="width: 10%;">${translations.expectedTricks || "Avg Tricks"}</th>
-                    <th style="width: 10%;">${translations.setPercentage || "Set %"}</th>
-                    <th style="width: 70%;">${
-                        translations.trickDistribution || "Trick Distribution (0-13)"
-                    }</th>
-                </tr>
-            </thead>`;
-
-        const tableBody = sortedLeads
-            .map((lead) => {
-                const suitChar = lead.card.charAt(0).toUpperCase();
-                const rank = lead.card.charAt(1).toUpperCase();
-                const suitName = { S: "spades", H: "hearts", D: "diamonds", C: "clubs" }[suitChar];
-
-                const perOfTrick = lead.per_of_trick || [];
-                let sum = 0;
-                perOfTrick.forEach((v) => (sum += v));
-                console.log(perOfTrick, sum);
-
-                const distributionText = perOfTrick
-                    .map((p, i) => {
-                        // 確率が0より大きい場合のみ表示
-                        if (p > 0) {
-                            return `<span class="me-2" style="white-space: nowrap;"><b>${i}</b>:${(
-                                (p / sum) *
-                                100
-                            ).toFixed()}%</span>`;
-                        }
-                        return "";
-                    })
-                    .join(" ");
-
-                return `
-                <tr>
-                    <td class="fw-bold fs-5"><span class="${SUIT_COLORS[suitName]}">${
-                    SUITS[suitName]
-                }</span> ${rank}</td>
-                    <td class="text-end">${lead.tricks.toFixed(2)}</td>
-                    <td class="text-end">${lead.per_of_set.toFixed(1)}%</td>
-                    <td>
-                        <div class="d-flex flex-wrap" style="font-size: 0.75rem; letter-spacing: -0.5px;">
-                           ${distributionText}
-                        </div>
-                    </td>
-                </tr>`;
-            })
-            .join("");
-
-        leadResultsContainer.innerHTML = `
-            <div class="col-12 col-lg-10">
-                <h5 class="text-center">${translations.optimalLeads}</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped align-middle">
-                        ${tableHeader}
-                        <tbody>${tableBody}</tbody>
-                    </table>
-                </div>
-            </div>`;
-    }
-
-    function showError(message) {
-        globalError.textContent = message;
-        globalError.classList.remove("d-none");
-    }
-
-    // --- イベントリスナー設定 ---
-    function setupEventListeners() {
-        document
-            .querySelectorAll('input[name="mainMode"]')
-            .forEach((radio) =>
-                radio.addEventListener("change", (e) =>
-                    setAnalysisMode(e.target.id.replace("Toggle", ""))
-                )
-            );
-        document
-            .querySelectorAll("[data-lang]")
-            .forEach((button) =>
-                button.addEventListener("click", (e) => setLanguage(e.target.dataset.lang))
-            );
-        document.body.addEventListener("click", (e) => {
-            if (e.target.matches(".card-rank")) handleCardClick(e.target);
-            const mobilePreview = e.target.closest(".mobile-preview");
-            if (mobilePreview && ddsAnalysisSection.contains(mobilePreview)) {
-                openMobileEditor(mobilePreview.dataset.hand);
-            }
-        });
-
-        const syncInputs = (source, dest) => (dest.value = source.value);
-        pbnInputDesktop.addEventListener("input", () =>
-            syncInputs(pbnInputDesktop, pbnInputMobile)
-        );
-        pbnInputMobile.addEventListener("input", () =>
-            syncInputs(pbnInputMobile, pbnInputDesktop)
-        );
-        simulationsInputDesktop.addEventListener("input", () =>
-            syncInputs(simulationsInputDesktop, simulationsInputMobile)
-        );
-        simulationsInputMobile.addEventListener("input", () =>
-            syncInputs(simulationsInputMobile, simulationsInputDesktop)
-        );
-
-        const leadControlIds = ["contract", "declarer", "vul", "simulations"];
-        leadControlIds.forEach((id) => {
-            const desktopEl = getEl(`lead-${id}`);
-            const mobileEl = getEl(`lead-${id}-mobile`);
-            desktopEl?.addEventListener("input", () => syncInputs(desktopEl, mobileEl));
-            mobileEl?.addEventListener("input", () => syncInputs(mobileEl, desktopEl));
-        });
-
-        HANDS.forEach((player) => {
-            const syncConditionInputs = (type, suits = false) => {
-                if (suits) {
-                    SUIT_KEYS.forEach((suit) => {
-                        const d = getEl(`${type}-${player}-${suit}`);
-                        const m = getEl(`${type}-${player}-${suit}-mobile`);
-                        d?.addEventListener("input", () => (m.value = d.value));
-                        m?.addEventListener("input", () => (d.value = m.value));
-                    });
-                } else {
-                    const d = getEl(`${type}-${player}`);
-                    const m = getEl(`${type}-${player}-mobile`);
-                    d?.addEventListener("input", () => (m.value = d.value));
-                    m?.addEventListener("input", () => (d.value = m.value));
-                }
+            const suitInfo = SUITS.find((s) => s.name === suit) || {
+                color: "text-indigo-600",
+                label: "NT",
             };
-            syncConditionInputs("shape", true);
-            syncConditionInputs("hcp");
+            const suitLabel = suit === "No-Trump" ? "NT" : suitInfo.label;
+            const suitColor = suit === "No-Trump" ? "text-indigo-700" : suitInfo.color;
+
+            let html = `<h5 class="font-bold text-lg mb-3 flex items-center gap-2 ${suitColor}"><span class="text-xl">${suitLabel}</span> ${suit}</h5>`;
+
+            ["North", "South"].forEach((player) => {
+                const dist = distData[player]; // Array of percentages
+                const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
+
+                html += `<div class="mb-4 last:mb-0">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="font-bold text-sm text-slate-700">${player}</span>
+                        <span class="text-xs font-bold text-slate-500">Avg: <span class="text-indigo-600 text-sm">${exp.toFixed(
+                            2
+                        )}</span></span>
+                    </div>
+                    ${createDistributionTable(dist)}
+                </div>`;
+            });
+
+            card.innerHTML = html;
+            container.appendChild(card);
         });
 
-        const syncAndRender = (source, dest) => {
-            dest.value = source.value;
-            renderLeadSolverUI();
+        document.getElementById("result-single").classList.remove("hidden");
+        document.getElementById("result-single").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function renderLeadResults(leads, count) {
+        const container = document.getElementById("result-lead-content");
+        document.getElementById("lead-sim-count").innerText = count;
+        container.innerHTML = "";
+
+        leads.sort((a, b) => b.tricks - a.tricks);
+
+        leads.forEach((lead) => {
+            const suitChar = lead.card[0];
+            const rankChar = lead.card[1];
+            const suitInfo = SUITS.find((s) => s.name[0] === suitChar) || {
+                color: "text-black",
+                label: suitChar,
+            };
+
+            // Normalize to percentages
+            let dist = lead.per_of_trick;
+            const total = dist.reduce((a, b) => a + b, 0);
+            if (total > 0) {
+                dist = dist.map((v) => (v / total) * 100);
+            }
+
+            const row = document.createElement("div");
+            row.className = "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3";
+            row.innerHTML = `
+                <div class="flex justify-between items-end mb-2">
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-bold text-2xl ${
+                            suitInfo.color
+                        } w-10 text-center bg-white border border-slate-200 rounded shadow-sm h-10 leading-10">${
+                suitInfo.label
+            }${rankChar}</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">Exp Tricks</span>
+                            <span class="text-lg font-bold text-slate-700 leading-none">${lead.tricks.toFixed(
+                                2
+                            )}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Set Prob</span>
+                        <span class="text-sm font-bold text-orange-600">${lead.per_of_set.toFixed(
+                            1
+                        )}%</span>
+                    </div>
+                </div>
+                ${createDistributionTable(dist)}
+            `;
+            container.appendChild(row);
+        });
+
+        document.getElementById("result-lead").classList.remove("hidden");
+        document.getElementById("result-lead").scrollIntoView({ behavior: "smooth" });
+    }
+
+    // --- Helpers ---
+    function showToast(msg) {
+        const el = document.getElementById("toast");
+        document.getElementById("toast-msg").innerText = msg;
+        el.classList.remove("translate-x-full", "opacity-0");
+        setTimeout(() => el.classList.add("translate-x-full", "opacity-0"), 3000);
+    }
+
+    function setLoading(isLoading) {
+        const el = document.getElementById("loading-overlay");
+        if (isLoading) el.classList.remove("hidden");
+        else el.classList.add("hidden");
+    }
+
+    function setupEventListeners() {
+        // Tabs
+        document.getElementById("nav-double").onclick = () => switchTab("double");
+        document.getElementById("nav-single").onclick = () => switchTab("single");
+        document.getElementById("nav-lead").onclick = () => switchTab("lead");
+
+        // Mobile Nav
+        document.getElementById("mobile-menu-btn").onclick = () => {
+            document.getElementById("mobile-nav").classList.toggle("hidden");
         };
-        leaderSelect.addEventListener("change", () =>
-            syncAndRender(leaderSelect, leaderSelectMobile)
-        );
-        leaderSelectMobile.addEventListener("change", () =>
-            syncAndRender(leaderSelectMobile, leaderSelect)
-        );
+        document.getElementById("mob-nav-double").onclick = () => switchTab("double");
+        document.getElementById("mob-nav-single").onclick = () => switchTab("single");
+        document.getElementById("mob-nav-lead").onclick = () => switchTab("lead");
 
-        analyzeBtnDesktop.addEventListener("click", runDDSAnalysis);
-        analyzeBtnMobile.addEventListener("click", runDDSAnalysis);
-        solveLeadBtn.addEventListener("click", runLeadAnalysis);
-        solveLeadBtnMobile.addEventListener("click", runLeadAnalysis);
-        mobileEditorClose.addEventListener("click", closeMobileEditor);
-    }
-
-    // --- 初期化処理 ---
-    async function initialize() {
-        const userLang =
-            localStorage.getItem("userLanguage") ||
-            (navigator.language.startsWith("ja") ? "ja" : "en");
-        await setLanguage(userLang);
-
-        HANDS.forEach((hand) => {
-            createCardSelector(hand, getEl(`${hand}-container`));
-            createMobilePreview(mobileHandPreviews, hand);
+        // Mobile Hand Focus
+        HANDS.forEach((h) => {
+            const el = document.getElementById(`hand-${h}`);
+            if (el) el.onclick = () => setMobileActive(h);
         });
 
-        const placeInGrid = (parent, childId, area) => (getEl(childId).style.gridArea = area);
-        placeInGrid(mobileHandPreviews, "mobile-preview-north", "1 / 2");
-        placeInGrid(mobileHandPreviews, "mobile-preview-west", "2 / 1");
-        placeInGrid(mobileHandPreviews, "mobile-preview-east", "2 / 3");
-        placeInGrid(mobileHandPreviews, "mobile-preview-south", "3 / 2");
+        // SD Mode Switches
+        document.querySelectorAll(".sd-mode-switch").forEach((btn) => {
+            btn.onclick = (e) => toggleSDMode(e.target.dataset.hand, e.target.dataset.mode);
+        });
 
-        setupEventListeners();
-        setAnalysisMode("doubleDummy");
+        // Run Buttons
+        document.getElementById("btn-run-double").onclick = runDoubleDummy;
+        document.getElementById("btn-run-single").onclick = runSingleDummy;
+        document.getElementById("btn-run-lead").onclick = runLeadSolver;
+
+        // Lead UI Update Event
+        document.getElementById("lead-leader").onchange = updateLeadModeUI;
     }
-
-    initialize();
 });
