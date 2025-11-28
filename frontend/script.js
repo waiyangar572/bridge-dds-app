@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Double Dummy Logic ---
     function initDoubleDummyUI() {
         renderCardInterface("container", toggleCardDD, ddState);
-        renderMobileKeyboard();
+        // renderMobileKeyboard();
         updateDDUI();
         setMobileActive("north");
     }
@@ -345,27 +345,27 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function renderMobileKeyboard() {
-        SUITS.forEach((suit) => {
-            const container = document.getElementById(`mobile-keys-${suit.id}`);
-            if (!container) return;
-            const label = document.createElement("div");
-            label.className = `w-8 h-10 flex items-center justify-center font-bold ${suit.color} bg-slate-50 border border-slate-200 rounded shrink-0 text-sm`;
-            label.innerHTML = suit.label;
-            container.appendChild(label);
+    // function renderMobileKeyboard() {
+    //     SUITS.forEach((suit) => {
+    //         const container = document.getElementById(`mobile-keys-${suit.id}`);
+    //         if (!container) return;
+    //         const label = document.createElement("div");
+    //         label.className = `w-8 h-10 flex items-center justify-center font-bold ${suit.color} bg-slate-50 border border-slate-200 rounded shrink-0 text-sm`;
+    //         label.innerHTML = suit.label;
+    //         container.appendChild(label);
 
-            RANKS.forEach((rank) => {
-                const cardId = suit.id + rank;
-                const btn = document.createElement("button");
-                btn.id = `mob-btn-${cardId}`;
-                btn.innerText = rank;
-                btn.className =
-                    "w-8 h-10 bg-white border border-slate-200 rounded shadow-sm font-medium active:bg-slate-100 shrink-0 text-slate-700 transition-colors";
-                btn.onclick = () => toggleCardDD(activeMobileHand, cardId);
-                container.appendChild(btn);
-            });
-        });
-    }
+    //         RANKS.forEach((rank) => {
+    //             const cardId = suit.id + rank;
+    //             const btn = document.createElement("button");
+    //             btn.id = `mob-btn-${cardId}`;
+    //             btn.innerText = rank;
+    //             btn.className =
+    //                 "w-8 h-10 bg-white border border-slate-200 rounded shadow-sm font-medium active:bg-slate-100 shrink-0 text-slate-700 transition-colors";
+    //             btn.onclick = () => toggleCardDD(activeMobileHand, cardId);
+    //             container.appendChild(btn);
+    //         });
+    //     });
+    // }
 
     function setMobileActive(hand) {
         activeMobileHand = hand;
@@ -447,6 +447,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 shapePreset: {},
                 simulations: 1000,
             };
+            const simulations = parseInt(document.getElementById("sd-simulations").value) || 1000;
+            const advancedTclInput = document.getElementById("sd-advanced-tcl").value;
+            requestData.simulations = simulations;
+            requestData.advanced_tcl = advancedTclInput;
 
             ["north", "south", "east", "west"].forEach((hand) => {
                 if ((hand === "north" || hand === "south") && sdModes[hand] === "hand") {
@@ -508,26 +512,23 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const suitsStr = SUITS.map((suit) => {
-            const cardsInSuit = leaderCards
-                .filter((c) => c.startsWith(suit.id))
-                .map((c) => c.substr(1))
-                .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
-                .join("");
-            return cardsInSuit || "";
-        }).join(".");
-
-        const level = document.getElementById("lead-level").value;
-        const suit = document.getElementById("lead-suit").value;
+        const contractText = document.getElementById("lead-contract").value.trim().toUpperCase();
+        if (!contractText) {
+            showToast("コントラクトを入力してください (例: 3NT)");
+            return;
+        }
+        const simulations = parseInt(document.getElementById("lead-simulations").value) || 100;
+        const advancedTcl = document.getElementById("lead-advanced-tcl").value;
 
         const requestData = {
             leader_hand_pbn: suitsStr,
             leader: leader[0],
-            contract: `${level}${suit}`,
+            contract: contractText,
             shapes: {},
             hcp: {},
             shapePreset: {},
-            simulations: 1000,
+            simulations: simulations,
+            advanced_tcl: advancedTcl,
         };
 
         HANDS.forEach((h) => {
@@ -629,12 +630,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 const dist = distData[player]; // Array of percentages
                 const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
 
+                const gameTricks =
+                    suit === "No-Trump" ? 9 : suit === "Spades" || suit === "Hearts" ? 10 : 11;
+                const getProb = (min) =>
+                    dist.reduce((sum, pct, i) => (i >= min ? sum + pct : sum), 0);
+
+                const gameProb = getProb(gameTricks);
+                const slamProb = getProb(12);
+                const grandSlamProb = getProb(13);
+
                 html += `<div class="mb-4 last:mb-0">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="font-bold text-sm text-slate-700">${player}</span>
-                        <span class="text-xs font-bold text-slate-500">Avg: <span class="text-indigo-600 text-sm">${exp.toFixed(
-                            2
-                        )}</span></span>
+                    <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
+                        <div class="flex items-baseline gap-2">
+                            <span class="font-bold text-sm text-slate-700 w-12">${player}</span>
+                            <span class="text-xs font-bold text-slate-500">Avg: <span class="text-indigo-600 text-sm">${exp.toFixed(
+                                2
+                            )}</span></span>
+                        </div>
+                        <div class="flex gap-3 text-xs font-medium">
+                            <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">Game: ${Math.round(
+                                gameProb
+                            )}%</span>
+                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">SmallSlam: ${Math.round(
+                                slamProb
+                            )}%</span>
+                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">GrandSlam: ${Math.round(
+                                grandSlamProb
+                            )}%</span>
+                        </div>
                     </div>
                     ${createDistributionTable(dist)}
                 </div>`;
