@@ -40,6 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 navBtn.classList.replace("tab-active", "tab-inactive");
                 navBtn.classList.remove("text-indigo-600", "border-indigo-600");
             }
+
+            // Mobile Nav Reset
+            const mobNavBtn = document.getElementById("mob-nav-" + t);
+            if (mobNavBtn) {
+                mobNavBtn.classList.remove("text-indigo-600");
+                mobNavBtn.classList.add("text-slate-600");
+            }
         });
 
         // Show View
@@ -50,6 +57,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeNav) {
             activeNav.classList.replace("tab-inactive", "tab-active");
             activeNav.classList.add("text-indigo-600", "border-indigo-600");
+        }
+
+        // Update Mobile Nav
+        const activeMobNav = document.getElementById("mob-nav-" + tabName);
+        if (activeMobNav) {
+            activeMobNav.classList.remove("text-slate-600");
+            activeMobNav.classList.add("text-indigo-600");
         }
 
         // Mobile Keyboard Logic
@@ -384,6 +398,16 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDDUI();
     }
 
+    function convertPBNHand(handCards) {
+        return SUITS.map((suit) => {
+                const cardsInSuit = handCards
+                    .filter((c) => c.startsWith(suit.id))
+                    .map((c) => c.substr(1))
+                    .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                    .join("");
+                return cardsInSuit || "";
+            }).join(".");
+    }
     function generatePBN(stateObj, isSingleDummy = false) {
         const handsOrder = ["north", "east", "south", "west"];
         const parts = [];
@@ -393,14 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             const handCards = stateObj[hand];
-            const suitsStr = SUITS.map((suit) => {
-                const cardsInSuit = handCards
-                    .filter((c) => c.startsWith(suit.id))
-                    .map((c) => c.substr(1))
-                    .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
-                    .join("");
-                return cardsInSuit || "";
-            }).join(".");
+            const suitsStr = convertPBNHand(handCards);
             parts.push(suitsStr);
         });
         return `N:${parts.join(" ")}`;
@@ -511,6 +528,14 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`${leader}の手札は13枚である必要があります (現在: ${leaderCards.length}枚)`);
             return;
         }
+        const suitsStr = SUITS.map((suit) => {
+            const cardsInSuit = leaderCards
+                .filter((c) => c.startsWith(suit.id))
+                .map((c) => c.substr(1))
+                .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                .join("");
+            return cardsInSuit || "";
+        }).join(".");
 
         const contractText = document.getElementById("lead-contract").value.trim().toUpperCase();
         if (!contractText) {
@@ -747,12 +772,21 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("nav-lead").onclick = () => switchTab("lead");
 
         // Mobile Nav
+        const mobileNav = document.getElementById("mobile-nav");
         document.getElementById("mobile-menu-btn").onclick = () => {
             document.getElementById("mobile-nav").classList.toggle("hidden");
         };
         document.getElementById("mob-nav-double").onclick = () => switchTab("double");
         document.getElementById("mob-nav-single").onclick = () => switchTab("single");
         document.getElementById("mob-nav-lead").onclick = () => switchTab("lead");
+
+        const onMobileTabClick = (tab) => {
+            switchTab(tab);
+            mobileNav.classList.add("hidden");
+        };
+        document.getElementById("mob-nav-double").onclick = () => onMobileTabClick("double");
+        document.getElementById("mob-nav-single").onclick = () => onMobileTabClick("single");
+        document.getElementById("mob-nav-lead").onclick = () => onMobileTabClick("lead");
 
         // Mobile Hand Focus
         HANDS.forEach((h) => {
