@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y build-essential wget unzip tcl-dev
 
 # Dealerのソースコードをダウンロード、ビルド、インストール
 WORKDIR /tmp
-RUN wget --no-check-certificate https://bridge.thomasoandrews.com/deal/deal319.zip && \
+RUN wget --no-check-certificate https://bridge.thomasoandrews.com/bridge/deal/deal319.zip && \
     unzip deal319.zip && \
     cd deal319 && \
     sed -i 's/-fast//g' Make.mac-osx && \

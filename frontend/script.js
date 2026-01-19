@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Constants ---
-    const API_BASE = "https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api";
+    const API_BASE = "https://bridge-analyzer-backend-338315263430.asia-northeast1.run.app/api";
     const SUITS = [
         { id: "s", label: "♠", color: "suit-s", name: "Spades" },
         { id: "h", label: "♥", color: "suit-h", name: "Hearts" },
@@ -400,13 +400,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function convertPBNHand(handCards) {
         return SUITS.map((suit) => {
-                const cardsInSuit = handCards
-                    .filter((c) => c.startsWith(suit.id))
-                    .map((c) => c.substr(1))
-                    .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
-                    .join("");
-                return cardsInSuit || "";
-            }).join(".");
+            const cardsInSuit = handCards
+                .filter((c) => c.startsWith(suit.id))
+                .map((c) => c.substr(1))
+                .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
+                .join("");
+            return cardsInSuit || "";
+        }).join(".");
     }
     function generatePBN(stateObj, isSingleDummy = false) {
         const handsOrder = ["north", "east", "south", "west"];
@@ -504,12 +504,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const finalPBN = `N:${pbnParts.north} ${pbnParts.east} ${pbnParts.south} ${pbnParts.west}`;
             requestData.pbn = finalPBN;
 
+            console.log(requestData);
+
             const res = await fetch(`${API_BASE}/analyse_single_dummy`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestData),
             });
             const data = await res.json();
+            console.log(data);
             if (data.error) throw new Error(data.error);
             renderSDResults(data.trick_distribution, data.simulations_run);
         } catch (e) {

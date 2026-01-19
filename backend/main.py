@@ -276,18 +276,18 @@ def analyse_single_dummy(request: SingleDummyRequest):
             ]
         }
 
-        def splitRange(range, min=0, max=40):
-            if range.find("-") == -1:
-                return int(range), int(range)
+        def splitRange(_range, min_range=0, max_range=40):
+            if _range.find("-") == -1:
+                return int(_range), int(_range)
             else:
-                [part1, part2, *_] = range.split("-")
+                [part1, part2, *_] = _range.split("-")
                 print(f"{part1},{part2}")
                 if part1 == "":
-                    part1 = min
+                    part1 = min_range
                 if part2 == "":
-                    part2 = max
+                    part2 = max_range
 
-                return part1, part2
+                return int(part1), int(part2)
 
         player_conditions = []
         for p in request.shapes:
@@ -317,6 +317,7 @@ def analyse_single_dummy(request: SingleDummyRequest):
                 if hcp_max < 37:
                     player_conditions.append(f"[hcp {p}] <= {hcp_max}")
 
+            print(request.shapePreset[p])
             if request.shapePreset[p] == "balanced":
                 player_conditions.append(
                     f"([{p} pattern] == [list 4 3 3 3] || [{p} pattern] == [list 4 4 3 2] || [{p} pattern] == [list 5 3 3 2])"
@@ -387,6 +388,7 @@ reject unless {{{boolean_expression}}}
 accept
 {"}"}
         """
+        print(tcl_text)
 
         with dds_lock:
             deal_pbn = runDeal(tcl_text, request.simulations)
