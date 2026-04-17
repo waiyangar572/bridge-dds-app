@@ -7,8 +7,13 @@
         <meta
             name="description"
             content="Contract bridge analysis tools: Double Dummy Solver, Single Dummy Solver, and Opening Lead Analyzer." />
-        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
-        <link rel="canonical" href="https://bridge-analyzer.web.app/en/double-dummy" data-seo="canonical" />
+        <meta
+            name="robots"
+            content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+        <link
+            rel="canonical"
+            href="https://bridge-analyzer.web.app/en/double-dummy"
+            data-seo="canonical" />
         <meta property="og:title" content="Bridge Solver | Double Dummy Solver" />
         <meta
             property="og:description"
@@ -34,27 +39,190 @@
             src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171"
             crossorigin="anonymous"></script>
         <style>
-            body {
-                font-family: "Inter", sans-serif;
-                background-color: #f8fafc;
+            :root {
+                --notion-blue: #0075de;
+                --notion-blue-active: #005bab;
+                --focus-blue: #097fe8;
+                --text-primary: rgba(0, 0, 0, 0.95);
+                --text-secondary: #615d59;
+                --text-muted: #a39e98;
+                --bg-white: #ffffff;
+                --bg-warm: #f6f5f4;
+                --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+                --card-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+                    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+                    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
             }
 
-            /* タブのスタイル */
+            body {
+                font-family:
+                    Inter,
+                    -apple-system,
+                    system-ui,
+                    "Segoe UI",
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                background-color: var(--bg-white) !important;
+                color: var(--text-primary) !important;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--notion-blue);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            .site-header {
+                background: var(--bg-white) !important;
+                border-bottom: var(--border-whisper);
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .site-header .site-brand {
+                color: var(--text-primary);
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.25px;
+            }
+
+            .site-header .site-logo {
+                border: var(--border-whisper);
+                background: var(--bg-warm);
+                color: var(--text-primary);
+                border-radius: 8px;
+            }
+
+            .site-header .site-logo i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .site-header .site-nav-btn {
+                color: var(--text-primary);
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.33;
+                border-bottom-width: 2px;
+            }
+
+            .site-header .tab-active {
+                color: var(--notion-blue) !important;
+                border-bottom-color: var(--notion-blue) !important;
+            }
+
+            .site-header .tab-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header .lang-switch {
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                border-radius: 9999px;
+                padding: 2px;
+            }
+
+            .site-header .lang-switch-btn {
+                border-radius: 9999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            .site-header .lang-switch-btn:hover {
+                color: var(--text-primary);
+            }
+
+            .site-header .lang-switch-btn.bg-indigo-600 {
+                background: var(--notion-blue) !important;
+                color: #fff !important;
+            }
+
+            .site-header .lang-switch-btn.text-slate-600 {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header #mobile-nav .text-indigo-600 {
+                color: var(--notion-blue) !important;
+                background: #f2f9ff;
+            }
+
+            .site-header #mobile-menu-btn {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                color: var(--text-secondary);
+            }
+
+            .site-header #mobile-menu-btn:hover {
+                color: var(--text-primary);
+                background: var(--bg-warm);
+            }
+
+            .sd-mode-switch-active {
+                background: #fff;
+                color: var(--notion-blue) !important;
+                box-shadow: var(--card-shadow);
+            }
+
+            .sd-mode-switch-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .sd-mode-switch-inactive:hover {
+                color: var(--text-primary) !important;
+            }
+
+            #total-count {
+                color: var(--notion-blue) !important;
+            }
+
             .tab-active {
-                border-bottom-color: #4f46e5;
-                color: #4f46e5;
-                background-color: #eef2ff;
+                border-bottom-color: var(--notion-blue);
+                color: var(--notion-blue);
+                background-color: #f2f9ff;
+                font-weight: 600;
             }
             .tab-inactive {
                 border-bottom-color: transparent;
-                color: #64748b;
+                color: var(--text-secondary);
+                font-weight: 500;
             }
             .tab-inactive:hover {
-                color: #334155;
-                background-color: #f1f5f9;
+                color: var(--text-primary);
+                background-color: var(--bg-warm);
             }
 
-            /* PCカードボタン */
+            #btn-run-double,
+            #btn-run-single,
+            #btn-run-lead {
+                background-color: var(--notion-blue) !important;
+                color: #fff !important;
+                border: 1px solid transparent;
+                border-radius: 4px !important;
+                box-shadow: var(--card-shadow) !important;
+                font-size: 15px;
+                font-weight: 600;
+                transition:
+                    transform 0.1s ease,
+                    background-color 0.15s ease;
+            }
+            #btn-run-double:hover,
+            #btn-run-single:hover,
+            #btn-run-lead:hover {
+                background-color: var(--notion-blue-active) !important;
+            }
+            #btn-run-double:active,
+            #btn-run-single:active,
+            #btn-run-lead:active {
+                transform: scale(0.96);
+            }
+
             .pc-rank-btn {
                 font-size: 0.75rem;
                 width: 1.6rem;
@@ -65,34 +233,60 @@
                 justify-content: center;
                 cursor: pointer;
                 transition: all 0.1s;
-                border: 1px solid #e2e8f0;
-                background: white;
+                border: var(--border-whisper);
+                background: var(--bg-white);
                 user-select: none;
             }
             .pc-rank-btn:hover {
-                background-color: #f8fafc;
-                border-color: #cbd5e1;
+                background-color: var(--bg-warm);
             }
             .pc-rank-btn.selected {
-                background-color: #4f46e5;
-                color: white;
-                border-color: #4f46e5;
-                font-weight: bold;
+                background-color: var(--notion-blue);
+                color: #fff;
+                border-color: var(--notion-blue);
+                font-weight: 600;
             }
             .pc-rank-btn.taken {
-                background-color: #f1f5f9;
-                color: #cbd5e1;
+                background-color: var(--bg-warm);
+                color: var(--text-muted);
                 cursor: not-allowed;
                 border-color: transparent;
             }
 
-            /* モバイル用フォーカス */
-            .hand-card-mobile-active {
-                border-color: #4f46e5 !important;
-                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            .bg-white,
+            section,
+            .hand-card {
+                border: var(--border-whisper) !important;
+                box-shadow: var(--card-shadow) !important;
             }
 
-            /* アニメーション */
+            input,
+            textarea,
+            select {
+                border: 1px solid #dddddd !important;
+                border-radius: 4px !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted) !important;
+            }
+
+            .count-badge,
+            .sd-count-badge,
+            .lead-count-badge {
+                border-radius: 9999px !important;
+                background: #f2f9ff !important;
+                color: var(--focus-blue) !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.125px;
+            }
+
+            .hand-card-mobile-active {
+                border-color: var(--focus-blue) !important;
+                box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.22);
+            }
+
             .fade-in {
                 animation: fadeIn 0.3s ease-in-out;
             }
@@ -107,62 +301,75 @@
                 }
             }
 
-            /* スート色 */
             .suit-s {
-                color: #1e293b;
+                color: #31302e;
             }
             .suit-h {
-                color: #ef4444;
+                color: #dd5b00;
             }
             .suit-d {
-                color: #f97316;
+                color: #dd5b00;
             }
             .suit-c {
-                color: #16a34a;
+                color: #1aae39;
             }
 
-            /* 基本テーブルスタイル */
             .result-table th {
-                @apply px-4 py-2 text-xs font-bold text-slate-500 uppercase bg-slate-50 border-b border-slate-200;
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.125px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
             }
             .result-table td {
-                @apply px-4 py-3 text-sm font-medium text-center border-b border-slate-100;
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                border-bottom: var(--border-whisper);
+                color: var(--text-primary);
             }
             .result-table tr:last-child td {
                 border-bottom: none;
             }
 
-            /* 分布表示用テーブル (New) */
             .dist-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 0.75rem;
+                font-size: 12px;
                 table-layout: fixed;
             }
             .dist-table th {
-                background-color: #f8fafc;
-                color: #64748b;
+                background-color: var(--bg-warm);
+                color: var(--text-secondary);
                 padding: 4px;
-                border: 1px solid #e2e8f0;
-                font-weight: normal;
+                border: var(--border-whisper);
+                font-weight: 500;
             }
             .dist-table td {
                 text-align: center;
                 padding: 4px;
-                border: 1px solid #e2e8f0;
-                color: #cbd5e1;
+                border: var(--border-whisper);
+                color: var(--text-muted);
             }
             .dist-table td.has-val {
-                color: #1e293b;
-                font-weight: bold;
-                background-color: #f0f9ff;
+                color: var(--text-primary);
+                font-weight: 600;
+                background-color: #f2f9ff;
             }
             .dist-table td.high-val {
-                background-color: #e0f2fe;
-                color: #0369a1;
+                background-color: #f2f9ff;
+                color: var(--focus-blue);
             }
 
-            /* モバイルキーボード */
+            *:focus-visible {
+                outline: 2px solid var(--focus-blue);
+                outline-offset: 1px;
+            }
+
             .no-scrollbar::-webkit-scrollbar {
                 display: none;
             }
@@ -174,31 +381,49 @@
     </head>
     <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
         <noscript>
-            <div style="max-width: 960px; margin: 16px auto; padding: 12px; border: 1px solid #cbd5e1; background: #f8fafc; font-family: Arial, sans-serif;">
+            <div
+                style="
+                    max-width: 960px;
+                    margin: 16px auto;
+                    padding: 12px;
+                    border: 1px solid #cbd5e1;
+                    background: #f8fafc;
+                    font-family: Arial, sans-serif;
+                ">
                 <strong>Bridge Solver</strong> requires JavaScript for interactive analysis.
-                <p style="margin-top: 8px;">Direct links:</p>
+                <p style="margin-top: 8px">Direct links:</p>
                 <ul>
-                    <li><a href="/en/double-dummy">Double Dummy Solver</a> / <a href="/ja/double-dummy">ダブルダミー分析</a></li>
-                    <li><a href="/en/single-dummy">Single Dummy Solver</a> / <a href="/ja/single-dummy">シングルダミー分析</a></li>
-                    <li><a href="/en/opening-lead">Opening Lead Analyzer</a> / <a href="/ja/opening-lead">オープニングリード分析</a></li>
-                    <li><a href="/en/privacy">Privacy Policy</a> / <a href="/ja/privacy">プライバシーポリシー</a></li>
+                    <li>
+                        <a href="/en/double-dummy">Double Dummy Solver</a> /
+                        <a href="/ja/double-dummy">ダブルダミー分析</a>
+                    </li>
+                    <li>
+                        <a href="/en/single-dummy">Single Dummy Solver</a> /
+                        <a href="/ja/single-dummy">シングルダミー分析</a>
+                    </li>
+                    <li>
+                        <a href="/en/opening-lead">Opening Lead Analyzer</a> /
+                        <a href="/ja/opening-lead">オープニングリード分析</a>
+                    </li>
+                    <li>
+                        <a href="/en/privacy">Privacy Policy</a> /
+                        <a href="/ja/privacy">プライバシーポリシー</a>
+                    </li>
                     <li><a href="/en/about">About Us</a> / <a href="/ja/about">運営情報</a></li>
-                    <li><a href="/en/contact">Contact</a> / <a href="/ja/contact">お問い合わせ</a></li>
+                    <li>
+                        <a href="/en/contact">Contact</a> / <a href="/ja/contact">お問い合わせ</a>
+                    </li>
                 </ul>
             </div>
         </noscript>
-        <header class="bg-white shadow-sm sticky top-0 z-50">
+        <header class="site-header bg-white z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <div class="flex items-center gap-2">
-                        <div class="bg-indigo-600 text-white p-1.5 rounded-lg">
+                        <div class="site-logo p-1.5">
                             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
                         </div>
-                        <span
-                            id="site-title"
-                            class="font-bold text-xl tracking-tight text-slate-900"
-                            >Bridge Solver</span
-                        >
+                        <span id="site-title" class="site-brand">Bridge Solver</span>
                     </div>
 
                     <div class="hidden md:flex items-center gap-6">
@@ -207,54 +432,46 @@
                                 type="button"
                                 id="nav-double"
                                 data-route="/double-dummy"
-                                class="tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                class="site-nav-btn tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 ダブルダミー分析
                             </button>
                             <button
                                 type="button"
                                 id="nav-single"
                                 data-route="/single-dummy"
-                                class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 シングルダミー分析
                             </button>
                             <button
                                 type="button"
                                 id="nav-lead"
                                 data-route="/opening-lead"
-                                class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 オープニングリード分析
                             </button>
                         </nav>
-                        <div
-                            class="flex items-center rounded-md border border-slate-200 bg-white p-0.5">
-                            <button
-                                type="button"
-                                id="lang-en"
-                                class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1">
                                 EN
                             </button>
-                            <button
-                                type="button"
-                                id="lang-ja"
-                                class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                            <button type="button" id="lang-ja" class="lang-switch-btn px-2.5 py-1">
                                 JP
                             </button>
                         </div>
                     </div>
 
                     <div class="md:hidden flex items-center gap-2">
-                        <div
-                            class="flex items-center rounded-md border border-slate-200 bg-white p-0.5">
+                        <div class="lang-switch flex items-center">
                             <button
                                 type="button"
                                 id="lang-en-mobile"
-                                class="px-2 py-1 text-[10px] font-bold rounded text-slate-600">
+                                class="lang-switch-btn px-2 py-1 text-[10px]">
                                 EN
                             </button>
                             <button
                                 type="button"
                                 id="lang-ja-mobile"
-                                class="px-2 py-1 text-[10px] font-bold rounded text-slate-600">
+                                class="lang-switch-btn px-2 py-1 text-[10px]">
                                 JP
                             </button>
                         </div>
@@ -295,15 +512,12 @@
             <div id="view-double" class="flex-grow flex flex-col fade-in">
                 <div class="flex justify-between items-center mb-6 px-1">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <span class="bg-indigo-100 text-indigo-700 p-1 rounded"
-                            ><i data-lucide="grid" class="w-5 h-5"></i
-                        ></span>
                         Double Dummy
                     </h2>
                     <div
                         class="text-xs font-mono text-slate-500 bg-white px-3 py-1.5 rounded border shadow-sm flex items-center gap-2">
                         <i data-lucide="layers" class="w-3 h-3"></i>
-                        <span id="total-count" class="font-bold text-indigo-600">0</span> / 52
+                        <span id="total-count" class="font-bold">0</span> / 52
                         cards
                     </div>
                 </div>
@@ -460,18 +674,6 @@
 
             <div id="view-single" class="hidden fade-in">
                 <div
-                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="settings" class="text-emerald-500"></i> Single Dummy Solver
-                    </h2>
-                    <div
-                        class="text-xs text-slate-500 bg-emerald-50 px-3 py-1 rounded border border-emerald-100">
-                        <i data-lucide="info" class="inline w-3 h-3 mr-1"></i>
-                        条件を指定してシミュレーションを行います
-                    </div>
-                </div>
-
-                <div
                     class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
                     <div
                         class="w-full md:col-start-2 md:row-start-1 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mb-6">
@@ -481,13 +683,13 @@
                             </h4>
                             <div class="flex bg-slate-100 rounded p-0.5">
                                 <button
-                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded shadow-sm bg-white text-indigo-600"
+                                    class="sd-mode-switch sd-mode-switch-active px-2 py-0.5 text-[10px] font-bold rounded"
                                     data-hand="north"
                                     data-mode="hand">
                                     Hand
                                 </button>
                                 <button
-                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded text-slate-500 hover:text-slate-700"
+                                    class="sd-mode-switch sd-mode-switch-inactive px-2 py-0.5 text-[10px] font-bold rounded"
                                     data-hand="north"
                                     data-mode="feature">
                                     Feature
@@ -757,13 +959,13 @@
                             </h4>
                             <div class="flex bg-slate-100 rounded p-0.5">
                                 <button
-                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded shadow-sm bg-white text-indigo-600"
+                                    class="sd-mode-switch sd-mode-switch-active px-2 py-0.5 text-[10px] font-bold rounded"
                                     data-hand="south"
                                     data-mode="hand">
                                     Hand
                                 </button>
                                 <button
-                                    class="sd-mode-switch px-2 py-0.5 text-[10px] font-bold rounded text-slate-500 hover:text-slate-700"
+                                    class="sd-mode-switch sd-mode-switch-inactive px-2 py-0.5 text-[10px] font-bold rounded"
                                     data-hand="south"
                                     data-mode="feature">
                                     Feature
@@ -956,7 +1158,7 @@
 
             <div id="view-lead" class="hidden fade-in">
                 <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <i data-lucide="search" class="text-orange-500"></i> Opening Lead Analyzer
+                    Opening Lead Analyzer
                 </h2>
 
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">

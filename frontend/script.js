@@ -591,11 +591,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const btns = document.querySelectorAll(`.sd-mode-switch[data-hand="${hand}"]`);
         btns.forEach((btn) => {
             if (btn.dataset.mode === mode) {
-                btn.classList.add("bg-white", "text-indigo-600", "shadow-sm");
-                btn.classList.remove("text-slate-500", "hover:text-slate-700");
+                btn.classList.add("sd-mode-switch-active");
+                btn.classList.remove("sd-mode-switch-inactive");
             } else {
-                btn.classList.remove("bg-white", "text-indigo-600", "shadow-sm");
-                btn.classList.add("text-slate-500", "hover:text-slate-700");
+                btn.classList.remove("sd-mode-switch-active");
+                btn.classList.add("sd-mode-switch-inactive");
             }
         });
     }
