@@ -147,7 +147,10 @@
     "balanced": "Balanced",
     "semiBalanced": "Semi-balanced",
     "unbalanced": "Unbalanced",
-    "balancedWithoutMajor": "Balanced without a 4-card major"
+    "balancedWithoutMajor": "Balanced without a 4-card major",
+    "fiveCardMajor": "5-card major",
+    "yes": "Yes",
+    "no": "No"
   },
   "glossaryTerms": {
     "double1": "Double Dummy",

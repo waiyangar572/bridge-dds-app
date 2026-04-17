@@ -145,7 +145,10 @@
     "balanced": "バランスハンド",
     "semiBalanced": "セミバランスハンド",
     "unbalanced": "アンバランスハンド",
-    "balancedWithoutMajor": "メジャー4枚なしバランス"
+    "balancedWithoutMajor": "メジャー4枚なしバランス",
+    "fiveCardMajor": "5枚メジャー",
+    "yes": "あり",
+    "no": "なし"
   },
   "glossaryTerms": {
     "double1": "Double Dummy",

@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initSingleDummyUI();
         initLeadSolverUI();
     }
+    initShapePresetMajorToggles();
     setupEventListeners();
     bootstrapApp();
 
@@ -219,9 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll('option[value="balanced"]').forEach((el) => (el.textContent = tr("select.balanced", "Balanced")));
         document.querySelectorAll('option[value="semiBalanced"]').forEach((el) => (el.textContent = tr("select.semiBalanced", "Semi-balanced")));
         document.querySelectorAll('option[value="unbalanced"]').forEach((el) => (el.textContent = tr("select.unbalanced", "Unbalanced")));
-        document
-            .querySelectorAll('option[value="balanced-without-major"]')
-            .forEach((el) => (el.textContent = tr("select.balancedWithoutMajor", "Balanced without a 4-card major")));
+        document.querySelectorAll(".shape-major-label").forEach((el) => (el.textContent = tr("select.fiveCardMajor", "5-card major")));
+        document.querySelectorAll('.shape-major-btn[data-allow="yes"]').forEach((el) => (el.textContent = tr("select.yes", "Yes")));
+        document.querySelectorAll('.shape-major-btn[data-allow="no"]').forEach((el) => (el.textContent = tr("select.no", "No")));
         setNodeText("#glossary-double-term-1", tr("glossaryTerms.double1", "Double Dummy"));
         setNodeText("#glossary-single-term-1", tr("glossaryTerms.single1", "Balanced Hand"));
         setNodeText("#glossary-single-term-2", tr("glossaryTerms.single2", "Semi-balanced Hand"));
@@ -553,6 +554,82 @@ document.addEventListener("DOMContentLoaded", () => {
                 await setLanguage(popLang, { persist: false, refreshUI: true });
             }
             navigateTo(popRoutePath, false);
+        });
+    }
+
+    function getShapePresetValue(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return "any";
+        if (select.value !== "balanced") return select.value;
+        return select.dataset.allowFiveMajor === "no" ? "balanced-without-major" : "balanced";
+    }
+
+    function updateShapeMajorToggleUI(select) {
+        const toggle = document.querySelector(`.shape-major-toggle[data-for="${select.id}"]`);
+        if (!toggle) return;
+
+        const showToggle = select.value === "balanced";
+        toggle.classList.toggle("hidden", !showToggle);
+        if (!showToggle) return;
+
+        const allowValue = select.dataset.allowFiveMajor === "no" ? "no" : "yes";
+        const yesBtn = toggle.querySelector('.shape-major-btn[data-allow="yes"]');
+        const noBtn = toggle.querySelector('.shape-major-btn[data-allow="no"]');
+
+        if (yesBtn) {
+            yesBtn.classList.toggle("shape-major-btn-active", allowValue === "yes");
+            yesBtn.classList.toggle("shape-major-btn-inactive", allowValue !== "yes");
+        }
+        if (noBtn) {
+            noBtn.classList.toggle("shape-major-btn-active", allowValue === "no");
+            noBtn.classList.toggle("shape-major-btn-inactive", allowValue !== "no");
+        }
+    }
+
+    function initShapePresetMajorToggles() {
+        const presetSelects = document.querySelectorAll('select[id^="sd-"][id$="-preset"], select[id^="lead-"][id$="-preset"]');
+
+        presetSelects.forEach((select) => {
+            if (!select.dataset.allowFiveMajor) {
+                select.dataset.allowFiveMajor = "yes";
+            }
+
+            const legacyOption = select.querySelector('option[value="balanced-without-major"]');
+            if (legacyOption) legacyOption.remove();
+
+            let toggle = document.querySelector(`.shape-major-toggle[data-for="${select.id}"]`);
+            if (!toggle) {
+                toggle = document.createElement("div");
+                toggle.className = "shape-major-toggle hidden mt-2";
+                toggle.dataset.for = select.id;
+                toggle.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5">
+                        <span class="shape-major-label text-[11px] font-semibold text-slate-600">5-card major</span>
+                        <div class="flex items-center gap-1">
+                            <button type="button" class="shape-major-btn px-2 py-1 text-[11px] font-semibold rounded border" data-allow="yes">Yes</button>
+                            <button type="button" class="shape-major-btn px-2 py-1 text-[11px] font-semibold rounded border" data-allow="no">No</button>
+                        </div>
+                    </div>
+                `;
+                select.insertAdjacentElement("afterend", toggle);
+            }
+
+            if (!select.dataset.majorToggleBound) {
+                select.addEventListener("change", () => updateShapeMajorToggleUI(select));
+                select.dataset.majorToggleBound = "true";
+            }
+
+            if (!toggle.dataset.clickBound) {
+                toggle.addEventListener("click", (event) => {
+                    const btn = event.target.closest(".shape-major-btn");
+                    if (!btn) return;
+                    select.dataset.allowFiveMajor = btn.dataset.allow === "no" ? "no" : "yes";
+                    updateShapeMajorToggleUI(select);
+                });
+                toggle.dataset.clickBound = "true";
+            }
+
+            updateShapeMajorToggleUI(select);
         });
     }
 
@@ -991,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cVal = document.getElementById(`sd-${hand}-c`).value || "0-13";
                     requestData.shapes[hand] = `${sVal},${hVal},${dVal},${cVal}`;
 
-                    const preset = document.getElementById(`sd-${hand}-preset`).value;
+                    const preset = getShapePresetValue(`sd-${hand}-preset`);
                     requestData.shapePreset[hand] = preset;
                 }
             });
@@ -1072,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cVal = document.getElementById(`lead-${h}-c`).value || "0-13";
                 requestData.shapes[h] = `${sVal},${hVal},${dVal},${cVal}`;
 
-                const preset = document.getElementById(`lead-${h}-preset`).value;
+                const preset = getShapePresetValue(`lead-${h}-preset`);
                 requestData.shapePreset[h] = preset === "any" ? "" : preset;
             }
         });
