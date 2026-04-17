@@ -190,6 +190,94 @@
                 border-color: rgba(0, 0, 0, 0.12);
             }
 
+            .result-panel-head {
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+
+            .result-panel-title {
+                color: var(--text-primary);
+                font-weight: 700;
+            }
+
+            .result-panel-count {
+                color: var(--focus-blue);
+                background: #f2f9ff;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
+
+            .result-sort-select {
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 4px;
+            }
+
+            .result-analysis-card {
+                background: #fff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+                padding: 12px;
+            }
+
+            .result-meta-label {
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.125px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .result-player-label {
+                color: var(--text-secondary);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-avg-value {
+                color: var(--notion-blue);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-value-primary {
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .result-value-accent {
+                color: #dd5b00;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-pill {
+                border-radius: 9999px;
+                padding: 2px 8px;
+                border: var(--border-whisper);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .result-pill-game {
+                background: rgba(26, 174, 57, 0.12);
+                color: #1aae39;
+            }
+
+            .result-pill-slam {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            .suit-nt {
+                color: var(--text-primary);
+            }
+
             #total-count {
                 color: var(--notion-blue) !important;
             }
@@ -314,16 +402,16 @@
             }
 
             .suit-s {
-                color: #31302e;
+                color: #2a6f97;
             }
             .suit-h {
-                color: #dd5b00;
+                color: #c94040;
             }
             .suit-d {
-                color: #dd5b00;
+                color: #f97316;
             }
             .suit-c {
-                color: #1aae39;
+                color: #16a34a;
             }
 
             .result-table th {
@@ -633,9 +721,9 @@
                             <thead>
                                 <tr>
                                     <th class="text-left w-20">Player</th>
-                                    <th class="text-indigo-600">NT</th>
-                                    <th class="text-slate-900">♠</th>
-                                    <th class="text-red-500">♥</th>
+                                    <th class="text-slate-900">NT</th>
+                                    <th class="suit-s">♠</th>
+                                    <th class="text-rose-700">♥</th>
                                     <th class="text-orange-500">♦</th>
                                     <th class="text-green-600">♣</th>
                                 </tr>
@@ -744,11 +832,10 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="sd-north-s"
-                                            value="2-5"
                                             class="w-full p-1 text-center border rounded text-xs mt-1"
                                             placeholder="0-13" />
                                     </div>
@@ -829,7 +916,7 @@
                             >
                             <div class="grid grid-cols-4 gap-2">
                                 <div class="text-center">
-                                    <span class="text-xs font-bold text-black">♠</span
+                                    <span class="text-xs font-bold suit-s">♠</span
                                     ><input
                                         type="text"
                                         id="sd-west-s"
@@ -912,7 +999,7 @@
                             >
                             <div class="grid grid-cols-4 gap-2">
                                 <div class="text-center">
-                                    <span class="text-xs font-bold text-black">♠</span
+                                    <span class="text-xs font-bold suit-s">♠</span
                                     ><input
                                         type="text"
                                         id="sd-east-s"
@@ -1020,7 +1107,7 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="sd-south-s"
@@ -1112,14 +1199,11 @@
                 <div
                     id="result-single"
                     class="hidden mt-8 max-w-4xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
-                    <div
-                        class="bg-emerald-50 px-4 py-3 border-b border-emerald-100 flex justify-between items-center">
-                        <h3 class="font-bold text-emerald-900 flex items-center gap-2">
+                    <div class="result-panel-head px-4 py-3 flex justify-between items-center">
+                        <h3 class="result-panel-title flex items-center gap-2">
                             <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 期待トリック数 (N/S)
                         </h3>
-                        <span
-                            id="sd-sim-count"
-                            class="text-xs text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-200"
+                        <span id="sd-sim-count" class="result-panel-count text-xs"
                             >Samples: -</span
                         >
                     </div>
@@ -1289,7 +1373,7 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="lead-north-s"
@@ -1382,7 +1466,7 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="lead-west-s"
@@ -1475,7 +1559,7 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="lead-east-s"
@@ -1568,7 +1652,7 @@
                                 >
                                 <div class="grid grid-cols-4 gap-2">
                                     <div class="text-center">
-                                        <span class="text-xs font-bold text-black">♠</span
+                                        <span class="text-xs font-bold suit-s">♠</span
                                         ><input
                                             type="text"
                                             id="lead-south-s"
@@ -1632,22 +1716,24 @@
                 <div
                     id="result-lead"
                     class="hidden mt-8 w-full bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-                    <div
-                        class="bg-orange-50 px-4 py-3 border-b border-orange-100 flex justify-between items-center">
-                        <h3 class="font-bold text-orange-900 flex items-center gap-2">
+                    <div class="result-panel-head px-4 py-3 flex justify-between items-center">
+                        <h3 class="result-panel-title flex items-center gap-2">
                             <i data-lucide="bar-chart" class="w-4 h-4"></i> 獲得トリック確率分布
                         </h3>
                         <div class="flex items-center gap-2 text-[10px] md:text-xs">
-                            <label id="lead-sort-label" for="lead-sort" class="text-slate-600 font-semibold"
+                            <label
+                                id="lead-sort-label"
+                                for="lead-sort"
+                                class="text-slate-600 font-semibold"
                                 >Sort</label
                             >
                             <select
                                 id="lead-sort"
-                                class="px-2 py-1 border border-orange-200 rounded bg-white text-slate-700 text-[11px] md:text-xs">
+                                class="result-sort-select px-2 py-1 text-[11px] md:text-xs">
                                 <option id="lead-sort-tricks" value="tricks">Exp Tricks</option>
                                 <option id="lead-sort-setprob" value="setprob">Set Prob</option>
                             </select>
-                            <span class="text-orange-600 font-bold"
+                            <span class="result-panel-count font-bold"
                                 >Simulations: <span id="lead-sim-count">-</span></span
                             >
                         </div>

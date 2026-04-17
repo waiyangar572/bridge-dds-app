@@ -1167,7 +1167,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="font-bold text-slate-700 bg-slate-50">${player}</td>
-                <td class="font-bold text-indigo-700 bg-indigo-50">${tricks["No-Trump"][player]}</td>
+                <td class="font-bold text-slate-900 bg-slate-50">${tricks["No-Trump"][player]}</td>
                 <td>${tricks["Spades"][player]}</td>
                 <td>${tricks["Hearts"][player]}</td>
                 <td>${tricks["Diamonds"][player]}</td>
@@ -1192,14 +1192,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const distData = distribution[suit];
             const card = document.createElement("div");
-            card.className = "bg-white border border-slate-200 rounded-lg p-4 mb-4 shadow-sm";
+            card.className = "result-analysis-card mb-4";
 
             const suitInfo = SUITS.find((s) => s.name === suit) || {
-                color: "text-indigo-600",
+                color: "suit-nt",
                 label: "NT",
             };
             const suitLabel = suit === "No-Trump" ? "NT" : suitInfo.label;
-            const suitColor = suit === "No-Trump" ? "text-indigo-700" : suitInfo.color;
+            const suitColor = suit === "No-Trump" ? "suit-nt" : suitInfo.color;
 
             let html = `<h5 class="font-bold text-lg mb-3 flex items-center gap-2 ${suitColor}"><span class="text-xl">${suitLabel}</span> ${suit}</h5>`;
 
@@ -1220,21 +1220,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 html += `<div class="mb-4 last:mb-0">
                     <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
                         <div class="flex items-baseline gap-2">
-                            <span class="font-bold text-sm text-slate-700 w-12">${playerLabel}</span>
-                            <span class="text-xs font-bold text-slate-500">${tr("ui.avg", "Avg")}: <span class="text-indigo-600 text-sm">${exp.toFixed(
+                            <span class="result-player-label w-12">${playerLabel}</span>
+                            <span class="result-meta-label">${tr("ui.avg", "Avg")}: <span class="result-avg-value">${exp.toFixed(
                                 2,
                             )}</span></span>
                         </div>
                         <div class="flex gap-3 text-xs font-medium">
-                            <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">${tr(
+                            <span class="result-pill result-pill-game">${tr(
                                 "ui.game",
                                 "Game",
                             )}: ${Math.round(gameProb)}%</span>
-                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
+                            <span class="result-pill result-pill-slam">${tr(
                                 "ui.smallSlam",
                                 "Small Slam",
                             )}: ${Math.round(slamProb)}%</span>
-                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
+                            <span class="result-pill result-pill-slam">${tr(
                                 "ui.grandSlam",
                                 "Grand Slam",
                             )}: ${Math.round(grandSlamProb)}%</span>
@@ -1278,7 +1278,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const row = document.createElement("div");
-            row.className = "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3";
+            row.className = "result-analysis-card mb-3";
             row.innerHTML = `
                 <div class="flex justify-between items-end mb-2">
                     <div class="flex items-baseline gap-2">
@@ -1288,21 +1288,21 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="text-2xl">${suitInfo.label}</span><span class="text-xl">${rankChar}</span>
                         </span>
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-slate-400 uppercase font-bold">${tr(
+                            <span class="result-meta-label">${tr(
                                 "ui.expTricks",
                                 "Exp Tricks",
                             )}</span>
-                            <span class="text-lg font-bold text-slate-700 leading-none">${lead.tricks.toFixed(
+                            <span class="result-value-primary leading-none">${lead.tricks.toFixed(
                                 2,
                             )}</span>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">${tr(
+                        <span class="result-meta-label block">${tr(
                             "ui.setProb",
                             "Set Prob",
                         )}</span>
-                        <span class="text-sm font-bold text-orange-600">${lead.per_of_set.toFixed(
+                        <span class="result-value-accent">${lead.per_of_set.toFixed(
                             1,
                         )}%</span>
                     </div>
