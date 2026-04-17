@@ -49,6 +49,7 @@
         "grandSlam": "Grand Slam",
         "expTricks": "Exp Tricks",
         "setProb": "Set Prob",
+        "sortBy": "Sort",
         "declarerAuto": "{declarer} (auto)",
         "leadBasicTitle": "Basic Settings",
         "leadLeader": "Opening Leader",

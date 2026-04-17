@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentLanguage = "en";
     let translations = {};
     let currentRoutePath = DEFAULT_ROUTE;
+    let leadSortMode = "tricks";
+    let latestLeadResults = [];
+    let latestLeadCount = 0;
 
     const NAV_KEYS = ["double", "single", "lead"];
     const VIEW_IDS = [
@@ -178,6 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#lead-declarer-label", tr("ui.declarer", "Declarer"));
         setNodeText("#lead-simulations-label", tr("ui.simulations", "Simulations"));
         setNodeText("#lead-advanced-tcl-label", tr("ui.advancedTcl", "Advanced TCL (Optional)"));
+        setNodeText("#lead-sort-label", tr("ui.sortBy", "Sort"));
+        setNodeText("#lead-sort-tricks", tr("ui.expTricks", "Exp Tricks"));
+        setNodeText("#lead-sort-setprob", tr("ui.setProb", "Set Prob"));
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
@@ -1125,7 +1131,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
-            renderLeadResults(data.leads, simulations);
+            latestLeadResults = Array.isArray(data.leads) ? data.leads : [];
+            latestLeadCount = simulations;
+            renderLeadResults(latestLeadResults, simulations);
         } catch (e) {
             showToast(tr("toasts.errorPrefix", "Error: ") + e.message);
         } finally {
@@ -1246,14 +1254,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderLeadResults(leads, count) {
         const container = document.getElementById("result-lead-content");
-        console.log(count);
-
         document.getElementById("lead-sim-count").innerText = count;
         container.innerHTML = "";
 
-        leads.sort((a, b) => b.tricks - a.tricks);
+        const sortedLeads = [...leads].sort((a, b) => {
+            if (leadSortMode === "setprob") return b.per_of_set - a.per_of_set;
+            return b.tricks - a.tricks;
+        });
 
-        leads.forEach((lead) => {
+        sortedLeads.forEach((lead) => {
             const suitChar = lead.card[0];
             const rankChar = lead.card[1];
             const suitInfo = SUITS.find((s) => s.name[0] === suitChar) || {
@@ -1273,11 +1282,11 @@ document.addEventListener("DOMContentLoaded", () => {
             row.innerHTML = `
                 <div class="flex justify-between items-end mb-2">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-bold text-2xl ${
+                        <span class="font-bold ${
                             suitInfo.color
-                        } w-10 text-center bg-white border border-slate-200 rounded shadow-sm h-10 leading-10">${
-                            suitInfo.label
-                        }${rankChar}</span>
+                        } w-12 px-2 text-center bg-white border border-slate-200 rounded shadow-sm h-10 inline-flex items-center justify-center leading-none">
+                            <span class="text-2xl">${suitInfo.label}</span><span class="text-xl">${rankChar}</span>
+                        </span>
                         <div class="flex flex-col">
                             <span class="text-[10px] text-slate-400 uppercase font-bold">${tr(
                                 "ui.expTricks",
@@ -1371,5 +1380,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // Lead UI Update Event
         const leadLeader = document.getElementById("lead-leader");
         if (leadLeader) leadLeader.onchange = updateLeadModeUI;
+
+        const leadSort = document.getElementById("lead-sort");
+        if (leadSort) {
+            leadSort.value = leadSortMode;
+            leadSort.addEventListener("change", () => {
+                leadSortMode = leadSort.value === "setprob" ? "setprob" : "tricks";
+                if (latestLeadResults.length > 0) {
+                    renderLeadResults(latestLeadResults, latestLeadCount);
+                }
+            });
+        }
     }
 });

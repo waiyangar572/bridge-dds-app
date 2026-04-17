@@ -1637,7 +1637,16 @@
                         <h3 class="font-bold text-orange-900 flex items-center gap-2">
                             <i data-lucide="bar-chart" class="w-4 h-4"></i> 獲得トリック確率分布
                         </h3>
-                        <div class="flex gap-2 text-[10px] md:text-xs">
+                        <div class="flex items-center gap-2 text-[10px] md:text-xs">
+                            <label id="lead-sort-label" for="lead-sort" class="text-slate-600 font-semibold"
+                                >Sort</label
+                            >
+                            <select
+                                id="lead-sort"
+                                class="px-2 py-1 border border-orange-200 rounded bg-white text-slate-700 text-[11px] md:text-xs">
+                                <option id="lead-sort-tricks" value="tricks">Exp Tricks</option>
+                                <option id="lead-sort-setprob" value="setprob">Set Prob</option>
+                            </select>
                             <span class="text-orange-600 font-bold"
                                 >Simulations: <span id="lead-sim-count">-</span></span
                             >
