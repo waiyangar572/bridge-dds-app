@@ -22,19 +22,80 @@ document.addEventListener("DOMContentLoaded", () => {
     let sdState = { north: [], south: [] }; // Only N/S allow hand input
     let sdModes = { north: "hand", south: "hand" }; // 'hand' or 'feature'
 
+    const NAV_KEYS = ["double", "single", "lead"];
+    const VIEW_IDS = ["view-double", "view-single", "view-lead", "view-privacy", "view-about", "view-contact"];
+    const ROUTES = {
+        "/": {
+            type: "tool",
+            tab: "double",
+            viewId: "view-double",
+            title: "Bridge Solver | Double Dummy",
+            description:
+                "Double Dummy Solver for contract bridge. Analyze optimal tricks for NT and each suit.",
+        },
+        "/double-dummy": {
+            type: "tool",
+            tab: "double",
+            viewId: "view-double",
+            title: "Bridge Solver | Double Dummy",
+            description:
+                "Double Dummy Solver for contract bridge. Analyze optimal tricks for NT and each suit.",
+        },
+        "/single-dummy": {
+            type: "tool",
+            tab: "single",
+            viewId: "view-single",
+            title: "Bridge Solver | Single Dummy",
+            description:
+                "Single Dummy Solver with HCP and shape constraints for practical contract bridge simulations.",
+        },
+        "/opening-lead": {
+            type: "tool",
+            tab: "lead",
+            viewId: "view-lead",
+            title: "Bridge Solver | Opening Lead Analyzer",
+            description:
+                "Opening Lead Analyzer for contract bridge. Compare expected tricks and set probability.",
+        },
+        "/privacy": {
+            type: "page",
+            viewId: "view-privacy",
+            title: "Bridge Solver | Privacy Policy",
+            description:
+                "Privacy Policy for Bridge Solver, including notes on advertising cookies and analytics usage.",
+        },
+        "/about": {
+            type: "page",
+            viewId: "view-about",
+            title: "Bridge Solver | About Us",
+            description:
+                "About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools.",
+        },
+        "/contact": {
+            type: "page",
+            viewId: "view-contact",
+            title: "Bridge Solver | Contact",
+            description:
+                "Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests.",
+        },
+    };
+
     // --- Init ---
     lucide.createIcons();
     initDoubleDummyUI();
     initSingleDummyUI();
     initLeadSolverUI();
     setupEventListeners();
+    initRouting();
 
     // --- Tab Switching ---
     function switchTab(tabName) {
         currentTab = tabName;
-        // Hide views
+        // Hide tool views
         ["double", "single", "lead"].forEach((t) => {
-            document.getElementById("view-" + t).classList.add("hidden");
+            const view = document.getElementById("view-" + t);
+            if (view) view.classList.add("hidden");
+
             const navBtn = document.getElementById("nav-" + t);
             if (navBtn) {
                 navBtn.classList.replace("tab-active", "tab-inactive");
@@ -50,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Show View
-        document.getElementById("view-" + tabName).classList.remove("hidden");
+        const activeView = document.getElementById("view-" + tabName);
+        if (activeView) activeView.classList.remove("hidden");
 
         // Update Nav
         const activeNav = document.getElementById("nav-" + tabName);
@@ -69,10 +131,102 @@ document.addEventListener("DOMContentLoaded", () => {
         // Mobile Keyboard Logic
         const kb = document.getElementById("mobile-keyboard");
         if (tabName === "double") {
-            if (window.innerWidth < 768) kb.classList.remove("translate-y-full");
+            if (window.innerWidth < 768 && kb) kb.classList.remove("translate-y-full");
         } else {
-            kb.classList.add("translate-y-full");
+            if (kb) kb.classList.add("translate-y-full");
         }
+    }
+
+    function setMeta(title, description) {
+        document.title = title;
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement("meta");
+            metaDescription.setAttribute("name", "description");
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.setAttribute("content", description);
+    }
+
+    function normalizePath(path) {
+        if (!path) return "/";
+        return path.endsWith("/") && path !== "/" ? path.slice(0, -1) : path;
+    }
+
+    function getRoute(pathname) {
+        const normalizedPath = normalizePath(pathname);
+        if (ROUTES[normalizedPath]) return { ...ROUTES[normalizedPath], path: normalizedPath };
+        return { ...ROUTES["/double-dummy"], path: "/double-dummy" };
+    }
+
+    function showView(viewId) {
+        VIEW_IDS.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (id === viewId) el.classList.remove("hidden");
+            else el.classList.add("hidden");
+        });
+    }
+
+    function applyNavState(route) {
+        NAV_KEYS.forEach((key) => {
+            const nav = document.getElementById(`nav-${key}`);
+            if (nav) {
+                nav.classList.replace("tab-active", "tab-inactive");
+                nav.classList.remove("text-indigo-600", "border-indigo-600");
+            }
+
+            const mobNav = document.getElementById(`mob-nav-${key}`);
+            if (mobNav) {
+                mobNav.classList.remove("text-indigo-600");
+                mobNav.classList.add("text-slate-600");
+            }
+        });
+
+        const activeKey = route.type === "tool" ? route.tab : route.nav;
+        if (!activeKey) return;
+
+        const activeNav = document.getElementById(`nav-${activeKey}`);
+        if (activeNav) {
+            activeNav.classList.replace("tab-inactive", "tab-active");
+            activeNav.classList.add("text-indigo-600", "border-indigo-600");
+        }
+
+        const activeMobNav = document.getElementById(`mob-nav-${activeKey}`);
+        if (activeMobNav) {
+            activeMobNav.classList.remove("text-slate-600");
+            activeMobNav.classList.add("text-indigo-600");
+        }
+    }
+
+    function renderRoute(route) {
+        if (route.type === "tool") {
+            showView(route.viewId);
+            switchTab(route.tab);
+            setMeta(route.title, route.description);
+        } else {
+            applyNavState(route);
+            showView(route.viewId);
+            setMeta(route.title, route.description);
+        }
+
+        const kb = document.getElementById("mobile-keyboard");
+        if (route.type !== "tool" || route.tab !== "double") {
+            if (kb) kb.classList.add("translate-y-full");
+        }
+    }
+
+    function navigateTo(path, pushHistory = true) {
+        const route = getRoute(path);
+        if (pushHistory && normalizePath(window.location.pathname) !== route.path) {
+            history.pushState({}, "", route.path);
+        }
+        renderRoute(route);
+    }
+
+    function initRouting() {
+        navigateTo(window.location.pathname, false);
+        window.addEventListener("popstate", () => navigateTo(window.location.pathname, false));
     }
 
     // --- Double Dummy Logic ---
@@ -769,27 +923,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setupEventListeners() {
-        // Tabs
-        document.getElementById("nav-double").onclick = () => switchTab("double");
-        document.getElementById("nav-single").onclick = () => switchTab("single");
-        document.getElementById("nav-lead").onclick = () => switchTab("lead");
-
         // Mobile Nav
         const mobileNav = document.getElementById("mobile-nav");
         document.getElementById("mobile-menu-btn").onclick = () => {
             document.getElementById("mobile-nav").classList.toggle("hidden");
         };
-        document.getElementById("mob-nav-double").onclick = () => switchTab("double");
-        document.getElementById("mob-nav-single").onclick = () => switchTab("single");
-        document.getElementById("mob-nav-lead").onclick = () => switchTab("lead");
 
-        const onMobileTabClick = (tab) => {
-            switchTab(tab);
+        document.addEventListener("click", (e) => {
+            const routeTarget = e.target.closest("[data-route]");
+            if (!routeTarget) return;
+            const route = routeTarget.dataset.route;
+            if (!route) return;
+            e.preventDefault();
+            navigateTo(route);
             mobileNav.classList.add("hidden");
-        };
-        document.getElementById("mob-nav-double").onclick = () => onMobileTabClick("double");
-        document.getElementById("mob-nav-single").onclick = () => onMobileTabClick("single");
-        document.getElementById("mob-nav-lead").onclick = () => onMobileTabClick("lead");
+        });
 
         // Mobile Hand Focus
         HANDS.forEach((h) => {

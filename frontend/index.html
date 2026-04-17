@@ -3,7 +3,10 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Bridge Solver</title>
+        <title>Bridge Solver | Double Dummy</title>
+        <meta
+            name="description"
+            content="Contract bridge analysis tools: Double Dummy Solver, Single Dummy Solver, and Opening Lead Analyzer." />
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -165,17 +168,23 @@
 
                     <nav class="hidden md:flex space-x-8">
                         <button
+                            type="button"
                             id="nav-double"
+                            data-route="/double-dummy"
                             class="tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                             ダブルダミー分析
                         </button>
                         <button
+                            type="button"
                             id="nav-single"
+                            data-route="/single-dummy"
                             class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                             シングルダミー分析
                         </button>
                         <button
+                            type="button"
                             id="nav-lead"
+                            data-route="/opening-lead"
                             class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                             オープニングリード分析
                         </button>
@@ -191,17 +200,23 @@
             <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
                 <div class="flex flex-col p-2 space-y-1">
                     <button
+                        type="button"
                         id="mob-nav-double"
+                        data-route="/double-dummy"
                         class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-indigo-600">
                         ダブルダミー分析
                     </button>
                     <button
+                        type="button"
                         id="mob-nav-single"
+                        data-route="/single-dummy"
                         class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         シングルダミー分析
                     </button>
                     <button
+                        type="button"
                         id="mob-nav-lead"
+                        data-route="/opening-lead"
                         class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         オープニングリード分析
                     </button>
@@ -338,6 +353,35 @@
                         </table>
                     </div>
                 </div>
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">このツールについて (Overview)</h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Double Dummy Solverは、4ハンド52枚が既知の前提で、各プレイヤーが最善を尽くした場合のメイクトリック数を高速に算出する分析機能です。
+                        契約成否の確認だけでなく、スートごとの上限トリック比較により、最適コントラクトの見直しにも使えます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>North / South / East / West にカードを割り当て、合計52枚になるまで入力します。</li>
+                        <li>「分析実行」を押すと、NT・各スート契約のトリック上限が表示されます。</li>
+                        <li>NSとEWの結果差を見て、実戦での競りや最終コントラクト判断に活用します。</li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Double Dummy</dt>
+                            <dd class="text-slate-600 mt-1">全員の手が見えている前提での理論最適プレイ解析。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">NT</dt>
+                            <dd class="text-slate-600 mt-1">No Trump。切り札なしの契約。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">メイクトリック</dt>
+                            <dd class="text-slate-600 mt-1">契約達成に実際に取れるトリック数。</dd>
+                        </div>
+                    </dl>
+                </section>
             </div>
 
             <div id="view-single" class="hidden fade-in">
@@ -793,6 +837,35 @@
                     </div>
                     <div id="result-single-content" class="p-4 space-y-4"></div>
                 </div>
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">このツールについて (Overview)</h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Single Dummy Solverは、見えている手札情報とHCP・Shape条件から未知ハンドをサンプリングし、
+                        取り得るトリック分布を推定する機能です。実戦で情報が不完全な場面でも、ゲーム・スラム到達率を定量的に比較できます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>North/Southは「Hand」または「Feature」を選択して入力します。</li>
+                        <li>未知ハンド側にはHCPレンジ、各スート枚数レンジ、Shape Typeを設定します。</li>
+                        <li>分析実行後、平均トリック・Game率・Slam率を比較して最適契約候補を判断します。</li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">HCP</dt>
+                            <dd class="text-slate-600 mt-1">High Card Points。A=4, K=3, Q=2, J=1で数える評価点。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Shape</dt>
+                            <dd class="text-slate-600 mt-1">4スート枚数配分（例: 4-4-3-2）。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Simulation</dt>
+                            <dd class="text-slate-600 mt-1">条件を満たす配り分けを多数試行して確率を推定する手法。</dd>
+                        </div>
+                    </dl>
+                </section>
             </div>
 
             <div id="view-lead" class="hidden fade-in">
@@ -1270,12 +1343,98 @@
                     </div>
                     <div id="result-lead-content" class="p-4 space-y-6"></div>
                 </div>
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">このツールについて (Overview)</h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Opening Lead Analyzerは、想定コントラクトに対する初手リード候補を比較し、
+                        期待トリック数とセット確率を同時に確認できる分析ツールです。守備側の最適化だけでなく、
+                        宣言側がケアすべきリード筋の把握にも役立ちます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>リーダー席、コントラクト、シミュレーション回数を設定します。</li>
+                        <li>リーダーの13枚を入力し、他席はHCP/Shape条件でレンジ指定します。</li>
+                        <li>結果の「Exp Tricks」と「Set Prob」を比較して、守備の初手方針を選びます。</li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Opening Lead</dt>
+                            <dd class="text-slate-600 mt-1">1トリック目にディフェンダーが出す最初のカード。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Set Prob</dt>
+                            <dd class="text-slate-600 mt-1">契約を1ダウン以上にできる確率。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">Declarer</dt>
+                            <dd class="text-slate-600 mt-1">最終コントラクトを宣言した側のプレイヤー。</dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+
+            <div id="view-privacy" class="hidden fade-in">
+                <section class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">Privacy Policy</h2>
+                    <div class="space-y-4 text-sm text-slate-700 leading-7">
+                        <p>
+                            本サイトは、コントラクトブリッジの分析機能を提供するために運営されています。サービス品質向上のため、アクセス情報を収集する場合があります。
+                        </p>
+                        <p>
+                            当サイトでは、Google AdSense等の第三者配信広告サービスを利用する可能性があります。これらのサービスはCookieを使用し、ユーザーの興味に応じた広告を表示することがあります。
+                        </p>
+                        <p>
+                            アクセス解析には、トラフィック把握を目的として解析ツールを利用する場合があります。収集される情報は匿名の統計データとして扱われ、個人を特定する目的では使用しません。
+                        </p>
+                        <p>
+                            Cookieの利用を希望しない場合、ブラウザ設定で無効化できます。ただし一部機能が正しく動作しない場合があります。
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-about" class="hidden fade-in">
+                <section class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">About Us</h2>
+                    <div class="space-y-4 text-sm text-slate-700 leading-7">
+                        <p>
+                            Bridge Solverは、モダンで使いやすいコントラクトブリッジ分析ツールを提供することを目的に運営しています。
+                        </p>
+                        <p>
+                            ダブルダミー分析、条件付きシミュレーション、オープニングリード検討を1つの画面で扱い、学習者から競技者まで実戦的な意思決定を支援します。
+                        </p>
+                        <p>
+                            今後も、読み物コンテンツと分析機能を継続的に拡充し、ブリッジ学習における再現性ある検証環境を提供していきます。
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-contact" class="hidden fade-in">
+                <section class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">Contact</h2>
+                    <p class="text-sm text-slate-700 leading-7 mb-6">
+                        ご意見・不具合報告・機能改善のご提案は、以下のGoogleフォームからお送りください。
+                    </p>
+                    <a
+                        href="https://forms.gle/your-form-id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold transition-colors">
+                        Googleフォームで問い合わせる
+                    </a>
+                    <p class="text-xs text-slate-500 mt-3">
+                        ※ 実運用時は `https://forms.gle/your-form-id` を正式なフォームURLに差し替えてください。
+                    </p>
+                </section>
             </div>
         </main>
 
         <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                     <div>
                         <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
                         <p class="text-sm leading-relaxed mb-4">
@@ -1285,9 +1444,17 @@
                     <div>
                         <h4 class="text-white font-bold mb-4">Tools</h4>
                         <ul class="space-y-2 text-sm">
-                            <li>Double Dummy Solver</li>
-                            <li>Single Dummy Solver</li>
-                            <li>Opening Lead Analyzer</li>
+                            <li><a href="/double-dummy" data-route="/double-dummy" class="hover:text-white">Double Dummy Solver</a></li>
+                            <li><a href="/single-dummy" data-route="/single-dummy" class="hover:text-white">Single Dummy Solver</a></li>
+                            <li><a href="/opening-lead" data-route="/opening-lead" class="hover:text-white">Opening Lead Analyzer</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-4">Information</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="/privacy" data-route="/privacy" class="hover:text-white">Privacy Policy</a></li>
+                            <li><a href="/about" data-route="/about" class="hover:text-white">About Us</a></li>
+                            <li><a href="/contact" data-route="/contact" class="hover:text-white">Contact</a></li>
                         </ul>
                     </div>
                 </div>
