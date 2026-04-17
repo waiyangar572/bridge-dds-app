@@ -220,6 +220,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document
             .querySelectorAll('option[value="balanced-without-major"]')
             .forEach((el) => (el.textContent = tr("select.balancedWithoutMajor", "Balanced without a 4-card major")));
+        setNodeText("#glossary-double-term-1", tr("glossaryTerms.double1", "Double Dummy"));
+        setNodeText("#glossary-single-term-1", tr("glossaryTerms.single1", "Balanced Hand"));
+        setNodeText("#glossary-single-term-2", tr("glossaryTerms.single2", "Semi-balanced Hand"));
+        setNodeText("#glossary-lead-term-1", tr("glossaryTerms.lead1", "Balanced Hand"));
+        setNodeText("#glossary-lead-term-2", tr("glossaryTerms.lead2", "Semi-balanced Hand"));
+        setNodeText("#glossary-lead-term-3", tr("glossaryTerms.lead3", "Set Probability"));
     }
 
     function setSeoMeta(routePath) {

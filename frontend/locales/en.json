@@ -133,7 +133,7 @@
         "about": [
             "Bridge Solver exists to provide modern, easy-to-use contract bridge analysis tools.",
             "It unifies double-dummy analysis, constrained simulations, and opening lead evaluation in one interface to support practical decisions from learners to advanced players.",
-            "We will continue expanding both analysis capability and educational content to provide a reproducible bridge study environment."
+            "We will continue expanding analysis capability to provide a reproducible bridge study environment."
         ]
     },
     "terms": {
@@ -142,11 +142,19 @@
         "east": "East",
         "west": "West"
     },
-    "select": {
-        "any": "Any",
-        "balanced": "Balanced",
-        "semiBalanced": "Semi-balanced",
-        "unbalanced": "Unbalanced",
-        "balancedWithoutMajor": "Balanced without a 4-card major"
-    }
+  "select": {
+    "any": "Any",
+    "balanced": "Balanced",
+    "semiBalanced": "Semi-balanced",
+    "unbalanced": "Unbalanced",
+    "balancedWithoutMajor": "Balanced without a 4-card major"
+  },
+  "glossaryTerms": {
+    "double1": "Double Dummy",
+    "single1": "Balanced Hand",
+    "single2": "Semi-balanced Hand",
+    "lead1": "Balanced Hand",
+    "lead2": "Semi-balanced Hand",
+    "lead3": "Set Probability"
+  }
 }
