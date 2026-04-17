@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- State ---
     let currentTab = "double";
-    let activeMobileHand = "north";
     // State for Double Dummy
     let ddState = { north: [], south: [], east: [], west: [] };
     // State for Lead Solver
@@ -31,44 +30,51 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentRoutePath = DEFAULT_ROUTE;
 
     const NAV_KEYS = ["double", "single", "lead"];
-    const VIEW_IDS = ["view-double", "view-single", "view-lead", "view-privacy", "view-about", "view-contact"];
+    const VIEW_IDS = [
+        "view-double",
+        "view-single",
+        "view-lead",
+        "view-privacy",
+        "view-about",
+        "view-contact",
+    ];
     const ROUTES = {
         "/double-dummy": {
             type: "tool",
             metaKey: "double-dummy",
             tab: "double",
             nav: "double",
-            viewId: "view-double"
+            viewId: "view-double",
         },
         "/single-dummy": {
             type: "tool",
             metaKey: "single-dummy",
             tab: "single",
             nav: "single",
-            viewId: "view-single"
+            viewId: "view-single",
         },
         "/opening-lead": {
             type: "tool",
             metaKey: "opening-lead",
             tab: "lead",
             nav: "lead",
-            viewId: "view-lead"
+            viewId: "view-lead",
         },
         "/privacy": {
             type: "page",
             metaKey: "privacy",
-            viewId: "view-privacy"
+            viewId: "view-privacy",
         },
         "/about": {
             type: "page",
             metaKey: "about",
-            viewId: "view-about"
+            viewId: "view-about",
         },
         "/contact": {
             type: "page",
             metaKey: "contact",
-            viewId: "view-contact"
-        }
+            viewId: "view-contact",
+        },
     };
 
     // --- Init ---
@@ -83,7 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
     bootstrapApp();
 
     function getNestedValue(obj, path) {
-        return path.split(".").reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+        return path
+            .split(".")
+            .reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
     }
 
     function tr(key, fallback = "", vars = {}) {
@@ -121,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: "lang-en", active: isEn },
             { id: "lang-ja", active: !isEn },
             { id: "lang-en-mobile", active: isEn },
-            { id: "lang-ja-mobile", active: !isEn }
+            { id: "lang-ja-mobile", active: !isEn },
         ];
         ids.forEach(({ id, active }) => {
             const btn = document.getElementById(id);
@@ -160,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-lead-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#mobile-analyze-text", tr("buttons.mobileAnalyze", "Analyze"));
-        setNodeText("#mobile-active-label", `${tr("ui.editing", "Editing")}: ${tr("terms.north", "North")}`);
         setNodeText("#loading-label", currentLanguage === "ja" ? "解析中..." : "Analyzing...");
         setNodeText("#result-double h3", tr("result.doubleTitle", "Double Dummy Result"));
         setNodeText("#result-single h3", tr("result.singleTitle", "Expected Tricks (N/S)"));
@@ -173,9 +180,15 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#lead-advanced-tcl-label", tr("ui.advancedTcl", "Advanced TCL (Optional)"));
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
-            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)",
-            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)",
-            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)"
+            currentLanguage === "ja"
+                ? "このツールについて (Overview)"
+                : "About this tool (Overview)",
+            currentLanguage === "ja"
+                ? "このツールについて (Overview)"
+                : "About this tool (Overview)",
+            currentLanguage === "ja"
+                ? "このツールについて (Overview)"
+                : "About this tool (Overview)",
         ]);
         setNodeTexts("#view-double section h4, #view-single section h4, #view-lead section h4", [
             currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
@@ -183,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
             currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary",
             currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
-            currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary"
+            currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary",
         ]);
         setNodeText("#view-double section p", tr("content.double.overview", ""));
         setNodeTexts("#view-double section ol li", tr("content.double.how", []));
@@ -213,16 +226,30 @@ document.addEventListener("DOMContentLoaded", () => {
             "Opening Lead Analyzer",
             tr("footer.privacy", "Privacy Policy"),
             tr("footer.about", "About Us"),
-            tr("footer.contact", "Contact")
+            tr("footer.contact", "Contact"),
         ]);
 
-        document.querySelectorAll('option[value="any"]').forEach((el) => (el.textContent = tr("select.any", "Any")));
-        document.querySelectorAll('option[value="balanced"]').forEach((el) => (el.textContent = tr("select.balanced", "Balanced")));
-        document.querySelectorAll('option[value="semiBalanced"]').forEach((el) => (el.textContent = tr("select.semiBalanced", "Semi-balanced")));
-        document.querySelectorAll('option[value="unbalanced"]').forEach((el) => (el.textContent = tr("select.unbalanced", "Unbalanced")));
-        document.querySelectorAll(".shape-major-label").forEach((el) => (el.textContent = tr("select.fiveCardMajor", "5-card major")));
-        document.querySelectorAll('.shape-major-btn[data-allow="yes"]').forEach((el) => (el.textContent = tr("select.yes", "Yes")));
-        document.querySelectorAll('.shape-major-btn[data-allow="no"]').forEach((el) => (el.textContent = tr("select.no", "No")));
+        document
+            .querySelectorAll('option[value="any"]')
+            .forEach((el) => (el.textContent = tr("select.any", "Any")));
+        document
+            .querySelectorAll('option[value="balanced"]')
+            .forEach((el) => (el.textContent = tr("select.balanced", "Balanced")));
+        document
+            .querySelectorAll('option[value="semiBalanced"]')
+            .forEach((el) => (el.textContent = tr("select.semiBalanced", "Semi-balanced")));
+        document
+            .querySelectorAll('option[value="unbalanced"]')
+            .forEach((el) => (el.textContent = tr("select.unbalanced", "Unbalanced")));
+        document
+            .querySelectorAll(".shape-major-label")
+            .forEach((el) => (el.textContent = tr("select.fiveCardMajor", "5-card major")));
+        document
+            .querySelectorAll('.shape-major-btn[data-allow="yes"]')
+            .forEach((el) => (el.textContent = tr("select.yes", "Yes")));
+        document
+            .querySelectorAll('.shape-major-btn[data-allow="no"]')
+            .forEach((el) => (el.textContent = tr("select.no", "No")));
         setNodeText("#glossary-double-term-1", tr("glossaryTerms.double1", "Double Dummy"));
         setNodeText("#glossary-single-term-1", tr("glossaryTerms.single1", "Balanced Hand"));
         setNodeText("#glossary-single-term-2", tr("glossaryTerms.single2", "Semi-balanced Hand"));
@@ -290,10 +317,10 @@ document.addEventListener("DOMContentLoaded", () => {
                       offers: {
                           "@type": "Offer",
                           price: "0",
-                          priceCurrency: "USD"
+                          priceCurrency: "USD",
                       },
                       isAccessibleForFree: true,
-                      browserRequirements: "Requires JavaScript. Works on modern browsers."
+                      browserRequirements: "Requires JavaScript. Works on modern browsers.",
                   }
                 : {
                       "@context": "https://schema.org",
@@ -305,8 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
                       isPartOf: {
                           "@type": "WebSite",
                           name: "Bridge Solver",
-                          url: `${SITE_ORIGIN}/`
-                      }
+                          url: `${SITE_ORIGIN}/`,
+                      },
                   };
 
         script.textContent = JSON.stringify(jsonLd);
@@ -315,13 +342,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function setSeoMeta(routePath) {
         const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
         const title = tr(`meta.${route.metaKey}.title`, "Bridge Solver");
-        const description = tr(`meta.${route.metaKey}.description`, "Contract bridge analysis tools.");
+        const description = tr(
+            `meta.${route.metaKey}.description`,
+            "Contract bridge analysis tools.",
+        );
         const localizedPath = buildLocalizedPath(currentLanguage, route.path || routePath);
         const canonicalUrl = `${SITE_ORIGIN}${localizedPath}`;
 
         setMeta(title, description);
         upsertLink("canonical", canonicalUrl);
-        upsertMetaByName("robots", "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
+        upsertMetaByName(
+            "robots",
+            "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+        );
         upsertMetaByProperty("og:title", title);
         upsertMetaByProperty("og:description", description);
         upsertMetaByProperty("og:type", "website");
@@ -338,7 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setAlternateLinks(routePath) {
-        document.querySelectorAll('link[rel="alternate"][data-hreflang="true"]').forEach((node) => node.remove());
+        document
+            .querySelectorAll('link[rel="alternate"][data-hreflang="true"]')
+            .forEach((node) => node.remove());
         const head = document.head;
         ["en", "ja"].forEach((lang) => {
             const link = document.createElement("link");
@@ -412,14 +447,6 @@ document.addEventListener("DOMContentLoaded", () => {
             activeMobNav.classList.remove("text-slate-600");
             activeMobNav.classList.add("text-indigo-600");
         }
-
-        // Mobile Keyboard Logic
-        const kb = document.getElementById("mobile-keyboard");
-        if (tabName === "double") {
-            if (window.innerWidth < 768 && kb) kb.classList.remove("translate-y-full");
-        } else {
-            if (kb) kb.classList.add("translate-y-full");
-        }
     }
 
     function setMeta(title, description) {
@@ -455,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return {
                 lang: maybeLang,
                 routePath: routePath === "/" || routePath === "" ? DEFAULT_ROUTE : routePath,
-                hasLangPrefix: true
+                hasLangPrefix: true,
             };
         }
         return { lang: null, routePath: normalized, hasLangPrefix: false };
@@ -517,17 +544,15 @@ document.addEventListener("DOMContentLoaded", () => {
             showView(route.viewId);
         }
         setSeoMeta(route.path);
-
-        const kb = document.getElementById("mobile-keyboard");
-        if (route.type !== "tool" || route.tab !== "double") {
-            if (kb) kb.classList.add("translate-y-full");
-        }
     }
 
     function navigateTo(path, pushHistory = true) {
         const route = getRoute(path);
         const localizedPath = buildLocalizedPath(currentLanguage, route.path);
-        if (pushHistory && normalizePath(window.location.pathname) !== normalizePath(localizedPath)) {
+        if (
+            pushHistory &&
+            normalizePath(window.location.pathname) !== normalizePath(localizedPath)
+        ) {
             history.pushState({}, "", localizedPath);
         }
         renderRoute(route);
@@ -587,7 +612,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function initShapePresetMajorToggles() {
-        const presetSelects = document.querySelectorAll('select[id^="sd-"][id$="-preset"], select[id^="lead-"][id$="-preset"]');
+        const presetSelects = document.querySelectorAll(
+            'select[id^="sd-"][id$="-preset"], select[id^="lead-"][id$="-preset"]',
+        );
 
         presetSelects.forEach((select) => {
             if (!select.dataset.allowFiveMajor) {
@@ -636,9 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Double Dummy Logic ---
     function initDoubleDummyUI() {
         renderCardInterface("container", toggleCardDD, ddState);
-        // renderMobileKeyboard();
         updateDDUI();
-        setMobileActive("north");
     }
 
     // --- Single Dummy Logic ---
@@ -743,10 +768,13 @@ document.addEventListener("DOMContentLoaded", () => {
             west: tr("terms.south", "South"),
             east: tr("terms.north", "North"),
             north: tr("terms.east", "East"),
-            south: tr("terms.west", "West")
+            south: tr("terms.west", "West"),
         };
-        document.getElementById("lead-declarer-display").innerText =
-            tr("ui.declarerAuto", "{declarer} (auto)", { declarer: mapping[leader] });
+        document.getElementById("lead-declarer-display").innerText = tr(
+            "ui.declarerAuto",
+            "{declarer} (auto)",
+            { declarer: mapping[leader] },
+        );
     }
 
     function toggleCardLead(hand, cardId) {
@@ -771,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
         containerPrefix,
         toggleCallback,
         stateObj,
-        handsToRender = HANDS
+        handsToRender = HANDS,
     ) {
         handsToRender.forEach((hand) => {
             const container = document.getElementById(`${containerPrefix}-${hand}`);
@@ -839,7 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 RANKS.forEach((rank) => {
                     const cardId = suit.id + rank;
                     const btn = document.getElementById(
-                        `btn-${containerPrefix}-${hand}-${cardId}`
+                        `btn-${containerPrefix}-${hand}-${cardId}`,
                     );
                     if (!btn) return;
 
@@ -894,76 +922,6 @@ document.addEventListener("DOMContentLoaded", () => {
         HANDS.forEach((h) => (total += ddState[h].length));
         document.getElementById("total-count").innerText = total;
         updateCardUI("container", ddState);
-
-        HANDS.forEach((hand) => {
-            SUITS.forEach((suit) => {
-                const mobCards = ddState[hand]
-                    .filter((c) => c.startsWith(suit.id))
-                    .sort((a, b) => RANKS.indexOf(a.substr(1)) - RANKS.indexOf(b.substr(1)))
-                    .map((c) => c.substr(1))
-                    .join("");
-                const mobText = document.getElementById(`mobile-text-${hand}-${suit.id}`);
-                if (mobText) mobText.innerText = mobCards;
-            });
-        });
-
-        SUITS.forEach((suit) => {
-            RANKS.forEach((rank) => {
-                const cardId = suit.id + rank;
-                const mobBtn = document.getElementById(`mob-btn-${cardId}`);
-                if (!mobBtn) return;
-                const owner = findCardOwner(ddState, cardId);
-                mobBtn.className =
-                    "w-8 h-10 border rounded shadow-sm font-medium shrink-0 transition-colors ";
-                if (owner === activeMobileHand)
-                    mobBtn.classList.add("bg-indigo-600", "text-white", "border-indigo-600");
-                else if (owner)
-                    mobBtn.classList.add("bg-slate-100", "text-slate-300", "border-slate-100");
-                else mobBtn.classList.add("bg-white", "text-slate-800", "border-slate-200");
-            });
-        });
-    }
-
-    // function renderMobileKeyboard() {
-    //     SUITS.forEach((suit) => {
-    //         const container = document.getElementById(`mobile-keys-${suit.id}`);
-    //         if (!container) return;
-    //         const label = document.createElement("div");
-    //         label.className = `w-8 h-10 flex items-center justify-center font-bold ${suit.color} bg-slate-50 border border-slate-200 rounded shrink-0 text-sm`;
-    //         label.innerHTML = suit.label;
-    //         container.appendChild(label);
-
-    //         RANKS.forEach((rank) => {
-    //             const cardId = suit.id + rank;
-    //             const btn = document.createElement("button");
-    //             btn.id = `mob-btn-${cardId}`;
-    //             btn.innerText = rank;
-    //             btn.className =
-    //                 "w-8 h-10 bg-white border border-slate-200 rounded shadow-sm font-medium active:bg-slate-100 shrink-0 text-slate-700 transition-colors";
-    //             btn.onclick = () => toggleCardDD(activeMobileHand, cardId);
-    //             container.appendChild(btn);
-    //         });
-    //     });
-    // }
-
-    function setMobileActive(hand) {
-        activeMobileHand = hand;
-        document.getElementById("mobile-active-label").innerText = `${tr("ui.editing", "Editing")}: ${tr(
-            `terms.${hand}`,
-            hand
-        )}`;
-        HANDS.forEach((h) => {
-            const el = document.getElementById(`hand-${h}`);
-            if (!el) return;
-            if (h === hand) {
-                el.classList.add("hand-card-mobile-active");
-                el.classList.remove("border-transparent");
-            } else {
-                el.classList.remove("hand-card-mobile-active");
-                el.classList.add("border-transparent");
-            }
-        });
-        updateDDUI();
     }
 
     function convertPBNHand(handCards) {
@@ -1052,8 +1010,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (sdState[hand].length > 0) {
                             throw new Error(
                                 tr("toasts.handNeed13", "{hand} must contain exactly 13 cards.", {
-                                    hand: tr(`terms.${hand}`, hand)
-                                })
+                                    hand: tr(`terms.${hand}`, hand),
+                                }),
                             );
                         }
                     }
@@ -1102,10 +1060,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const leaderCards = leadState[leaderKey];
         if (leaderCards.length !== 13) {
             showToast(
-                tr("toasts.leaderNeed13", "{leader}'s hand must contain exactly 13 cards (current: {count}).", {
-                    leader,
-                    count: leaderCards.length
-                })
+                tr(
+                    "toasts.leaderNeed13",
+                    "{leader}'s hand must contain exactly 13 cards (current: {count}).",
+                    {
+                        leader,
+                        count: leaderCards.length,
+                    },
+                ),
             );
             return;
         }
@@ -1163,7 +1125,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
-            renderLeadResults(data.leads, data.simulations_run);
+            renderLeadResults(data.leads, simulations);
         } catch (e) {
             showToast(tr("toasts.errorPrefix", "Error: ") + e.message);
         } finally {
@@ -1211,7 +1173,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderSDResults(distribution, count) {
         const container = document.getElementById("result-single-content");
-        document.getElementById("sd-sim-count").innerText = `${tr("ui.samples", "Samples")}: ${count}`;
+        document.getElementById("sd-sim-count").innerText =
+            `${tr("ui.samples", "Samples")}: ${count}`;
         container.innerHTML = "";
 
         const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
@@ -1251,28 +1214,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="flex items-baseline gap-2">
                             <span class="font-bold text-sm text-slate-700 w-12">${playerLabel}</span>
                             <span class="text-xs font-bold text-slate-500">${tr("ui.avg", "Avg")}: <span class="text-indigo-600 text-sm">${exp.toFixed(
-                                2
+                                2,
                             )}</span></span>
                         </div>
                         <div class="flex gap-3 text-xs font-medium">
                             <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">${tr(
                                 "ui.game",
-                                "Game"
-                            )}: ${Math.round(
-                                gameProb
-                            )}%</span>
+                                "Game",
+                            )}: ${Math.round(gameProb)}%</span>
                             <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
                                 "ui.smallSlam",
-                                "Small Slam"
-                            )}: ${Math.round(
-                                slamProb
-                            )}%</span>
+                                "Small Slam",
+                            )}: ${Math.round(slamProb)}%</span>
                             <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
                                 "ui.grandSlam",
-                                "Grand Slam"
-                            )}: ${Math.round(
-                                grandSlamProb
-                            )}%</span>
+                                "Grand Slam",
+                            )}: ${Math.round(grandSlamProb)}%</span>
                         </div>
                     </div>
                     ${createDistributionTable(dist)}
@@ -1289,6 +1246,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderLeadResults(leads, count) {
         const container = document.getElementById("result-lead-content");
+        console.log(count);
+
         document.getElementById("lead-sim-count").innerText = count;
         container.innerHTML = "";
 
@@ -1317,25 +1276,25 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="font-bold text-2xl ${
                             suitInfo.color
                         } w-10 text-center bg-white border border-slate-200 rounded shadow-sm h-10 leading-10">${
-                suitInfo.label
-            }${rankChar}</span>
+                            suitInfo.label
+                        }${rankChar}</span>
                         <div class="flex flex-col">
                             <span class="text-[10px] text-slate-400 uppercase font-bold">${tr(
                                 "ui.expTricks",
-                                "Exp Tricks"
+                                "Exp Tricks",
                             )}</span>
                             <span class="text-lg font-bold text-slate-700 leading-none">${lead.tricks.toFixed(
-                                2
+                                2,
                             )}</span>
                         </div>
                     </div>
                     <div class="text-right">
                         <span class="text-[10px] text-slate-400 uppercase font-bold block">${tr(
                             "ui.setProb",
-                            "Set Prob"
+                            "Set Prob",
                         )}</span>
                         <span class="text-sm font-bold text-orange-600">${lead.per_of_set.toFixed(
-                            1
+                            1,
                         )}%</span>
                     </div>
                 </div>
@@ -1394,12 +1353,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 history.pushState({}, "", localizedPath);
                 navigateTo(currentRoutePath, false);
             });
-        });
-
-        // Mobile Hand Focus
-        HANDS.forEach((h) => {
-            const el = document.getElementById(`hand-${h}`);
-            if (el) el.onclick = () => setMobileActive(h);
         });
 
         // SD Mode Switches
