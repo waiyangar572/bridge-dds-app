@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Constants ---
     const API_BASE = "https://bridge-analyzer-backend-338315263430.asia-northeast1.run.app/api";
+    const SITE_ORIGIN = "https://bridge-analyzer.web.app";
+    const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/favicon-96x96.png`;
     const SUPPORTED_LANGS = ["en", "ja"];
     const DEFAULT_ROUTE = "/double-dummy";
     const LANGUAGE_STORAGE_KEY = "bridge_solver_lang";
@@ -228,11 +230,109 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#glossary-lead-term-3", tr("glossaryTerms.lead3", "Set Probability"));
     }
 
+    function upsertLink(rel, href, attrs = {}) {
+        let link = document.querySelector(`link[rel="${rel}"][data-seo="${rel}"]`);
+        if (!link) {
+            link = document.createElement("link");
+            link.rel = rel;
+            link.dataset.seo = rel;
+            document.head.appendChild(link);
+        }
+        link.href = href;
+        Object.entries(attrs).forEach(([key, value]) => {
+            link.setAttribute(key, value);
+        });
+    }
+
+    function upsertMetaByName(name, content) {
+        let meta = document.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+            meta = document.createElement("meta");
+            meta.setAttribute("name", name);
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+    }
+
+    function upsertMetaByProperty(property, content) {
+        let meta = document.querySelector(`meta[property="${property}"]`);
+        if (!meta) {
+            meta = document.createElement("meta");
+            meta.setAttribute("property", property);
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+    }
+
+    function setJsonLd(routePath, title, description, canonicalUrl) {
+        const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
+        let script = document.getElementById("seo-json-ld");
+        if (!script) {
+            script = document.createElement("script");
+            script.id = "seo-json-ld";
+            script.type = "application/ld+json";
+            document.head.appendChild(script);
+        }
+
+        const type = route.type === "tool" ? "SoftwareApplication" : "WebPage";
+        const jsonLd =
+            type === "SoftwareApplication"
+                ? {
+                      "@context": "https://schema.org",
+                      "@type": "SoftwareApplication",
+                      name: title,
+                      applicationCategory: "GameApplication",
+                      operatingSystem: "Web",
+                      description,
+                      url: canonicalUrl,
+                      inLanguage: currentLanguage,
+                      offers: {
+                          "@type": "Offer",
+                          price: "0",
+                          priceCurrency: "USD"
+                      },
+                      isAccessibleForFree: true,
+                      browserRequirements: "Requires JavaScript. Works on modern browsers."
+                  }
+                : {
+                      "@context": "https://schema.org",
+                      "@type": "WebPage",
+                      name: title,
+                      description,
+                      url: canonicalUrl,
+                      inLanguage: currentLanguage,
+                      isPartOf: {
+                          "@type": "WebSite",
+                          name: "Bridge Solver",
+                          url: `${SITE_ORIGIN}/`
+                      }
+                  };
+
+        script.textContent = JSON.stringify(jsonLd);
+    }
+
     function setSeoMeta(routePath) {
         const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
         const title = tr(`meta.${route.metaKey}.title`, "Bridge Solver");
         const description = tr(`meta.${route.metaKey}.description`, "Contract bridge analysis tools.");
+        const localizedPath = buildLocalizedPath(currentLanguage, route.path || routePath);
+        const canonicalUrl = `${SITE_ORIGIN}${localizedPath}`;
+
         setMeta(title, description);
+        upsertLink("canonical", canonicalUrl);
+        upsertMetaByName("robots", "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
+        upsertMetaByProperty("og:title", title);
+        upsertMetaByProperty("og:description", description);
+        upsertMetaByProperty("og:type", "website");
+        upsertMetaByProperty("og:url", canonicalUrl);
+        upsertMetaByProperty("og:image", DEFAULT_OG_IMAGE);
+        upsertMetaByProperty("og:locale", currentLanguage === "ja" ? "ja_JP" : "en_US");
+        upsertMetaByProperty("og:locale:alternate", currentLanguage === "ja" ? "en_US" : "ja_JP");
+        upsertMetaByName("twitter:card", "summary_large_image");
+        upsertMetaByName("twitter:title", title);
+        upsertMetaByName("twitter:description", description);
+        upsertMetaByName("twitter:image", DEFAULT_OG_IMAGE);
+        setJsonLd(route.path || routePath, title, description, canonicalUrl);
         setAlternateLinks(routePath);
     }
 
@@ -243,14 +343,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const link = document.createElement("link");
             link.rel = "alternate";
             link.hreflang = lang;
-            link.href = `${window.location.origin}${buildLocalizedPath(lang, routePath)}`;
+            link.href = `${SITE_ORIGIN}${buildLocalizedPath(lang, routePath)}`;
             link.dataset.hreflang = "true";
             head.appendChild(link);
         });
         const xDefault = document.createElement("link");
         xDefault.rel = "alternate";
         xDefault.hreflang = "x-default";
-        xDefault.href = `${window.location.origin}${buildLocalizedPath("en", routePath)}`;
+        xDefault.href = `${SITE_ORIGIN}${buildLocalizedPath("en", routePath)}`;
         xDefault.dataset.hreflang = "true";
         head.appendChild(xDefault);
     }

@@ -1,48 +1,55 @@
 # 指示
 
-あなたは、優れたUX/UIデザイナーであり、グローバルSEOに精通したフロントエンドエンジニアです。
-現在開発中のコントラクトブリッジ分析Webアプリケーション（SPA）において、海外からのアクセス（特に英語圏）を獲得するための多言語化（i18n）およびグローバルSEO対応を行ってください。
+あなたは、テクニカルSEOに極めて精通した凄腕のフロントエンドエンジニアです。
+現在Firebase Hosting (`.web.app`) で稼働しているコントラクトブリッジ分析SPA（Single Page Application）に対して、オーガニックトラフィックを最大化するための高度なSEO改修を行ってください。
 
-# 背景と課題
+# 背景と目標
 
-- コントラクトブリッジは世界中でプレイされているため、英語対応することでトラフィックの大幅な増加が見込めます。トラフィックの増加はAdSense審査や今後の収益化に直結します。
-- 前回の改修で追加した「使い方テキスト」や「必須ページ（プライバシーポリシー等）」も含めて、英語と日本語の両方を提供する必要があります。
+- サイトには優れた「Double Dummy Solver」「Single Dummy Solver」などのツールがありますが、現状はSPAの特性上、Googleクローラーにコンテンツが正しくインデックスされにくい状態です。
+- ターゲットとする検索キーワードは「double dummy solver online」「contract bridge hand analyzer」「bridge opening lead calculator」などのグローバルなロングテールキーワードです。
+- 検索エンジンに「これは価値のあるWebアプリケーションである」と正確に認識させることが目標です。
 
 # 厳守事項（制約）
 
-- **現在のユーザー体験（UX）を絶対に損なわないこと。**
-- 言語切り替えのUI（Language Switcher）は、ヘッダーの端などに配置し、ツール操作の邪魔にならないミニマルなデザインにしてください。
-- コントラクトブリッジの専門用語（Declarer, Dummy, Tricks, Vulnerability, HCPなど）は、世界標準の正確な英語を使用してください。
+- **現在の洗練されたユーザー体験（UX）、UIデザイン、ツールの動作スピードは一切損なわないこと。**
+- すべての改修は、バックグラウンド（`<head>`内や不可視領域）、またはインフラ（ビルド設定）のレベルで行うこと。
 
 # 実装要求事項
 
-## 1. 多言語化ライブラリの導入と設定
+## 1. 動的メタデータの最適化 (React Helmet等の活用)
 
-- 現在のフレームワーク（React/Vue等）に最適なi18nライブラリ（例: react-i18next）を導入するコードを提示してください。
-- ユーザーのブラウザの言語設定を読み取り、デフォルト言語を自動設定する仕組み（英語優先）を実装してください。
+各ページ（トップ、DDS、SDS、Lead Analyzer、記事ページ）ごとに、以下のタグが動的に適切に設定されるよう実装してください。
 
-## 2. 言語切り替えUIの実装
+- `<title>` (キーワードを含めた魅力的なタイトル。例: "Double Dummy Solver - Bridge Analyzer")
+- `<meta name="description">` (各ツールの機能を具体的に説明する120文字程度のテキスト)
+- `<link rel="canonical" href="...">` (URLの正規化による評価分散の防止)
 
-- ヘッダー右上に、シンプルで洗練された言語切り替えトグル（例: 「EN / JP」または地球儀アイコンのドロップダウン）を実装してください。
+## 2. OGP (Open Graph Protocol) と Twitter Cards の設定
 
-## 3. URLルーティングとグローバルSEO対応
+SNSでのシェア時にクリック率を最大化するため、全ページに共通（またはページ固有）のOGPタグとTwitter Cardタグを設定してください。
 
-- 言語ごとに独立したURLを生成するようにルーティングを改修してください。（例: トップページなら `/en/` と `/ja/`、ツールなら `/en/double-dummy` など）。
-- React Helmet（または同等の機能）を使用して、言語切り替えに応じて以下のメタデータを動的に変更してください。
-    - `<html lang="en">` / `<html lang="ja">`
-    - `<title>` と `<meta name="description">` （それぞれの言語に翻訳）
-    - `<link rel="alternate" hreflang="en" href="..." />` および `hreflang="ja"` （Googleに別言語ページを認識させるため）
+- `og:title`, `og:description`, `og:type` (トップはwebsite, 記事はarticle), `og:url`
+- `twitter:card` (summary_large_image)
 
-## 4. 翻訳ファイルの作成（JSON）
+## 3. JSON-LD (構造化データ) の導入
 
-- ハードコードされているUIテキスト、および前回追加した以下のコンテンツについて、日本語と英語の翻訳ファイル（JSON形式）の雛形を作成してください。
-    - ツールUI（Analyze, Hand, Shape, Settingsなど）
-    - 各ツールの説明文・使い方（How to use）
-    - 必須ページ（Privacy Policy, About Us）
-      ※ 英語の翻訳はプレースホルダーではなく、ブリッジの専門家として自然で正確な英文をあなたが生成して含めてください。
+Googleの検索結果にリッチリザルト（特別な枠）として表示される確率を上げるため、サイトトップまたは各ツールページに `SoftwareApplication` または `WebApplication` のJSON-LD構造化データを追加するコンポーネントを作成してください。
+
+- `name`, `applicationCategory` (GameApplication / SportsActivityLocation等適切なもの), `operatingSystem`, `offers` (Free) などの属性を含めること。
+
+## 4. クローラビリティの向上 (sitemap.xml / robots.txt)
+
+- 検索エンジンがサイト内の全ページを迷わず巡回できるよう、`sitemap.xml` と `robots.txt` を自動生成、または静的に配置する設定を行ってください。
+
+## 5. SPAのインデックス問題への対応策（提案と実装）
+
+Firebase Hostingで稼働するSPAにおいて、クローラーに初期HTMLを正しく解釈させるための最適なアプローチ（以下のいずれか）を提案し、その設定ファイルやコードを提示してください。
+
+- A: SSR (Server-Side Rendering) や SSG (Static Site Generation) への移行（Next.js等を使用している場合）
+- B: Vite等のビルドツールを使ったプレレンダリング（Prerendering）プラグインの導入
 
 # 出力形式
 
-1. 実装の全体方針、必要なライブラリ、およびディレクトリ構成（翻訳ファイルの配置場所など）を提示してください。
-2. 次に、i18nの設定ファイル、言語切り替えコンポーネント、ルーティング/SEO設定のコードを順次出力してください。
-3. 最後に、英語と日本語の翻訳用JSONファイルの中身（一部抜粋で可）を出力してください。
+1. まず、JSON-LDの構造と、設定すべきメタデータ（Title/Description）の構成案（英語）を提示してください。
+2. 次に、動的メタデータとJSON-LDを挿入するためのReactコンポーネント（例: `SeoHead.jsx`）のコードを出力してください。
+3. 最後に、sitemap.xmlの生成方法と、SPAのインデックス問題を解決するための具体的なビルド設定（Vite設定ファイルなど）を出力してください。

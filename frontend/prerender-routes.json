@@ -1,0 +1,18 @@
+{
+    "baseUrl": "https://bridge-analyzer.web.app",
+    "strategy": "static-snapshot-manifest",
+    "routes": [
+        "/en/double-dummy",
+        "/en/single-dummy",
+        "/en/opening-lead",
+        "/en/privacy",
+        "/en/about",
+        "/en/contact",
+        "/ja/double-dummy",
+        "/ja/single-dummy",
+        "/ja/opening-lead",
+        "/ja/privacy",
+        "/ja/about",
+        "/ja/contact"
+    ]
+}

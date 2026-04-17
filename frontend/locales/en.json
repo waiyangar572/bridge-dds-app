@@ -14,16 +14,16 @@
     },
     "meta": {
         "double-dummy": {
-            "title": "Bridge Solver | Double Dummy Solver",
-            "description": "Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract."
+            "title": "Double Dummy Solver Online | Bridge Solver",
+            "description": "Use this double dummy solver online to analyze contract bridge hands, compare NT and suit contracts, and find optimal trick potential."
         },
         "single-dummy": {
-            "title": "Bridge Solver | Single Dummy Solver",
-            "description": "Single Dummy simulation with HCP and shape constraints for practical contract bridge decisions."
+            "title": "Contract Bridge Hand Analyzer | Single Dummy Solver",
+            "description": "Run a contract bridge hand analyzer with HCP and shape constraints to estimate trick distributions for practical bidding decisions."
         },
         "opening-lead": {
-            "title": "Bridge Solver | Opening Lead Analyzer",
-            "description": "Evaluate opening lead candidates by expected tricks and set probability in contract bridge."
+            "title": "Bridge Opening Lead Calculator | Bridge Solver",
+            "description": "Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts."
         },
         "privacy": {
             "title": "Bridge Solver | Privacy Policy",
