@@ -161,12 +161,13 @@
                         <div class="bg-indigo-600 text-white p-1.5 rounded-lg">
                             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
                         </div>
-                        <span class="font-bold text-xl tracking-tight text-slate-900"
+                        <span id="site-title" class="font-bold text-xl tracking-tight text-slate-900"
                             >Bridge Solver</span
                         >
                     </div>
 
-                    <nav class="hidden md:flex space-x-8">
+                    <div class="hidden md:flex items-center gap-6">
+                        <nav class="hidden md:flex space-x-8">
                         <button
                             type="button"
                             id="nav-double"
@@ -188,9 +189,38 @@
                             class="tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                             オープニングリード分析
                         </button>
-                    </nav>
+                        </nav>
+                        <div class="flex items-center rounded-md border border-slate-200 bg-white p-0.5">
+                            <button
+                                type="button"
+                                id="lang-en"
+                                class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                                EN
+                            </button>
+                            <button
+                                type="button"
+                                id="lang-ja"
+                                class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                                JP
+                            </button>
+                        </div>
+                    </div>
 
-                    <div class="md:hidden">
+                    <div class="md:hidden flex items-center gap-2">
+                        <div class="flex items-center rounded-md border border-slate-200 bg-white p-0.5">
+                            <button
+                                type="button"
+                                id="lang-en-mobile"
+                                class="px-2 py-1 text-[10px] font-bold rounded text-slate-600">
+                                EN
+                            </button>
+                            <button
+                                type="button"
+                                id="lang-ja-mobile"
+                                class="px-2 py-1 text-[10px] font-bold rounded text-slate-600">
+                                JP
+                            </button>
+                        </div>
                         <button id="mobile-menu-btn" class="p-2">
                             <i data-lucide="menu" class="text-slate-500"></i>
                         </button>
@@ -321,7 +351,7 @@
                     <button
                         id="btn-run-double"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 inline-flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5"></i> 分析実行
+                        <i data-lucide="zap" class="w-5 h-5"></i> <span id="btn-run-double-text">分析実行</span>
                     </button>
                 </div>
 
@@ -817,7 +847,7 @@
                     <button
                         id="btn-run-single"
                         class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 inline-flex items-center gap-2">
-                        <i data-lucide="search" class="w-5 h-5"></i> 分析実行
+                        <i data-lucide="search" class="w-5 h-5"></i> <span id="btn-run-single-text">分析実行</span>
                     </button>
                 </div>
 
@@ -874,10 +904,10 @@
                 </h2>
 
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-                    <h3 class="font-bold text-lg mb-4 text-slate-700 border-b pb-2">基本設定</h3>
+                    <h3 id="lead-basic-title" class="font-bold text-lg mb-4 text-slate-700 border-b pb-2">基本設定</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                            <label id="lead-leader-label" class="block text-sm font-medium text-slate-600 mb-1"
                                 >オープニングリーダー</label
                             >
                             <select id="lead-leader" class="w-full p-2 border rounded bg-slate-50">
@@ -888,7 +918,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                            <label id="lead-contract-label" class="block text-sm font-medium text-slate-600 mb-1"
                                 >コントラクト</label
                             >
                             <input
@@ -898,7 +928,7 @@
                                 placeholder="e.g. 3NT, 4S" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-600 mb-1"
+                            <label id="lead-declarer-label" class="block text-sm font-medium text-slate-600 mb-1"
                                 >宣言側 (Declarer)</label
                             >
                             <div
@@ -910,7 +940,7 @@
                         <div
                             class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 pt-4 border-t border-slate-100">
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1"
+                                <label id="lead-simulations-label" class="block text-sm font-medium text-slate-600 mb-1"
                                     >シミュレーション回数</label
                                 >
                                 <input
@@ -920,7 +950,7 @@
                                     value="1000" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1"
+                                <label id="lead-advanced-tcl-label" class="block text-sm font-medium text-slate-600 mb-1"
                                     >Advanced TCL (Optional)</label
                                 >
                                 <textarea
@@ -1038,9 +1068,6 @@
                             <i data-lucide="user" class="w-4 h-4"></i> West
                         </h4>
                         <div class="lead-card-selector hidden">
-                            <p class="text-xs text-slate-500 mb-2">
-                                正確なハンドを選択してください (13枚)
-                            </p>
                             <div
                                 class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
                                 0 / 13
@@ -1323,7 +1350,7 @@
                     <button
                         id="btn-run-lead"
                         class="bg-orange-600 hover:bg-orange-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 inline-flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5"></i> 分析実行
+                        <i data-lucide="zap" class="w-5 h-5"></i> <span id="btn-run-lead-text">分析実行</span>
                     </button>
                 </div>
 
@@ -1481,7 +1508,7 @@
             <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
                 <div
                     class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-                <span class="font-bold text-slate-700">Analyzing...</span>
+                <span id="loading-label" class="font-bold text-slate-700">Analyzing...</span>
             </div>
         </div>
 
@@ -1499,7 +1526,7 @@
                         <button
                             onclick="document.getElementById('btn-run-double').click()"
                             class="text-xs bg-indigo-600 text-white px-3 py-1 rounded shadow">
-                            Analyze
+                            <span id="mobile-analyze-text">Analyze</span>
                         </button>
                     </div>
                 </div>
@@ -1520,6 +1547,6 @@
             </div>
         </div>
 
-        <script src="script.js"></script>
+        <script src="/script.js"></script>
     </body>
 </html>

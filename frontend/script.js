@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Constants ---
     const API_BASE = "https://bridge-analyzer-backend-338315263430.asia-northeast1.run.app/api";
+    const SUPPORTED_LANGS = ["en", "ja"];
+    const DEFAULT_ROUTE = "/double-dummy";
+    const LANGUAGE_STORAGE_KEY = "bridge_solver_lang";
     const SUITS = [
         { id: "s", label: "♠", color: "suit-s", name: "Spades" },
         { id: "h", label: "♥", color: "suit-h", name: "Hearts" },
@@ -21,72 +24,247 @@ document.addEventListener("DOMContentLoaded", () => {
     // State for Single Dummy
     let sdState = { north: [], south: [] }; // Only N/S allow hand input
     let sdModes = { north: "hand", south: "hand" }; // 'hand' or 'feature'
+    let currentLanguage = "en";
+    let translations = {};
+    let currentRoutePath = DEFAULT_ROUTE;
 
     const NAV_KEYS = ["double", "single", "lead"];
     const VIEW_IDS = ["view-double", "view-single", "view-lead", "view-privacy", "view-about", "view-contact"];
     const ROUTES = {
-        "/": {
-            type: "tool",
-            tab: "double",
-            viewId: "view-double",
-            title: "Bridge Solver | Double Dummy",
-            description:
-                "Double Dummy Solver for contract bridge. Analyze optimal tricks for NT and each suit.",
-        },
         "/double-dummy": {
             type: "tool",
+            metaKey: "double-dummy",
             tab: "double",
-            viewId: "view-double",
-            title: "Bridge Solver | Double Dummy",
-            description:
-                "Double Dummy Solver for contract bridge. Analyze optimal tricks for NT and each suit.",
+            nav: "double",
+            viewId: "view-double"
         },
         "/single-dummy": {
             type: "tool",
+            metaKey: "single-dummy",
             tab: "single",
-            viewId: "view-single",
-            title: "Bridge Solver | Single Dummy",
-            description:
-                "Single Dummy Solver with HCP and shape constraints for practical contract bridge simulations.",
+            nav: "single",
+            viewId: "view-single"
         },
         "/opening-lead": {
             type: "tool",
+            metaKey: "opening-lead",
             tab: "lead",
-            viewId: "view-lead",
-            title: "Bridge Solver | Opening Lead Analyzer",
-            description:
-                "Opening Lead Analyzer for contract bridge. Compare expected tricks and set probability.",
+            nav: "lead",
+            viewId: "view-lead"
         },
         "/privacy": {
             type: "page",
-            viewId: "view-privacy",
-            title: "Bridge Solver | Privacy Policy",
-            description:
-                "Privacy Policy for Bridge Solver, including notes on advertising cookies and analytics usage.",
+            metaKey: "privacy",
+            viewId: "view-privacy"
         },
         "/about": {
             type: "page",
-            viewId: "view-about",
-            title: "Bridge Solver | About Us",
-            description:
-                "About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools.",
+            metaKey: "about",
+            viewId: "view-about"
         },
         "/contact": {
             type: "page",
-            viewId: "view-contact",
-            title: "Bridge Solver | Contact",
-            description:
-                "Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests.",
-        },
+            metaKey: "contact",
+            viewId: "view-contact"
+        }
     };
 
     // --- Init ---
     lucide.createIcons();
-    initDoubleDummyUI();
-    initSingleDummyUI();
-    initLeadSolverUI();
+    if (document.getElementById("view-double")) {
+        initDoubleDummyUI();
+        initSingleDummyUI();
+        initLeadSolverUI();
+    }
     setupEventListeners();
-    initRouting();
+    bootstrapApp();
+
+    function getNestedValue(obj, path) {
+        return path.split(".").reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+    }
+
+    function tr(key, fallback = "", vars = {}) {
+        let value = getNestedValue(translations, key);
+        if (value === undefined) value = fallback || key;
+        if (typeof value !== "string") return value;
+        return value.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : `{${k}}`));
+    }
+
+    function detectBrowserLanguage() {
+        const browserLang = (navigator.language || "en").toLowerCase();
+        return browserLang.startsWith("ja") ? "ja" : "en";
+    }
+
+    function getStoredLanguage() {
+        const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+        if (SUPPORTED_LANGS.includes(stored)) return stored;
+        return null;
+    }
+
+    function getPreferredLanguage() {
+        return getStoredLanguage() || detectBrowserLanguage();
+    }
+
+    async function loadTranslations(lang) {
+        const normalized = SUPPORTED_LANGS.includes(lang) ? lang : "en";
+        const res = await fetch(`/locales/${normalized}.json`, { cache: "no-cache" });
+        if (!res.ok) throw new Error(`Locale file not found: ${normalized}`);
+        return res.json();
+    }
+
+    function updateLanguageSwitcherUI() {
+        const isEn = currentLanguage === "en";
+        const ids = [
+            { id: "lang-en", active: isEn },
+            { id: "lang-ja", active: !isEn },
+            { id: "lang-en-mobile", active: isEn },
+            { id: "lang-ja-mobile", active: !isEn }
+        ];
+        ids.forEach(({ id, active }) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.classList.toggle("bg-indigo-600", active);
+            btn.classList.toggle("text-white", active);
+            btn.classList.toggle("text-slate-600", !active);
+        });
+    }
+
+    function setNodeText(selector, text) {
+        const node = document.querySelector(selector);
+        if (!node) return;
+        node.textContent = text;
+    }
+
+    function setNodeTexts(selector, texts = []) {
+        const nodes = document.querySelectorAll(selector);
+        nodes.forEach((node, idx) => {
+            if (texts[idx] !== undefined) node.textContent = texts[idx];
+        });
+    }
+
+    function applyTranslations() {
+        document.documentElement.lang = currentLanguage;
+        updateLanguageSwitcherUI();
+
+        setNodeText("#site-title", tr("site.title", "Bridge Solver"));
+        setNodeText("#nav-double", tr("nav.double", "Double Dummy"));
+        setNodeText("#nav-single", tr("nav.single", "Single Dummy"));
+        setNodeText("#nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#mob-nav-double", tr("nav.double", "Double Dummy"));
+        setNodeText("#mob-nav-single", tr("nav.single", "Single Dummy"));
+        setNodeText("#mob-nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#btn-run-double-text", tr("buttons.analyze", "Analyze"));
+        setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
+        setNodeText("#btn-run-lead-text", tr("buttons.analyze", "Analyze"));
+        setNodeText("#mobile-analyze-text", tr("buttons.mobileAnalyze", "Analyze"));
+        setNodeText("#mobile-active-label", `${tr("ui.editing", "Editing")}: ${tr("terms.north", "North")}`);
+        setNodeText("#loading-label", currentLanguage === "ja" ? "解析中..." : "Analyzing...");
+        setNodeText("#result-double h3", tr("result.doubleTitle", "Double Dummy Result"));
+        setNodeText("#result-single h3", tr("result.singleTitle", "Expected Tricks (N/S)"));
+        setNodeText("#result-lead h3", tr("result.leadTitle", "Trick Distribution by Lead"));
+        setNodeText("#lead-basic-title", tr("ui.leadBasicTitle", "Basic Settings"));
+        setNodeText("#lead-leader-label", tr("ui.leadLeader", "Opening Leader"));
+        setNodeText("#lead-contract-label", tr("ui.contract", "Contract"));
+        setNodeText("#lead-declarer-label", tr("ui.declarer", "Declarer"));
+        setNodeText("#lead-simulations-label", tr("ui.simulations", "Simulations"));
+        setNodeText("#lead-advanced-tcl-label", tr("ui.advancedTcl", "Advanced TCL (Optional)"));
+
+        setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
+            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)",
+            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)",
+            currentLanguage === "ja" ? "このツールについて (Overview)" : "About this tool (Overview)"
+        ]);
+        setNodeTexts("#view-double section h4, #view-single section h4, #view-lead section h4", [
+            currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
+            currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary",
+            currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
+            currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary",
+            currentLanguage === "ja" ? "使い方 (How to use)" : "How to use",
+            currentLanguage === "ja" ? "用語解説 (Glossary)" : "Glossary"
+        ]);
+        setNodeText("#view-double section p", tr("content.double.overview", ""));
+        setNodeTexts("#view-double section ol li", tr("content.double.how", []));
+        setNodeTexts("#view-double section dl dd", tr("content.double.glossary", []));
+        setNodeText("#view-single section p", tr("content.single.overview", ""));
+        setNodeTexts("#view-single section ol li", tr("content.single.how", []));
+        setNodeTexts("#view-single section dl dd", tr("content.single.glossary", []));
+        setNodeText("#view-lead section p", tr("content.lead.overview", ""));
+        setNodeTexts("#view-lead section ol li", tr("content.lead.how", []));
+        setNodeTexts("#view-lead section dl dd", tr("content.lead.glossary", []));
+        setNodeTexts("#view-privacy .space-y-4 p", tr("content.privacy", []));
+        setNodeTexts("#view-about .space-y-4 p", tr("content.about", []));
+
+        setNodeText("#view-privacy h2", tr("pages.privacyTitle", "Privacy Policy"));
+        setNodeText("#view-about h2", tr("pages.aboutTitle", "About Us"));
+        setNodeText("#view-contact h2", tr("pages.contactTitle", "Contact"));
+        setNodeText("#view-contact p.text-sm", tr("pages.contactLead", ""));
+        setNodeText("#view-contact a", tr("pages.contactButton", ""));
+        setNodeText("#view-contact p.text-xs", tr("pages.contactNote", ""));
+
+        setNodeText("footer h4:nth-of-type(1)", tr("footer.tools", "Tools"));
+        setNodeText("footer h4:nth-of-type(2)", tr("footer.info", "Information"));
+        setNodeText("footer .text-sm.leading-relaxed", tr("footer.description", ""));
+        setNodeTexts("footer .space-y-2.text-sm a", [
+            "Double Dummy Solver",
+            "Single Dummy Solver",
+            "Opening Lead Analyzer",
+            tr("footer.privacy", "Privacy Policy"),
+            tr("footer.about", "About Us"),
+            tr("footer.contact", "Contact")
+        ]);
+
+        document.querySelectorAll('option[value="any"]').forEach((el) => (el.textContent = tr("select.any", "Any")));
+        document.querySelectorAll('option[value="balanced"]').forEach((el) => (el.textContent = tr("select.balanced", "Balanced")));
+        document.querySelectorAll('option[value="semiBalanced"]').forEach((el) => (el.textContent = tr("select.semiBalanced", "Semi-balanced")));
+        document.querySelectorAll('option[value="unbalanced"]').forEach((el) => (el.textContent = tr("select.unbalanced", "Unbalanced")));
+        document
+            .querySelectorAll('option[value="balanced-without-major"]')
+            .forEach((el) => (el.textContent = tr("select.balancedWithoutMajor", "Balanced without a 4-card major")));
+    }
+
+    function setSeoMeta(routePath) {
+        const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
+        const title = tr(`meta.${route.metaKey}.title`, "Bridge Solver");
+        const description = tr(`meta.${route.metaKey}.description`, "Contract bridge analysis tools.");
+        setMeta(title, description);
+        setAlternateLinks(routePath);
+    }
+
+    function setAlternateLinks(routePath) {
+        document.querySelectorAll('link[rel="alternate"][data-hreflang="true"]').forEach((node) => node.remove());
+        const head = document.head;
+        ["en", "ja"].forEach((lang) => {
+            const link = document.createElement("link");
+            link.rel = "alternate";
+            link.hreflang = lang;
+            link.href = `${window.location.origin}${buildLocalizedPath(lang, routePath)}`;
+            link.dataset.hreflang = "true";
+            head.appendChild(link);
+        });
+        const xDefault = document.createElement("link");
+        xDefault.rel = "alternate";
+        xDefault.hreflang = "x-default";
+        xDefault.href = `${window.location.origin}${buildLocalizedPath("en", routePath)}`;
+        xDefault.dataset.hreflang = "true";
+        head.appendChild(xDefault);
+    }
+
+    async function setLanguage(lang, { persist = true, refreshUI = true } = {}) {
+        const normalized = SUPPORTED_LANGS.includes(lang) ? lang : "en";
+        currentLanguage = normalized;
+        translations = await loadTranslations(normalized);
+        if (persist) localStorage.setItem(LANGUAGE_STORAGE_KEY, normalized);
+        if (refreshUI) {
+            applyTranslations();
+            setSeoMeta(currentRoutePath);
+        }
+    }
+
+    window.getLanguage = getPreferredLanguage;
+    window.loadLanguage = async (lang) => {
+        await setLanguage(lang, { persist: true, refreshUI: true });
+    };
+    window.setupLanguageSwitcher = () => {};
 
     // --- Tab Switching ---
     function switchTab(tabName) {
@@ -153,10 +331,33 @@ document.addEventListener("DOMContentLoaded", () => {
         return path.endsWith("/") && path !== "/" ? path.slice(0, -1) : path;
     }
 
+    function buildLocalizedPath(lang, routePath) {
+        const basePath = routePath === "/" ? DEFAULT_ROUTE : routePath;
+        return `/${lang}${basePath}`;
+    }
+
+    function parseLocalizedPath(pathname) {
+        const normalized = normalizePath(pathname);
+        const parts = normalized.split("/").filter(Boolean);
+        if (parts.length === 0) {
+            return { lang: null, routePath: DEFAULT_ROUTE, hasLangPrefix: false };
+        }
+        const maybeLang = parts[0];
+        if (SUPPORTED_LANGS.includes(maybeLang)) {
+            const routePath = "/" + parts.slice(1).join("/");
+            return {
+                lang: maybeLang,
+                routePath: routePath === "/" || routePath === "" ? DEFAULT_ROUTE : routePath,
+                hasLangPrefix: true
+            };
+        }
+        return { lang: null, routePath: normalized, hasLangPrefix: false };
+    }
+
     function getRoute(pathname) {
         const normalizedPath = normalizePath(pathname);
         if (ROUTES[normalizedPath]) return { ...ROUTES[normalizedPath], path: normalizedPath };
-        return { ...ROUTES["/double-dummy"], path: "/double-dummy" };
+        return { ...ROUTES[DEFAULT_ROUTE], path: DEFAULT_ROUTE };
     }
 
     function showView(viewId) {
@@ -200,15 +401,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderRoute(route) {
+        currentRoutePath = route.path;
         if (route.type === "tool") {
             showView(route.viewId);
             switchTab(route.tab);
-            setMeta(route.title, route.description);
         } else {
             applyNavState(route);
             showView(route.viewId);
-            setMeta(route.title, route.description);
         }
+        setSeoMeta(route.path);
 
         const kb = document.getElementById("mobile-keyboard");
         if (route.type !== "tool" || route.tab !== "double") {
@@ -218,15 +419,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function navigateTo(path, pushHistory = true) {
         const route = getRoute(path);
-        if (pushHistory && normalizePath(window.location.pathname) !== route.path) {
-            history.pushState({}, "", route.path);
+        const localizedPath = buildLocalizedPath(currentLanguage, route.path);
+        if (pushHistory && normalizePath(window.location.pathname) !== normalizePath(localizedPath)) {
+            history.pushState({}, "", localizedPath);
         }
         renderRoute(route);
     }
 
-    function initRouting() {
-        navigateTo(window.location.pathname, false);
-        window.addEventListener("popstate", () => navigateTo(window.location.pathname, false));
+    async function bootstrapApp() {
+        const parsed = parseLocalizedPath(window.location.pathname);
+        const preferredLang = parsed.lang || getPreferredLanguage();
+        const routePath = ROUTES[parsed.routePath] ? parsed.routePath : DEFAULT_ROUTE;
+        await setLanguage(preferredLang, { persist: false, refreshUI: false });
+        applyTranslations();
+
+        const expectedPath = buildLocalizedPath(preferredLang, routePath);
+        if (normalizePath(window.location.pathname) !== normalizePath(expectedPath)) {
+            history.replaceState({}, "", expectedPath);
+        }
+        navigateTo(routePath, false);
+
+        window.addEventListener("popstate", async () => {
+            const popParsed = parseLocalizedPath(window.location.pathname);
+            const popLang = popParsed.lang || getPreferredLanguage();
+            const popRoutePath = ROUTES[popParsed.routePath] ? popParsed.routePath : DEFAULT_ROUTE;
+            if (popLang !== currentLanguage) {
+                await setLanguage(popLang, { persist: false, refreshUI: true });
+            }
+            navigateTo(popRoutePath, false);
+        });
     }
 
     // --- Double Dummy Logic ---
@@ -284,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 2. If opponent has it, steal it (remove from them, add to me)
         else if (sdState[otherHand].includes(cardId)) {
             if (sdState[hand].length >= 13) {
-                showToast("13枚制限です");
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
                 return;
             }
             sdState[otherHand] = sdState[otherHand].filter((c) => c !== cardId);
@@ -293,7 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3. Else, just add it
         else {
             if (sdState[hand].length >= 13) {
-                showToast("13枚制限です");
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
                 return;
             }
             sdState[hand].push(cardId);
@@ -313,7 +534,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateLeadModeUI() {
-        const leader = document.getElementById("lead-leader").value.toLowerCase(); // 'west', etc.
+        const leadSelect = document.getElementById("lead-leader");
+        if (!leadSelect) return;
+        const leader = leadSelect.value.toLowerCase(); // 'west', etc.
 
         HANDS.forEach((hand) => {
             const panel = document.getElementById(`lead-panel-${hand}`);
@@ -333,9 +556,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        const mapping = { west: "South", east: "North", north: "East", south: "West" };
+        const mapping = {
+            west: tr("terms.south", "South"),
+            east: tr("terms.north", "North"),
+            north: tr("terms.east", "East"),
+            south: tr("terms.west", "West")
+        };
         document.getElementById("lead-declarer-display").innerText =
-            mapping[leader] + " (自動設定)";
+            tr("ui.declarerAuto", "{declarer} (auto)", { declarer: mapping[leader] });
     }
 
     function toggleCardLead(hand, cardId) {
@@ -343,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
             leadState[hand] = leadState[hand].filter((c) => c !== cardId);
         } else {
             if (leadState[hand].length >= 13) {
-                showToast("13枚制限です");
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
                 return;
             }
             leadState[hand].push(cardId);
@@ -458,14 +686,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ddState[hand] = ddState[hand].filter((c) => c !== cardId);
         } else if (currentOwner) {
             if (ddState[hand].length >= 13) {
-                showToast("このハンドは既に13枚です");
+                showToast(tr("toasts.already13", "This hand already has 13 cards."));
                 return;
             }
             ddState[currentOwner] = ddState[currentOwner].filter((c) => c !== cardId);
             ddState[hand].push(cardId);
         } else {
             if (ddState[hand].length >= 13) {
-                showToast("13枚制限です");
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
                 return;
             }
             ddState[hand].push(cardId);
@@ -537,7 +765,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setMobileActive(hand) {
         activeMobileHand = hand;
-        document.getElementById("mobile-active-label").innerText = `Editing: ${hand}`;
+        document.getElementById("mobile-active-label").innerText = `${tr("ui.editing", "Editing")}: ${tr(
+            `terms.${hand}`,
+            hand
+        )}`;
         HANDS.forEach((h) => {
             const el = document.getElementById(`hand-${h}`);
             if (!el) return;
@@ -582,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let total = 0;
         HANDS.forEach((h) => (total += ddState[h].length));
         if (total !== 52) {
-            showToast("カードが52枚選択されていません");
+            showToast(tr("toasts.cards52", "All 52 cards must be assigned before analysis."));
             return;
         }
 
@@ -598,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) throw new Error(data.error);
             renderDDResults(data.tricks);
         } catch (e) {
-            showToast("Error: " + e.message);
+            showToast(tr("toasts.errorPrefix", "Error: ") + e.message);
         } finally {
             setLoading(false);
         }
@@ -635,8 +866,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         }).join(".");
                         pbnParts[hand] = suitsStr;
                     } else {
-                        if (sdState[hand].length > 0)
-                            throw new Error(`${hand}の手札が13枚ではありません`);
+                        if (sdState[hand].length > 0) {
+                            throw new Error(
+                                tr("toasts.handNeed13", "{hand} must contain exactly 13 cards.", {
+                                    hand: tr(`terms.${hand}`, hand)
+                                })
+                            );
+                        }
                     }
                 } else {
                     const minH = document.getElementById(`sd-${hand}-hcp-min`).value || 0;
@@ -670,7 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) throw new Error(data.error);
             renderSDResults(data.trick_distribution, data.simulations_run);
         } catch (e) {
-            showToast("Error: " + e.message);
+            showToast(tr("toasts.errorPrefix", "Error: ") + e.message);
         } finally {
             setLoading(false);
         }
@@ -682,7 +918,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const leaderCards = leadState[leaderKey];
         if (leaderCards.length !== 13) {
-            showToast(`${leader}の手札は13枚である必要があります (現在: ${leaderCards.length}枚)`);
+            showToast(
+                tr("toasts.leaderNeed13", "{leader}'s hand must contain exactly 13 cards (current: {count}).", {
+                    leader,
+                    count: leaderCards.length
+                })
+            );
             return;
         }
         const suitsStr = SUITS.map((suit) => {
@@ -696,7 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const contractText = document.getElementById("lead-contract").value.trim().toUpperCase();
         if (!contractText) {
-            showToast("コントラクトを入力してください (例: 3NT)");
+            showToast(tr("toasts.inputContract", "Enter a contract (e.g. 3NT)."));
             return;
         }
         const simulations = parseInt(document.getElementById("lead-simulations").value) || 100;
@@ -741,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) throw new Error(data.error);
             renderLeadResults(data.leads, data.simulations_run);
         } catch (e) {
-            showToast("Error: " + e.message);
+            showToast(tr("toasts.errorPrefix", "Error: ") + e.message);
         } finally {
             setLoading(false);
         }
@@ -787,7 +1028,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderSDResults(distribution, count) {
         const container = document.getElementById("result-single-content");
-        document.getElementById("sd-sim-count").innerText = `Samples: ${count}`;
+        document.getElementById("sd-sim-count").innerText = `${tr("ui.samples", "Samples")}: ${count}`;
         container.innerHTML = "";
 
         const suitOrder = ["No-Trump", "Spades", "Hearts", "Diamonds", "Clubs"];
@@ -809,6 +1050,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let html = `<h5 class="font-bold text-lg mb-3 flex items-center gap-2 ${suitColor}"><span class="text-xl">${suitLabel}</span> ${suit}</h5>`;
 
             ["North", "South"].forEach((player) => {
+                const playerLabel = tr(`terms.${player.toLowerCase()}`, player);
                 const dist = distData[player]; // Array of percentages
                 const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
 
@@ -824,19 +1066,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 html += `<div class="mb-4 last:mb-0">
                     <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
                         <div class="flex items-baseline gap-2">
-                            <span class="font-bold text-sm text-slate-700 w-12">${player}</span>
-                            <span class="text-xs font-bold text-slate-500">Avg: <span class="text-indigo-600 text-sm">${exp.toFixed(
+                            <span class="font-bold text-sm text-slate-700 w-12">${playerLabel}</span>
+                            <span class="text-xs font-bold text-slate-500">${tr("ui.avg", "Avg")}: <span class="text-indigo-600 text-sm">${exp.toFixed(
                                 2
                             )}</span></span>
                         </div>
                         <div class="flex gap-3 text-xs font-medium">
-                            <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">Game: ${Math.round(
+                            <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">${tr(
+                                "ui.game",
+                                "Game"
+                            )}: ${Math.round(
                                 gameProb
                             )}%</span>
-                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">SmallSlam: ${Math.round(
+                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
+                                "ui.smallSlam",
+                                "Small Slam"
+                            )}: ${Math.round(
                                 slamProb
                             )}%</span>
-                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">GrandSlam: ${Math.round(
+                            <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100">${tr(
+                                "ui.grandSlam",
+                                "Grand Slam"
+                            )}: ${Math.round(
                                 grandSlamProb
                             )}%</span>
                         </div>
@@ -886,14 +1137,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 suitInfo.label
             }${rankChar}</span>
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-slate-400 uppercase font-bold">Exp Tricks</span>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">${tr(
+                                "ui.expTricks",
+                                "Exp Tricks"
+                            )}</span>
                             <span class="text-lg font-bold text-slate-700 leading-none">${lead.tricks.toFixed(
                                 2
                             )}</span>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Set Prob</span>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">${tr(
+                            "ui.setProb",
+                            "Set Prob"
+                        )}</span>
                         <span class="text-sm font-bold text-orange-600">${lead.per_of_set.toFixed(
                             1
                         )}%</span>
@@ -925,9 +1182,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function setupEventListeners() {
         // Mobile Nav
         const mobileNav = document.getElementById("mobile-nav");
-        document.getElementById("mobile-menu-btn").onclick = () => {
-            document.getElementById("mobile-nav").classList.toggle("hidden");
-        };
+        const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+        if (mobileMenuBtn && mobileNav) {
+            mobileMenuBtn.onclick = () => {
+                mobileNav.classList.toggle("hidden");
+            };
+        }
 
         document.addEventListener("click", (e) => {
             const routeTarget = e.target.closest("[data-route]");
@@ -936,7 +1196,21 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!route) return;
             e.preventDefault();
             navigateTo(route);
-            mobileNav.classList.add("hidden");
+            if (mobileNav) mobileNav.classList.add("hidden");
+        });
+
+        const switchers = ["lang-en", "lang-ja", "lang-en-mobile", "lang-ja-mobile"];
+        switchers.forEach((id) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener("click", async () => {
+                const nextLang = id.includes("ja") ? "ja" : "en";
+                if (nextLang === currentLanguage) return;
+                await setLanguage(nextLang, { persist: true, refreshUI: true });
+                const localizedPath = buildLocalizedPath(nextLang, currentRoutePath);
+                history.pushState({}, "", localizedPath);
+                navigateTo(currentRoutePath, false);
+            });
         });
 
         // Mobile Hand Focus
@@ -951,11 +1225,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Run Buttons
-        document.getElementById("btn-run-double").onclick = runDoubleDummy;
-        document.getElementById("btn-run-single").onclick = runSingleDummy;
-        document.getElementById("btn-run-lead").onclick = runLeadSolver;
+        const runDoubleBtn = document.getElementById("btn-run-double");
+        const runSingleBtn = document.getElementById("btn-run-single");
+        const runLeadBtn = document.getElementById("btn-run-lead");
+        if (runDoubleBtn) runDoubleBtn.onclick = runDoubleDummy;
+        if (runSingleBtn) runSingleBtn.onclick = runSingleDummy;
+        if (runLeadBtn) runLeadBtn.onclick = runLeadSolver;
 
         // Lead UI Update Event
-        document.getElementById("lead-leader").onchange = updateLeadModeUI;
+        const leadLeader = document.getElementById("lead-leader");
+        if (leadLeader) leadLeader.onchange = updateLeadModeUI;
     }
 });

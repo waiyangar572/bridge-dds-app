@@ -1,0 +1,155 @@
+{
+  "lang": "ja",
+  "site": {
+    "title": "Bridge Solver"
+  },
+  "nav": {
+    "double": "ダブルダミー分析",
+    "single": "シングルダミー分析",
+    "lead": "オープニングリード分析"
+  },
+  "buttons": {
+    "analyze": "分析実行",
+    "mobileAnalyze": "分析"
+  },
+  "meta": {
+    "double-dummy": {
+      "title": "Bridge Solver | ダブルダミー分析",
+      "description": "コントラクトブリッジのDouble Dummy解析。NT/各スートの最適トリックを比較できます。"
+    },
+    "single-dummy": {
+      "title": "Bridge Solver | シングルダミー分析",
+      "description": "HCP・Shape条件を指定したシングルダミーシミュレーションで実戦的な確率分布を確認できます。"
+    },
+    "opening-lead": {
+      "title": "Bridge Solver | オープニングリード分析",
+      "description": "Opening Lead候補ごとの期待トリック数とセット確率を比較できます。"
+    },
+    "privacy": {
+      "title": "Bridge Solver | プライバシーポリシー",
+      "description": "Bridge Solverのプライバシーポリシー。Cookie、広告、アクセス解析に関する方針を記載しています。"
+    },
+    "about": {
+      "title": "Bridge Solver | 運営情報",
+      "description": "Bridge Solverの目的と、コントラクトブリッジ分析ツールの提供方針について。"
+    },
+    "contact": {
+      "title": "Bridge Solver | お問い合わせ",
+      "description": "Bridge Solverへのお問い合わせ方法。Googleフォームからご連絡いただけます。"
+    }
+  },
+  "ui": {
+    "cardsLabel": "cards",
+    "editing": "編集中",
+    "samples": "サンプル",
+    "simulations": "シミュレーション",
+    "avg": "平均",
+    "game": "ゲーム",
+    "smallSlam": "スモールスラム",
+    "grandSlam": "グランドスラム",
+    "expTricks": "期待トリック",
+    "setProb": "セット確率",
+    "declarerAuto": "{declarer} (自動設定)",
+    "leadBasicTitle": "基本設定",
+    "leadLeader": "オープニングリーダー",
+    "contract": "コントラクト",
+    "declarer": "ディクレアラー",
+    "advancedTcl": "Advanced TCL (Optional)"
+  },
+  "toasts": {
+    "already13": "このハンドは既に13枚です",
+    "limit13": "13枚制限です",
+    "cards52": "カードが52枚選択されていません",
+    "inputContract": "コントラクトを入力してください (例: 3NT)",
+    "leaderNeed13": "{leader}の手札は13枚である必要があります (現在: {count}枚)",
+    "handNeed13": "{hand}の手札が13枚ではありません",
+    "errorPrefix": "Error: "
+  },
+  "result": {
+    "doubleTitle": "メイク数分析結果",
+    "singleTitle": "期待トリック数 (N/S)",
+    "leadTitle": "獲得トリック確率分布",
+    "player": "Player"
+  },
+  "footer": {
+    "description": "モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。",
+    "tools": "Tools",
+    "info": "Information",
+    "privacy": "Privacy Policy",
+    "about": "About Us",
+    "contact": "Contact"
+  },
+  "pages": {
+    "privacyTitle": "Privacy Policy",
+    "aboutTitle": "About Us",
+    "contactTitle": "Contact",
+    "contactLead": "ご意見・不具合報告・機能改善のご提案は、以下のGoogleフォームからお送りください。",
+    "contactButton": "Googleフォームで問い合わせる",
+    "contactNote": "※ 実運用時は `https://forms.gle/your-form-id` を正式なフォームURLに差し替えてください。"
+  },
+  "content": {
+    "double": {
+      "overview": "Double Dummy Solverは、4ハンド52枚が既知の前提で、各プレイヤーが最善を尽くした場合のメイクトリック数を高速に算出する分析機能です。コントラクト成否の確認だけでなく、スートごとの上限トリック比較により、最適コントラクトの見直しにも使えます。",
+      "how": [
+        "North / South / East / West にカードを割り当て、合計52枚になるまで入力します。",
+        "「分析実行」を押すと、NT・各スート契約のトリック上限が表示されます。",
+        "NSとEWの結果差を見て、実戦での競りや最終コントラクト判断に活用します。"
+      ],
+      "glossary": [
+        "全員の手が見えている前提での理論最適プレイ解析。",
+        "No Trump。切り札なしの契約。",
+        "契約達成に実際に取れるトリック数。"
+      ]
+    },
+    "single": {
+      "overview": "Single Dummy Solverは、見えている手札情報とHCP・Shape条件から未知ハンドをサンプリングし、取り得るトリック分布を推定する機能です。実戦で情報が不完全な場面でも、ゲーム・スラム到達率を定量的に比較できます。",
+      "how": [
+        "North/Southは「Hand」または「Feature」を選択して入力します。",
+        "未知ハンド側にはHCPレンジ、各スート枚数レンジ、Shape Typeを設定します。",
+        "分析実行後、平均トリック・Game率・Slam率を比較して最適契約候補を判断します。"
+      ],
+      "glossary": [
+        "High Card Points。A=4, K=3, Q=2, J=1で数える評価点。",
+        "4スート枚数配分（例: 4-4-3-2）。",
+        "条件を満たす配り分けを多数試行して確率を推定する手法。"
+      ]
+    },
+    "lead": {
+      "overview": "Opening Lead Analyzerは、想定コントラクトに対する初手リード候補を比較し、期待トリック数とセット確率を同時に確認できる分析ツールです。守備側の最適化だけでなく、宣言側がケアすべきリード筋の把握にも役立ちます。",
+      "how": [
+        "リーダー席、コントラクト、シミュレーション回数を設定します。",
+        "リーダーの13枚を入力し、他席はHCP/Shape条件でレンジ指定します。",
+        "結果の「Exp Tricks」と「Set Prob」を比較して、守備の初手方針を選びます。"
+      ],
+      "glossary": [
+        "1トリック目にディフェンダーが出す最初のカード。",
+        "契約を1ダウン以上にできる確率。",
+        "最終コントラクトを宣言した側のプレイヤー。"
+      ]
+    },
+    "privacy": [
+      "本サイトは、コントラクトブリッジの分析機能を提供するために運営されています。サービス品質向上のため、アクセス情報を収集する場合があります。",
+      "当サイトでは、Google AdSense等の第三者配信広告サービスを利用する可能性があります。これらのサービスはCookieを使用し、ユーザーの興味に応じた広告を表示することがあります。",
+      "アクセス解析には、トラフィック把握を目的として解析ツールを利用する場合があります。収集される情報は匿名の統計データとして扱われ、個人を特定する目的では使用しません。",
+      "Cookieの利用を希望しない場合、ブラウザ設定で無効化できます。ただし一部機能が正しく動作しない場合があります。"
+    ],
+    "about": [
+      "Bridge Solverは、モダンで使いやすいコントラクトブリッジ分析ツールを提供することを目的に運営しています。",
+      "ダブルダミー分析、条件付きシミュレーション、オープニングリード検討を1つの画面で扱い、学習者から競技者まで実戦的な意思決定を支援します。",
+      "今後も、読み物コンテンツと分析機能を継続的に拡充し、ブリッジ学習における再現性ある検証環境を提供していきます。"
+    ]
+  },
+  "terms": {
+    "north": "North",
+    "south": "South",
+    "east": "East",
+    "west": "West"
+  },
+  "select": {
+    "any": "指定なし",
+    "balanced": "バランスハンド",
+    "semiBalanced": "セミバランスハンド",
+    "unbalanced": "アンバランスハンド",
+    "balancedWithoutMajor": "メジャー4枚なしバランス"
+  }
+}
