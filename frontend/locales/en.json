@@ -1,155 +1,152 @@
 {
-  "lang": "en",
-  "site": {
-    "title": "Bridge Solver"
-  },
-  "nav": {
-    "double": "Double Dummy",
-    "single": "Single Dummy",
-    "lead": "Opening Lead"
-  },
-  "buttons": {
-    "analyze": "Analyze",
-    "mobileAnalyze": "Analyze"
-  },
-  "meta": {
-    "double-dummy": {
-      "title": "Bridge Solver | Double Dummy Solver",
-      "description": "Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract."
+    "lang": "en",
+    "site": {
+        "title": "Bridge Solver"
     },
-    "single-dummy": {
-      "title": "Bridge Solver | Single Dummy Solver",
-      "description": "Single Dummy simulation with HCP and shape constraints for practical contract bridge decisions."
+    "nav": {
+        "double": "Double Dummy",
+        "single": "Single Dummy",
+        "lead": "Opening Lead"
     },
-    "opening-lead": {
-      "title": "Bridge Solver | Opening Lead Analyzer",
-      "description": "Evaluate opening lead candidates by expected tricks and set probability in contract bridge."
+    "buttons": {
+        "analyze": "Analyze",
+        "mobileAnalyze": "Analyze"
     },
-    "privacy": {
-      "title": "Bridge Solver | Privacy Policy",
-      "description": "Privacy Policy for Bridge Solver, including cookie usage, ads, and analytics policy."
+    "meta": {
+        "double-dummy": {
+            "title": "Bridge Solver | Double Dummy Solver",
+            "description": "Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract."
+        },
+        "single-dummy": {
+            "title": "Bridge Solver | Single Dummy Solver",
+            "description": "Single Dummy simulation with HCP and shape constraints for practical contract bridge decisions."
+        },
+        "opening-lead": {
+            "title": "Bridge Solver | Opening Lead Analyzer",
+            "description": "Evaluate opening lead candidates by expected tricks and set probability in contract bridge."
+        },
+        "privacy": {
+            "title": "Bridge Solver | Privacy Policy",
+            "description": "Privacy Policy for Bridge Solver, including cookie usage, ads, and analytics policy."
+        },
+        "about": {
+            "title": "Bridge Solver | About Us",
+            "description": "About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools."
+        },
+        "contact": {
+            "title": "Bridge Solver | Contact",
+            "description": "Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests."
+        }
     },
-    "about": {
-      "title": "Bridge Solver | About Us",
-      "description": "About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools."
+    "ui": {
+        "cardsLabel": "cards",
+        "editing": "Editing",
+        "samples": "Samples",
+        "simulations": "Simulations",
+        "avg": "Avg",
+        "game": "Game",
+        "smallSlam": "Small Slam",
+        "grandSlam": "Grand Slam",
+        "expTricks": "Exp Tricks",
+        "setProb": "Set Prob",
+        "declarerAuto": "{declarer} (auto)",
+        "leadBasicTitle": "Basic Settings",
+        "leadLeader": "Opening Leader",
+        "contract": "Contract",
+        "declarer": "Declarer",
+        "advancedTcl": "Advanced TCL (Optional)"
     },
-    "contact": {
-      "title": "Bridge Solver | Contact",
-      "description": "Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests."
+    "toasts": {
+        "already13": "This hand already has 13 cards.",
+        "limit13": "You can assign up to 13 cards per hand.",
+        "cards52": "All 52 cards must be assigned before analysis.",
+        "inputContract": "Enter a contract (e.g. 3NT).",
+        "leaderNeed13": "{leader}'s hand must contain exactly 13 cards (current: {count}).",
+        "handNeed13": "{hand} must contain exactly 13 cards.",
+        "errorPrefix": "Error: "
+    },
+    "result": {
+        "doubleTitle": "Double Dummy Result",
+        "singleTitle": "Expected Tricks (N/S)",
+        "leadTitle": "Trick Distribution by Lead",
+        "player": "Player"
+    },
+    "footer": {
+        "description": "A modern browser-based contract bridge analysis platform.",
+        "tools": "Tools",
+        "info": "Information",
+        "privacy": "Privacy Policy",
+        "about": "About Us",
+        "contact": "Contact"
+    },
+    "pages": {
+        "privacyTitle": "Privacy Policy",
+        "aboutTitle": "About Us",
+        "contactTitle": "Contact",
+        "contactLead": "For feedback, bug reports, and feature requests, please use the Google Form below.",
+        "contactButton": "Open Google Form",
+        "contactNote": "Replace `https://forms.gle/your-form-id` with your production contact form URL."
+    },
+    "content": {
+        "double": {
+            "overview": "The Double Dummy Solver assumes all 52 cards are known and computes the maximum achievable tricks under best play from both sides. It helps you compare contract ceilings by denomination and reassess the best final contract.",
+            "how": [
+                "Assign cards to North, South, East, and West until all 52 cards are entered.",
+                "Click Analyze to view trick ceilings for NT and each suit contract.",
+                "Compare N/S and E/W outcomes to support practical auction and contract decisions."
+            ],
+            "glossary": [
+                "Optimal-play analysis under full information where all four hands are visible."
+            ]
+        },
+        "single": {
+            "overview": "Single Dummy Solver samples unknown hands from visible cards plus HCP and shape constraints, then estimates trick distributions. It is useful in practical situations where complete information is unavailable.",
+            "how": [
+                "For North/South, choose Hand or Feature input mode and enter your constraints.",
+                "For unknown hands, define HCP ranges, suit-length ranges, and shape type.",
+                "After analysis, compare average tricks, game probability, and slam probability."
+            ],
+            "glossary": [
+                "A shape of 4333, 4432, or 5332. Whether it includes five major cards depends on the agreed rules.",
+                "A hand with no shorts or seven-card suits, and typically without a six-card major."
+            ]
+        },
+        "lead": {
+            "overview": "Opening Lead Analyzer compares candidate opening leads against an assumed contract and reports expected tricks together with set probability. It supports both defensive lead selection and declarer-side risk awareness.",
+            "how": [
+                "Set the opening leader seat, contract, and number of simulations.",
+                "Enter the leader's exact 13 cards, then set HCP/shape ranges for other seats.",
+                "Compare Exp Tricks and Set Prob to choose the most practical opening lead."
+            ],
+            "glossary": [
+                "A shape of 4333, 4432, or 5332. Whether it includes five major cards depends on the agreed rules.",
+                "A hand with no shorts or seven-card suits, and typically without a six-card major.",
+                "Probability of defeating the contract by at least one trick."
+            ]
+        },
+        "privacy": [
+            "This website provides contract bridge analysis tools. To improve service quality, access-related information may be collected.",
+            "The site may use third-party ad services such as Google AdSense. These services may use cookies to show interest-based advertisements.",
+            "Traffic analytics tools may be used to understand usage trends. Collected data is treated as anonymous statistics and is not used to identify individuals.",
+            "If you do not want cookies, you can disable them in your browser settings. Some features may not function correctly in that case."
+        ],
+        "about": [
+            "Bridge Solver exists to provide modern, easy-to-use contract bridge analysis tools.",
+            "It unifies double-dummy analysis, constrained simulations, and opening lead evaluation in one interface to support practical decisions from learners to advanced players.",
+            "We will continue expanding both analysis capability and educational content to provide a reproducible bridge study environment."
+        ]
+    },
+    "terms": {
+        "north": "North",
+        "south": "South",
+        "east": "East",
+        "west": "West"
+    },
+    "select": {
+        "any": "Any",
+        "balanced": "Balanced",
+        "semiBalanced": "Semi-balanced",
+        "unbalanced": "Unbalanced",
+        "balancedWithoutMajor": "Balanced without a 4-card major"
     }
-  },
-  "ui": {
-    "cardsLabel": "cards",
-    "editing": "Editing",
-    "samples": "Samples",
-    "simulations": "Simulations",
-    "avg": "Avg",
-    "game": "Game",
-    "smallSlam": "Small Slam",
-    "grandSlam": "Grand Slam",
-    "expTricks": "Exp Tricks",
-    "setProb": "Set Prob",
-    "declarerAuto": "{declarer} (auto)",
-    "leadBasicTitle": "Basic Settings",
-    "leadLeader": "Opening Leader",
-    "contract": "Contract",
-    "declarer": "Declarer",
-    "advancedTcl": "Advanced TCL (Optional)"
-  },
-  "toasts": {
-    "already13": "This hand already has 13 cards.",
-    "limit13": "You can assign up to 13 cards per hand.",
-    "cards52": "All 52 cards must be assigned before analysis.",
-    "inputContract": "Enter a contract (e.g. 3NT).",
-    "leaderNeed13": "{leader}'s hand must contain exactly 13 cards (current: {count}).",
-    "handNeed13": "{hand} must contain exactly 13 cards.",
-    "errorPrefix": "Error: "
-  },
-  "result": {
-    "doubleTitle": "Double Dummy Result",
-    "singleTitle": "Expected Tricks (N/S)",
-    "leadTitle": "Trick Distribution by Lead",
-    "player": "Player"
-  },
-  "footer": {
-    "description": "A modern browser-based contract bridge analysis platform.",
-    "tools": "Tools",
-    "info": "Information",
-    "privacy": "Privacy Policy",
-    "about": "About Us",
-    "contact": "Contact"
-  },
-  "pages": {
-    "privacyTitle": "Privacy Policy",
-    "aboutTitle": "About Us",
-    "contactTitle": "Contact",
-    "contactLead": "For feedback, bug reports, and feature requests, please use the Google Form below.",
-    "contactButton": "Open Google Form",
-    "contactNote": "Replace `https://forms.gle/your-form-id` with your production contact form URL."
-  },
-  "content": {
-    "double": {
-      "overview": "The Double Dummy Solver assumes all 52 cards are known and computes the maximum achievable tricks under best play from both sides. It helps you compare contract ceilings by denomination and reassess the best final contract.",
-      "how": [
-        "Assign cards to North, South, East, and West until all 52 cards are entered.",
-        "Click Analyze to view trick ceilings for NT and each suit contract.",
-        "Compare N/S and E/W outcomes to support practical auction and contract decisions."
-      ],
-      "glossary": [
-        "Optimal-play analysis under full information where all four hands are visible.",
-        "No Trump contract with no trump suit.",
-        "The number of tricks you can actually take relative to the contract target."
-      ]
-    },
-    "single": {
-      "overview": "Single Dummy Solver samples unknown hands from visible cards plus HCP and shape constraints, then estimates trick distributions. It is useful in practical situations where complete information is unavailable.",
-      "how": [
-        "For North/South, choose Hand or Feature input mode and enter your constraints.",
-        "For unknown hands, define HCP ranges, suit-length ranges, and shape type.",
-        "After analysis, compare average tricks, game probability, and slam probability."
-      ],
-      "glossary": [
-        "High Card Points: A=4, K=3, Q=2, J=1.",
-        "Suit-length pattern across four suits, such as 4-4-3-2.",
-        "Repeated random deal generation under constraints to estimate probabilities."
-      ]
-    },
-    "lead": {
-      "overview": "Opening Lead Analyzer compares candidate opening leads against an assumed contract and reports expected tricks together with set probability. It supports both defensive lead selection and declarer-side risk awareness.",
-      "how": [
-        "Set the opening leader seat, contract, and number of simulations.",
-        "Enter the leader's exact 13 cards, then set HCP/shape ranges for other seats.",
-        "Compare Exp Tricks and Set Prob to choose the most practical opening lead."
-      ],
-      "glossary": [
-        "The first card played by the defense at trick one.",
-        "Probability of defeating the contract by at least one trick.",
-        "The player who first named the final contract denomination for their side."
-      ]
-    },
-    "privacy": [
-      "This website provides contract bridge analysis tools. To improve service quality, access-related information may be collected.",
-      "The site may use third-party ad services such as Google AdSense. These services may use cookies to show interest-based advertisements.",
-      "Traffic analytics tools may be used to understand usage trends. Collected data is treated as anonymous statistics and is not used to identify individuals.",
-      "If you do not want cookies, you can disable them in your browser settings. Some features may not function correctly in that case."
-    ],
-    "about": [
-      "Bridge Solver exists to provide modern, easy-to-use contract bridge analysis tools.",
-      "It unifies double-dummy analysis, constrained simulations, and opening lead evaluation in one interface to support practical decisions from learners to advanced players.",
-      "We will continue expanding both analysis capability and educational content to provide a reproducible bridge study environment."
-    ]
-  },
-  "terms": {
-    "north": "North",
-    "south": "South",
-    "east": "East",
-    "west": "West"
-  },
-  "select": {
-    "any": "Any",
-    "balanced": "Balanced",
-    "semiBalanced": "Semi-balanced",
-    "unbalanced": "Unbalanced",
-    "balancedWithoutMajor": "Balanced without a 4-card major"
-  }
 }

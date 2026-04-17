@@ -402,14 +402,6 @@
                             <dt class="font-bold text-slate-800">Double Dummy</dt>
                             <dd class="text-slate-600 mt-1">全員の手が見えている前提での理論最適プレイ解析。</dd>
                         </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">NT</dt>
-                            <dd class="text-slate-600 mt-1">No Trump。切り札なしの契約。</dd>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">メイクトリック</dt>
-                            <dd class="text-slate-600 mt-1">契約達成に実際に取れるトリック数。</dd>
-                        </div>
                     </dl>
                 </section>
             </div>
@@ -883,16 +875,12 @@
                     <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
                     <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">HCP</dt>
-                            <dd class="text-slate-600 mt-1">High Card Points。A=4, K=3, Q=2, J=1で数える評価点。</dd>
+                            <dt class="font-bold text-slate-800">バランスハンド</dt>
+                            <dd class="text-slate-600 mt-1">4333,4432,5332のいずれかの形。メジャー5枚を含むかどうかは取り決め次第。</dd>
                         </div>
                         <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">Shape</dt>
-                            <dd class="text-slate-600 mt-1">4スート枚数配分（例: 4-4-3-2）。</dd>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">Simulation</dt>
-                            <dd class="text-slate-600 mt-1">条件を満たす配り分けを多数試行して確率を推定する手法。</dd>
+                            <dt class="font-bold text-slate-800">セミバランスハンド</dt>
+                            <dd class="text-slate-600 mt-1">ショートがなく、7枚スートがないハンド。基本的に6枚メジャーは持たない。</dd>
                         </div>
                     </dl>
                 </section>
@@ -972,9 +960,6 @@
                             <i data-lucide="user" class="w-4 h-4"></i> North
                         </h4>
                         <div class="lead-card-selector hidden">
-                            <p class="text-xs text-slate-500 mb-2">
-                                正確なハンドを選択してください (13枚)
-                            </p>
                             <div
                                 class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
                                 0 / 13
@@ -1161,9 +1146,6 @@
                             <i data-lucide="user" class="w-4 h-4"></i> East
                         </h4>
                         <div class="lead-card-selector hidden">
-                            <p class="text-xs text-slate-500 mb-2">
-                                正確なハンドを選択してください (13枚)
-                            </p>
                             <div
                                 class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
                                 0 / 13
@@ -1257,9 +1239,6 @@
                             <i data-lucide="user" class="w-4 h-4"></i> South
                         </h4>
                         <div class="lead-card-selector hidden">
-                            <p class="text-xs text-slate-500 mb-2">
-                                正確なハンドを選択してください (13枚)
-                            </p>
                             <div
                                 class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
                                 0 / 13
@@ -1387,16 +1366,16 @@
                     <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
                     <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">Opening Lead</dt>
-                            <dd class="text-slate-600 mt-1">1トリック目にディフェンダーが出す最初のカード。</dd>
+                            <dt class="font-bold text-slate-800">バランスハンド</dt>
+                            <dd class="text-slate-600 mt-1">4333,4432,5332のいずれかの形。メジャー5枚を含むかどうかは取り決め次第。</dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt class="font-bold text-slate-800">セミバランスハンド</dt>
+                            <dd class="text-slate-600 mt-1">ショートがなく、7枚スートがないハンド。基本的に6枚メジャーは持たない。</dd>
                         </div>
                         <div class="bg-slate-50 p-3 rounded border border-slate-200">
                             <dt class="font-bold text-slate-800">Set Prob</dt>
-                            <dd class="text-slate-600 mt-1">契約を1ダウン以上にできる確率。</dd>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <dt class="font-bold text-slate-800">Declarer</dt>
-                            <dd class="text-slate-600 mt-1">最終コントラクトを宣言した側のプレイヤー。</dd>
+                            <dd class="text-slate-600 mt-1">コントラクトを1ダウン以上にできる確率。</dd>
                         </div>
                     </dl>
                 </section>
