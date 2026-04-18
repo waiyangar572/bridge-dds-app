@@ -78,6 +78,25 @@
                 text-decoration: underline;
             }
 
+            #mob-nav-double:hover {
+                text-decoration: none;
+            }
+            #mob-nav-single:hover {
+                text-decoration: none;
+            }
+            #mob-nav-lead:hover {
+                text-decoration: none;
+            }
+            #nav-double:hover {
+                text-decoration: none;
+            }
+            #nav-single:hover {
+                text-decoration: none;
+            }
+            #nav-lead:hover {
+                text-decoration: none;
+            }
+
             .site-header {
                 background: var(--bg-white) !important;
                 border-bottom: var(--border-whisper);
@@ -481,6 +500,25 @@
     </head>
     <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
         <noscript>
+            <style>
+                #view-single,
+                #view-lead {
+                    display: none !important;
+                }
+                #view-double:target,
+                #view-single:target,
+                #view-lead:target {
+                    display: block !important;
+                }
+                main:has(#view-double:target) #view-single,
+                main:has(#view-double:target) #view-lead,
+                main:has(#view-single:target) #view-double,
+                main:has(#view-single:target) #view-lead,
+                main:has(#view-lead:target) #view-double,
+                main:has(#view-lead:target) #view-single {
+                    display: none !important;
+                }
+            </style>
             <div
                 style="
                     max-width: 960px;
@@ -493,6 +531,11 @@
                 <strong>Bridge Solver</strong> requires JavaScript for interactive analysis.
                 <p style="margin-top: 8px">Direct links:</p>
                 <ul>
+                    <li>
+                        <a href="#view-double">Double Dummy</a> /
+                        <a href="#view-single">Single Dummy</a> /
+                        <a href="#view-lead">Opening Lead</a>
+                    </li>
                     <li>
                         <a href="/en/double-dummy">Double Dummy Solver</a> /
                         <a href="/ja/double-dummy">ダブルダミー分析</a>
@@ -528,27 +571,27 @@
 
                     <div class="hidden md:flex items-center gap-6">
                         <nav class="hidden md:flex space-x-8">
-                            <button
-                                type="button"
+                            <a
+                                href="#view-double"
                                 id="nav-double"
                                 data-route="/double-dummy"
                                 class="site-nav-btn tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 ダブルダミー分析
-                            </button>
-                            <button
-                                type="button"
+                            </a>
+                            <a
+                                href="#view-single"
                                 id="nav-single"
                                 data-route="/single-dummy"
                                 class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 シングルダミー分析
-                            </button>
-                            <button
-                                type="button"
+                            </a>
+                            <a
+                                href="#view-lead"
                                 id="nav-lead"
                                 data-route="/opening-lead"
                                 class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 オープニングリード分析
-                            </button>
+                            </a>
                         </nav>
                         <div class="lang-switch flex items-center">
                             <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1">
@@ -583,27 +626,27 @@
             </div>
             <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
                 <div class="flex flex-col p-2 space-y-1">
-                    <button
-                        type="button"
+                    <a
+                        href="#view-double"
                         id="mob-nav-double"
                         data-route="/double-dummy"
-                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-indigo-600">
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-indigo-600">
                         ダブルダミー分析
-                    </button>
-                    <button
-                        type="button"
+                    </a>
+                    <a
+                        href="#view-single"
                         id="mob-nav-single"
                         data-route="/single-dummy"
-                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         シングルダミー分析
-                    </button>
-                    <button
-                        type="button"
+                    </a>
+                    <a
+                        href="#view-lead"
                         id="mob-nav-lead"
                         data-route="/opening-lead"
-                        class="text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         オープニングリード分析
-                    </button>
+                    </a>
                 </div>
             </div>
         </header>
@@ -611,8 +654,8 @@
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
             <div id="view-double" class="flex-grow flex flex-col fade-in">
                 <div class="flex justify-between items-center mb-6 px-1">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        Double Dummy
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        Double Dummy Solver
                     </h2>
                     <div
                         class="text-xs font-mono text-slate-500 bg-white px-3 py-1.5 rounded border shadow-sm flex items-center gap-2">
@@ -772,6 +815,10 @@
             </div>
 
             <div id="view-single" class="hidden fade-in">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        Single Dummy Analyzer
+                    </h2>
+
                 <div
                     class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
                     <div
