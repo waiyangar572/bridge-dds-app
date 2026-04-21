@@ -32,11 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let latestLeadResults = [];
     let latestLeadCount = 0;
 
-    const NAV_KEYS = ["double", "single", "lead"];
+    const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
         "view-double",
         "view-single",
         "view-lead",
+        "view-probability",
         "view-privacy",
         "view-about",
         "view-contact",
@@ -63,6 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
             nav: "lead",
             viewId: "view-lead",
         },
+        "/probability": {
+            type: "tool",
+            metaKey: "probability",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+        },
         "/privacy": {
             type: "page",
             metaKey: "privacy",
@@ -86,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initDoubleDummyUI();
         initSingleDummyUI();
         initLeadSolverUI();
+        initProbabilityUI();
     }
     initShapePresetMajorToggles();
     setupEventListeners();
@@ -164,9 +173,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#nav-probability", tr("nav.probability", "Probability"));
         setNodeText("#mob-nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#mob-nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#mob-nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#mob-nav-probability", tr("nav.probability", "Probability"));
         setNodeText("#btn-run-double-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-lead-text", tr("buttons.analyze", "Analyze"));
@@ -184,6 +195,30 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#lead-sort-label", tr("ui.sortBy", "Sort"));
         setNodeText("#lead-sort-tricks", tr("ui.expTricks", "Exp Tricks"));
         setNodeText("#lead-sort-setprob", tr("ui.setProb", "Set Prob"));
+        setNodeText("#probability-title", tr("probability.title", "Probability Quick Check"));
+        setNodeText(
+            "#probability-lead",
+            tr("probability.lead", "Frequently used bridge probabilities at a glance."),
+        );
+        setNodeText(
+            "#prob-suit-title",
+            tr("probability.suit.title", "Suit distribution probability"),
+        );
+        setNodeText(
+            "#prob-suit-help",
+            tr("probability.suit.help", "Shows opponent split probabilities grouped by fit length."),
+        );
+        setNodeText(
+            "#prob-finesse-title",
+            tr("probability.qdrop.title", "Q-drop cashing probability"),
+        );
+        setNodeText(
+            "#prob-finesse-help",
+            tr(
+                "probability.qdrop.help",
+                "Probability of taking all tricks by cashing when Q is missing.",
+            ),
+        );
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
@@ -230,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "Double Dummy Solver",
             "Single Dummy Solver",
             "Opening Lead Analyzer",
+            "Probability Table",
             tr("footer.privacy", "Privacy Policy"),
             tr("footer.about", "About Us"),
             tr("footer.contact", "Contact"),
@@ -262,6 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#glossary-lead-term-1", tr("glossaryTerms.lead1", "Balanced Hand"));
         setNodeText("#glossary-lead-term-2", tr("glossaryTerms.lead2", "Semi-balanced Hand"));
         setNodeText("#glossary-lead-term-3", tr("glossaryTerms.lead3", "Set Probability"));
+
+        updateProbabilitySuitResult();
+        updateProbabilityQDropResult();
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -418,7 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function switchTab(tabName) {
         currentTab = tabName;
         // Hide tool views
-        ["double", "single", "lead"].forEach((t) => {
+        ["double", "single", "lead", "probability"].forEach((t) => {
             const view = document.getElementById("view-" + t);
             if (view) view.classList.add("hidden");
 
@@ -798,6 +837,152 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateLeadUI() {
         updateCardUI("lead-container", leadState);
+    }
+
+    // --- Probability Quick Check ---
+    function combination(n, r) {
+        if (r < 0 || r > n) return 0;
+        const k = Math.min(r, n - r);
+        let num = 1;
+        let den = 1;
+        for (let i = 1; i <= k; i++) {
+            num *= n - (k - i);
+            den *= i;
+        }
+        return num / den;
+    }
+
+    function computeFitDistributionFromPartnership() {
+        const fitDenominator = combination(52, 26);
+        const oppDenominator = combination(26, 13);
+        const groups = [];
+
+        for (let fitLength = 6; fitLength <= 13; fitLength++) {
+            const fitProbabilityRaw =
+                (combination(13, fitLength) * combination(39, 26 - fitLength)) /
+                fitDenominator;
+            const oppSuitCards = 13 - fitLength;
+            const splitMap = new Map();
+
+            for (
+                let left = Math.max(0, oppSuitCards - 13);
+                left <= Math.min(13, oppSuitCards);
+                left++
+            ) {
+                const right = oppSuitCards - left;
+                const splitRaw =
+                    (combination(oppSuitCards, left) *
+                        combination(26 - oppSuitCards, 13 - left)) /
+                    oppDenominator;
+                const high = Math.max(left, right);
+                const low = Math.min(left, right);
+                const key = `${high}-${low}`;
+                splitMap.set(key, (splitMap.get(key) || 0) + splitRaw);
+            }
+
+            const splits = Array.from(splitMap.entries())
+                .map(([split, raw]) => ({
+                    split,
+                    conditionalProbability: raw * 100,
+                    overallProbability: raw * fitProbabilityRaw * 100,
+                }))
+                .sort((a, b) => b.conditionalProbability - a.conditionalProbability);
+
+            groups.push({
+                fitLength,
+                fitProbability: fitProbabilityRaw * 100,
+                splits,
+            });
+        }
+        return groups.sort((a, b) => a.fitLength - b.fitLength);
+    }
+
+    function updateProbabilitySuitResult() {
+        const container = document.getElementById("prob-suit-result");
+        if (!container) return;
+
+        const groups = computeFitDistributionFromPartnership();
+        const headerSplit = tr("probability.suit.oppSplit", "Opp split");
+        const headerProb = tr("probability.suit.probability", "Probability");
+
+        const sections = groups
+            .map((group) => {
+                const heading = tr(
+                    "probability.suit.fitHeading",
+                    "Fit {fit} cards (overall {prob}%)",
+                    {
+                        fit: group.fitLength,
+                        prob: group.fitProbability.toFixed(2),
+                    },
+                );
+                const rows = group.splits
+                    .map(
+                        (splitRow) =>
+                            `<tr><td class="text-left font-semibold">${splitRow.split}</td><td>${splitRow.conditionalProbability.toFixed(2)}%</td></tr>`,
+                    )
+                    .join("");
+                return `
+                    <div class="mb-4 last:mb-0">
+                        <div class="result-meta-label mb-1">${heading}</div>
+                        <table class="w-full result-table">
+                            <thead><tr><th class="text-left">${headerSplit}</th><th>${headerProb}</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+            })
+            .join("");
+
+        container.innerHTML = `
+            <div class="text-xs text-slate-500 mb-2">${tr("probability.suit.note", "Fit lengths shown: 6 to 13 cards.")}</div>
+            ${sections}
+        `;
+    }
+
+    function computeQDropCashingProbability(fitLength) {
+        const missing = 13 - fitLength;
+        if (missing <= 0) return 100;
+        const denominator = combination(25, 12);
+        const singleton = combination(missing - 1, 0) * combination(26 - missing, 12);
+        const doubleton = combination(missing - 1, 1) * combination(26 - missing, 11);
+        return ((singleton + doubleton) / denominator) * 100;
+    }
+
+    function updateProbabilityQDropResult() {
+        const container = document.getElementById("prob-finesse-result");
+        if (!container) return;
+        const p8 = computeQDropCashingProbability(8);
+        const p9 = computeQDropCashingProbability(9);
+
+        container.innerHTML = `
+            <table class="w-full result-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
+                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-left font-semibold">${tr("probability.qdrop.fit8", "8-card fit")}</td>
+                        <td>${p8.toFixed(2)}%</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left font-semibold">${tr("probability.qdrop.fit9", "9-card fit")}</td>
+                        <td>${p9.toFixed(2)}%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="text-xs text-slate-500 mt-2">${tr(
+                "probability.qdrop.note",
+                "Assumption: Q is missing and you cash two top honors.",
+            )}</div>
+        `;
+    }
+
+    function initProbabilityUI() {
+        updateProbabilitySuitResult();
+        updateProbabilityQDropResult();
     }
 
     // --- Shared Card Rendering ---

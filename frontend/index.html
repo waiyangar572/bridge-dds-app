@@ -502,20 +502,28 @@
         <noscript>
             <style>
                 #view-single,
-                #view-lead {
+                #view-lead,
+                #view-probability {
                     display: none !important;
                 }
                 #view-double:target,
                 #view-single:target,
-                #view-lead:target {
+                #view-lead:target,
+                #view-probability:target {
                     display: block !important;
                 }
                 main:has(#view-double:target) #view-single,
                 main:has(#view-double:target) #view-lead,
+                main:has(#view-double:target) #view-probability,
                 main:has(#view-single:target) #view-double,
                 main:has(#view-single:target) #view-lead,
+                main:has(#view-single:target) #view-probability,
                 main:has(#view-lead:target) #view-double,
-                main:has(#view-lead:target) #view-single {
+                main:has(#view-lead:target) #view-single,
+                main:has(#view-lead:target) #view-probability,
+                main:has(#view-probability:target) #view-double,
+                main:has(#view-probability:target) #view-single,
+                main:has(#view-probability:target) #view-lead {
                     display: none !important;
                 }
             </style>
@@ -534,7 +542,8 @@
                     <li>
                         <a href="#view-double">Double Dummy</a> /
                         <a href="#view-single">Single Dummy</a> /
-                        <a href="#view-lead">Opening Lead</a>
+                        <a href="#view-lead">Opening Lead</a> /
+                        <a href="#view-probability">Probability</a>
                     </li>
                 </ul>
             </div>
@@ -571,6 +580,13 @@
                                 data-route="/opening-lead"
                                 class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
                                 オープニングリード分析
+                            </a>
+                            <a
+                                href="#view-probability"
+                                id="nav-probability"
+                                data-route="/probability"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                確率クイック
                             </a>
                         </nav>
                         <div class="lang-switch flex items-center">
@@ -626,6 +642,13 @@
                         data-route="/opening-lead"
                         class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         オープニングリード分析
+                    </a>
+                    <a
+                        href="#view-probability"
+                        id="mob-nav-probability"
+                        data-route="/probability"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        確率クイック
                     </a>
                 </div>
             </div>
@@ -1828,6 +1851,37 @@
                 </section>
             </div>
 
+            <div id="view-probability" class="hidden fade-in">
+                <h2 id="probability-title" class="text-2xl font-bold text-slate-800 mb-6">
+                    Probability Quick Check
+                </h2>
+                <p id="probability-lead" class="text-sm text-slate-600 mb-6">
+                    Frequently used bridge probabilities at a glance.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <h3 id="prob-suit-title" class="text-lg font-bold text-slate-900 mb-3">
+                            Suit distribution probability
+                        </h3>
+                        <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
+                            Estimate split probabilities for missing cards in one suit.
+                        </p>
+                        <div id="prob-suit-result" class="text-sm text-slate-700"></div>
+                    </section>
+
+                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <h3 id="prob-finesse-title" class="text-lg font-bold text-slate-900 mb-3">
+                            Q-drop cashing probability
+                        </h3>
+                        <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
+                            Probability of taking all tricks by cashing when Q is missing.
+                        </p>
+                        <div id="prob-finesse-result" class="text-sm text-slate-700"></div>
+                    </section>
+                </div>
+            </div>
+
             <div id="view-privacy" class="hidden fade-in">
                 <section
                     class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
@@ -1921,6 +1975,14 @@
                                     data-route="/opening-lead"
                                     class="hover:text-white"
                                     >Opening Lead Analyzer</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/probability"
+                                    data-route="/probability"
+                                    class="hover:text-white"
+                                    >Probability Quick Check</a
                                 >
                             </li>
                         </ul>

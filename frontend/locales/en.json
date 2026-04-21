@@ -6,7 +6,8 @@
     "nav": {
         "double": "Double Dummy",
         "single": "Single Dummy",
-        "lead": "Opening Lead"
+        "lead": "Opening Lead",
+        "probability": "Probability"
     },
     "buttons": {
         "analyze": "Analyze",
@@ -24,6 +25,10 @@
         "opening-lead": {
             "title": "Bridge Opening Lead Calculator | Bridge Solver",
             "description": "Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts."
+        },
+        "probability": {
+            "title": "Bridge Probability Quick Check | Bridge Solver",
+            "description": "Quickly check practical bridge odds such as suit split probability and basic finesse success rate."
         },
         "privacy": {
             "title": "Bridge Solver | Privacy Policy",
@@ -136,6 +141,32 @@
             "It unifies double-dummy analysis, constrained simulations, and opening lead evaluation in one interface to support practical decisions from learners to advanced players.",
             "We will continue expanding analysis capability to provide a reproducible bridge study environment."
         ]
+    },
+    "probability": {
+        "title": "Probability Table",
+        "lead": "Frequently used bridge probabilities at a glance.",
+        "calculate": "Calculate",
+        "suit": {
+            "title": "Suit distribution probability",
+            "help": "Shows opponent split probabilities grouped by fit length.",
+            "ownLength": "Your suit length",
+            "split": "Split",
+            "fitLength": "Fit length",
+            "partnerCards": "Partner cards",
+            "oppSplit": "Opponent split",
+            "fitHeading": "Fit {fit} cards (overall {prob}%)",
+            "probability": "Probability",
+            "note": "Shown range: 6-card fit to 13-card fit"
+        },
+        "qdrop": {
+            "title": "Q-missing cashing probability",
+            "help": "Probability of taking all tricks by cashing when Q is missing.",
+            "fit": "Fit",
+            "fit8": "8-card fit",
+            "fit9": "9-card fit",
+            "success": "All-win probability",
+            "note": "Assumption: Q is missing and you cash two top honors."
+        }
     },
     "terms": {
         "north": "North",
