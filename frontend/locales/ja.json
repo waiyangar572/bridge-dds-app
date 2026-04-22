@@ -7,7 +7,7 @@
         "double": "ダブルダミー分析",
         "single": "シングルダミー分析",
         "lead": "オープニングリード分析",
-        "probability": "確率クイック"
+        "probability": "確率表"
     },
     "buttons": {
         "analyze": "分析実行",
@@ -27,7 +27,7 @@
             "description": "Opening Lead候補ごとの期待トリック数とセット確率を比較できます。"
         },
         "probability": {
-            "title": "Bridge Solver | 確率クイックチェック",
+            "title": "Bridge Solver | 確率表",
             "description": "ブリッジで頻出するスート分布確率とフィネス成功率を素早く確認できます。"
         },
         "privacy": {
