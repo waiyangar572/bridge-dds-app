@@ -455,6 +455,41 @@
                 border-bottom: none;
             }
 
+            .qdrop-fit-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .qdrop-fit-toggle:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .qdrop-fit-toggle.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-fit-toggle-caret {
+                font-size: 10px;
+                opacity: 0.8;
+            }
+
             .dist-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -1877,9 +1912,16 @@
                         <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
                             Probability of taking all tricks by cashing when Q is missing.
                         </p>
+                        <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
+                            Click a fit cell to toggle comparison for that holding.
+                        </p>
                         <div id="prob-finesse-result" class="text-sm text-slate-700"></div>
                     </section>
                 </div>
+
+                <!-- admax -->
+<script src="https://adm.shinobi.jp/o/2452c9aa9b29bbfa3e2e8799678272f0"></script>
+<!-- admax -->
             </div>
 
             <div id="view-privacy" class="hidden fade-in">

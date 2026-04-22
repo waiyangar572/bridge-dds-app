@@ -159,6 +159,7 @@
         "qdrop": {
             "title": "Q抜け 最適ライン全勝確率",
             "help": "Qが不足しているとき、最適ライン前提で全勝できる確率を表示します。",
+            "compareHint": "フィット欄をクリックすると、その持ち方のライン比較を表示・非表示できます。",
             "group8Title": "8枚フィット",
             "group9Title": "9枚フィット",
             "fit": "フィット",
@@ -175,6 +176,12 @@
             "line54": "Aを叩き、表の4-0ならフィネス、でなければKを叩く",
             "line63": "Aを叩き、表の4-0ならフィネス、でなければKを叩く",
             "line72": "AKを叩く",
+            "compareResultTitle": "{fit} のライン比較",
+            "compareLineFinesseFirst": "先にフィネスする",
+            "compareLineCashAK": "AKを叩いてQドロップを狙う",
+            "compareLineDoubleFinesse": "2回フィネスする",
+            "compareLineCashAThenFinesse": "Aを叩いてからフィネスする",
+            "bestTag": "ベスト",
             "success": "全勝確率",
             "note": "前提: Q抜け。各行ごとに指定プレイラインの全勝確率を表示。"
         }

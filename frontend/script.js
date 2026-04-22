@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
+    let qdropComparisonFit = "";
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -220,6 +221,13 @@ document.addEventListener("DOMContentLoaded", () => {
             tr(
                 "probability.qdrop.help",
                 "Probability of taking all tricks by cashing when Q is missing.",
+            ),
+        );
+        setNodeText(
+            "#prob-qdrop-click-hint",
+            tr(
+                "probability.qdrop.compareHint",
+                "Click a fit cell to toggle comparison for that holding.",
             ),
         );
 
@@ -974,10 +982,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     (state.side === "offside" && state.qLen === 1);
             } else if (model === "62-double-finesse") {
                 ok = state.side === "onside" && state.qLen <= 4;
+            } else if (model == "62-cash-and-finesse") {
+                ok =
+                    (state.side === "onside" && state.qLen <= 3) ||
+                    (state.side === "offside" && state.qLen === 1);
             } else if (model === "9fit-ak-drop-or-onside-40") {
                 ok = isQDrop(state) || isOnsideFourZero(state);
             } else if (model === "9fit-drop-only") {
                 ok = isQDrop(state);
+            } else if (model === "drop-only") {
+                ok = isQDrop(state);
+            } else if (model === "onside-only") {
+                ok = state.side === "onside";
             }
             return ok ? sum + state.p : sum;
         }, 0);
@@ -985,12 +1001,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return win * 100;
     }
 
-    function updateProbabilityQDropResult() {
-        const container = document.getElementById("prob-finesse-result");
-        if (!container) return;
-
+    function getQDropBestRows() {
         const rows8 = [
             {
+                key: "44",
                 fit: tr("probability.qdrop.fit44", "4-4 fit"),
                 line: tr(
                     "probability.qdrop.line44",
@@ -999,6 +1013,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 probability: computeQLineProbability(5, "44-optimal"),
             },
             {
+                key: "53",
                 fit: tr("probability.qdrop.fit53", "5-3 fit"),
                 line: tr(
                     "probability.qdrop.line53",
@@ -1007,6 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 probability: computeQLineProbability(5, "53-optimal"),
             },
             {
+                key: "62",
                 fit: tr("probability.qdrop.fit62", "6-2 fit"),
                 line: tr(
                     "probability.qdrop.line62",
@@ -1018,6 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const rows9 = [
             {
+                key: "54",
                 fit: tr("probability.qdrop.fit54", "5-4 fit"),
                 line: tr(
                     "probability.qdrop.line54",
@@ -1026,6 +1043,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
             },
             {
+                key: "63",
                 fit: tr("probability.qdrop.fit63", "6-3 fit"),
                 line: tr(
                     "probability.qdrop.line63",
@@ -1034,35 +1052,248 @@ document.addEventListener("DOMContentLoaded", () => {
                 probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
             },
             {
+                key: "72",
                 fit: tr("probability.qdrop.fit72", "7-2 fit"),
                 line: tr("probability.qdrop.line72", "Play for Q-drop only."),
                 probability: computeQLineProbability(4, "9fit-drop-only"),
             },
         ];
 
-        const body8 = rows8
-            .map(
-                (row) => `
-                    <tr>
-                        <td class="text-left font-semibold">${row.fit}</td>
-                        <td class="text-left">${row.line}</td>
-                        <td>${row.probability.toFixed(2)}%</td>
-                    </tr>
-                `,
-            )
-            .join("");
+        return { rows8, rows9 };
+    }
 
-        const body9 = rows9
-            .map(
-                (row) => `
+    function getQDropComparisonRows(fitKey) {
+        if (!fitKey) return null;
+        const bestTag = tr("probability.qdrop.bestTag", "Best");
+        const make = (lineKey, fallback, missing, model, isBest = false) => ({
+            line: `${tr(lineKey, fallback)}${
+                isBest
+                    ? ` <span class="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">${bestTag}</span>`
+                    : ""
+            }`,
+            probability: computeQLineProbability(missing, model),
+        });
+
+        if (fitKey === "44") {
+            return {
+                fit: tr("probability.qdrop.fit44", "4-4 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line44",
+                        "Cash A then finesse.",
+                        5,
+                        "44-optimal",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineFinesseFirst",
+                        "Take finesse first.",
+                        5,
+                        "onside-only",
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAK",
+                        "Cash AK and play for drop.",
+                        5,
+                        "drop-only",
+                    ),
+                ],
+            };
+        }
+        if (fitKey === "53") {
+            return {
+                fit: tr("probability.qdrop.fit53", "5-3 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line53",
+                        "Cash A then finesse.",
+                        5,
+                        "53-optimal",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineDoubleFinesse",
+                        "Take two finesses.",
+                        5,
+                        "62-double-finesse",
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAK",
+                        "Cash AK and play for drop.",
+                        5,
+                        "drop-only",
+                    ),
+                ],
+            };
+        }
+        if (fitKey === "62") {
+            return {
+                fit: tr("probability.qdrop.fit62", "6-2 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line62",
+                        "Do not cash on Q side; take two finesses.",
+                        5,
+                        "62-double-finesse",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAThenFinesse",
+                        "Cash A then finesse.",
+                        5,
+                        "62-cash-and-finesse",
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAK",
+                        "Cash AK and play for drop.",
+                        5,
+                        "drop-only",
+                    ),
+                ],
+            };
+        }
+        if (fitKey === "54") {
+            return {
+                fit: tr("probability.qdrop.fit54", "5-4 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line54",
+                        "Cash A and K.",
+                        4,
+                        "9fit-ak-drop-or-onside-40",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAK",
+                        "Cash AK and play for drop.",
+                        4,
+                        "drop-only",
+                    ),
+                    make(
+                        "probability.qdrop.compareLineFinesseFirst",
+                        "Take finesse first.",
+                        4,
+                        "onside-only",
+                    ),
+                ],
+            };
+        }
+        if (fitKey === "63") {
+            return {
+                fit: tr("probability.qdrop.fit63", "6-3 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line63",
+                        "Cash A and K.",
+                        4,
+                        "9fit-ak-drop-or-onside-40",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAK",
+                        "Cash AK and play for drop.",
+                        4,
+                        "drop-only",
+                    ),
+                    make(
+                        "probability.qdrop.compareLineFinesseFirst",
+                        "Take finesse first.",
+                        4,
+                        "onside-only",
+                    ),
+                ],
+            };
+        }
+        if (fitKey === "72") {
+            return {
+                fit: tr("probability.qdrop.fit72", "7-2 fit"),
+                rows: [
+                    make(
+                        "probability.qdrop.line72",
+                        "Play for Q-drop only.",
+                        4,
+                        "9fit-drop-only",
+                        true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineFinesseFirst",
+                        "Take finesse first.",
+                        4,
+                        "onside-only",
+                    ),
+                ],
+            };
+        }
+        return null;
+    }
+
+    function updateProbabilityQDropResult() {
+        const container = document.getElementById("prob-finesse-result");
+        if (!container) return;
+
+        const { rows8, rows9 } = getQDropBestRows();
+        const selectedComparison = getQDropComparisonRows(qdropComparisonFit);
+        const renderBody = (rows) =>
+            rows
+                .map((row) => {
+                    const expanded = selectedComparison && qdropComparisonFit === row.key;
+                    const expandedRow = expanded
+                        ? `
                     <tr>
-                        <td class="text-left font-semibold">${row.fit}</td>
+                        <td colspan="3" class="text-left bg-slate-50">
+                            <div class="text-xs font-semibold text-slate-600 mb-2">${tr(
+                                "probability.qdrop.compareResultTitle",
+                                "Comparison for {fit}",
+                                { fit: selectedComparison.fit },
+                            )}</div>
+                            <table class="w-full result-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
+                                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${selectedComparison.rows
+                                        .map(
+                                            (cmp) => `
+                                        <tr>
+                                            <td class="text-left">${cmp.line}</td>
+                                            <td>${cmp.probability.toFixed(2)}%</td>
+                                        </tr>
+                                    `,
+                                        )
+                                        .join("")}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    `
+                        : "";
+                    return `
+                    <tr>
+                        <td class="text-left font-semibold">
+                            <button
+                                type="button"
+                                data-qdrop-fit="${row.key}"
+                                aria-pressed="${qdropComparisonFit === row.key ? "true" : "false"}"
+                                class="qdrop-fit-toggle ${qdropComparisonFit === row.key ? "is-active" : ""}">
+                                ${row.fit}
+                                <span class="qdrop-fit-toggle-caret">${
+                                    qdropComparisonFit === row.key ? "▼" : "▶"
+                                }</span>
+                            </button>
+                        </td>
                         <td class="text-left">${row.line}</td>
                         <td>${row.probability.toFixed(2)}%</td>
                     </tr>
-                `,
-            )
-            .join("");
+                    ${expandedRow}
+                `;
+                })
+                .join("");
+
+        const body8 = renderBody(rows8);
+        const body9 = renderBody(rows9);
 
         container.innerHTML = `
             <div class="mb-4">
@@ -1690,6 +1921,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (latestLeadResults.length > 0) {
                     renderLeadResults(latestLeadResults, latestLeadCount);
                 }
+            });
+        }
+
+        const qdropResult = document.getElementById("prob-finesse-result");
+        if (qdropResult) {
+            qdropResult.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                const toggle = target.closest("[data-qdrop-fit]");
+                if (!toggle) return;
+                const nextFit = toggle.getAttribute("data-qdrop-fit") || "";
+                qdropComparisonFit = qdropComparisonFit === nextFit ? "" : nextFit;
+                updateProbabilityQDropResult();
             });
         }
     }
