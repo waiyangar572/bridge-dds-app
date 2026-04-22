@@ -206,7 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         setNodeText(
             "#prob-suit-help",
-            tr("probability.suit.help", "Shows opponent split probabilities grouped by fit length."),
+            tr(
+                "probability.suit.help",
+                "Shows opponent split probabilities grouped by fit length.",
+            ),
         );
         setNodeText(
             "#prob-finesse-title",
@@ -857,10 +860,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const oppDenominator = combination(26, 13);
         const groups = [];
 
-        for (let fitLength = 6; fitLength <= 13; fitLength++) {
+        for (let fitLength = 6; fitLength <= 11; fitLength++) {
             const fitProbabilityRaw =
-                (combination(13, fitLength) * combination(39, 26 - fitLength)) /
-                fitDenominator;
+                (combination(13, fitLength) * combination(39, 26 - fitLength)) / fitDenominator;
             const oppSuitCards = 13 - fitLength;
             const splitMap = new Map();
 
@@ -871,8 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ) {
                 const right = oppSuitCards - left;
                 const splitRaw =
-                    (combination(oppSuitCards, left) *
-                        combination(26 - oppSuitCards, 13 - left)) /
+                    (combination(oppSuitCards, left) * combination(26 - oppSuitCards, 13 - left)) /
                     oppDenominator;
                 const high = Math.max(left, right);
                 const low = Math.min(left, right);
@@ -939,43 +940,160 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    function computeQDropCashingProbability(fitLength) {
-        const missing = 13 - fitLength;
-        if (missing <= 0) return 100;
-        const denominator = combination(25, 12);
-        const singleton = combination(missing - 1, 0) * combination(26 - missing, 12);
-        const doubleton = combination(missing - 1, 1) * combination(26 - missing, 11);
-        return ((singleton + doubleton) / denominator) * 100;
+    function buildQMissingStates(missing) {
+        const states = [];
+        const denominator = combination(26, 13);
+        for (let qLen = 1; qLen <= missing; qLen++) {
+            const onsideProb =
+                (combination(missing - 1, qLen - 1) * combination(26 - missing, 13 - qLen)) /
+                denominator;
+            if (onsideProb > 0) states.push({ side: "onside", qLen, p: onsideProb });
+
+            const onsideWithoutQ = missing - qLen;
+            const offsideProb =
+                (combination(missing - 1, onsideWithoutQ) *
+                    combination(26 - missing, 13 - onsideWithoutQ)) /
+                denominator;
+            if (offsideProb > 0) states.push({ side: "offside", qLen, p: offsideProb });
+        }
+        return states;
+    }
+
+    function computeQLineProbability(missing, model) {
+        const states = buildQMissingStates(missing);
+        const isQDrop = (state) => state.qLen <= 2;
+        const isOnsideFourZero = (state) => state.side === "onside" && state.qLen === missing;
+
+        const win = states.reduce((sum, state) => {
+            let ok = false;
+            if (model === "44-optimal") {
+                ok = state.side === "onside" || (state.side === "offside" && state.qLen === 1);
+            } else if (model === "53-optimal") {
+                ok =
+                    (state.side === "onside" && state.qLen <= 4) ||
+                    (state.side === "offside" && state.qLen === 1);
+            } else if (model === "62-double-finesse") {
+                ok = state.side === "onside" && state.qLen <= 4;
+            } else if (model === "9fit-ak-drop-or-onside-40") {
+                ok = isQDrop(state) || isOnsideFourZero(state);
+            } else if (model === "9fit-drop-only") {
+                ok = isQDrop(state);
+            }
+            return ok ? sum + state.p : sum;
+        }, 0);
+
+        return win * 100;
     }
 
     function updateProbabilityQDropResult() {
         const container = document.getElementById("prob-finesse-result");
         if (!container) return;
-        const p8 = computeQDropCashingProbability(8);
-        const p9 = computeQDropCashingProbability(9);
+
+        const rows8 = [
+            {
+                fit: tr("probability.qdrop.fit44", "4-4 fit"),
+                line: tr(
+                    "probability.qdrop.line44",
+                    "Cash A then finesse. Covers offside singleton Q and onside Q.",
+                ),
+                probability: computeQLineProbability(5, "44-optimal"),
+            },
+            {
+                fit: tr("probability.qdrop.fit53", "5-3 fit"),
+                line: tr(
+                    "probability.qdrop.line53",
+                    "Cash one top honor then finesse. Even with onside Q, a 5-0 break cannot all-win.",
+                ),
+                probability: computeQLineProbability(5, "53-optimal"),
+            },
+            {
+                fit: tr("probability.qdrop.fit62", "6-2 fit"),
+                line: tr(
+                    "probability.qdrop.line62",
+                    "Do not cash on Q side; take two finesses. All-win when onside Q is 4 or fewer.",
+                ),
+                probability: computeQLineProbability(5, "62-double-finesse"),
+            },
+        ];
+
+        const rows9 = [
+            {
+                fit: tr("probability.qdrop.fit54", "5-4 fit"),
+                line: tr(
+                    "probability.qdrop.line54",
+                    "Cash A and K. Win on Q-drop or onside 4-0 only.",
+                ),
+                probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
+            },
+            {
+                fit: tr("probability.qdrop.fit63", "6-3 fit"),
+                line: tr(
+                    "probability.qdrop.line63",
+                    "Cash A and K. Win on Q-drop or onside 4-0 only.",
+                ),
+                probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
+            },
+            {
+                fit: tr("probability.qdrop.fit72", "7-2 fit"),
+                line: tr("probability.qdrop.line72", "Play for Q-drop only."),
+                probability: computeQLineProbability(4, "9fit-drop-only"),
+            },
+        ];
+
+        const body8 = rows8
+            .map(
+                (row) => `
+                    <tr>
+                        <td class="text-left font-semibold">${row.fit}</td>
+                        <td class="text-left">${row.line}</td>
+                        <td>${row.probability.toFixed(2)}%</td>
+                    </tr>
+                `,
+            )
+            .join("");
+
+        const body9 = rows9
+            .map(
+                (row) => `
+                    <tr>
+                        <td class="text-left font-semibold">${row.fit}</td>
+                        <td class="text-left">${row.line}</td>
+                        <td>${row.probability.toFixed(2)}%</td>
+                    </tr>
+                `,
+            )
+            .join("");
 
         container.innerHTML = `
-            <table class="w-full result-table">
-                <thead>
-                    <tr>
-                        <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
-                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-left font-semibold">${tr("probability.qdrop.fit8", "8-card fit")}</td>
-                        <td>${p8.toFixed(2)}%</td>
-                    </tr>
-                    <tr>
-                        <td class="text-left font-semibold">${tr("probability.qdrop.fit9", "9-card fit")}</td>
-                        <td>${p9.toFixed(2)}%</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="mb-4">
+                <div class="result-meta-label mb-1">${tr("probability.qdrop.group8Title", "8-card fit group")}</div>
+                <table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
+                            <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
+                            <th>${tr("probability.qdrop.success", "All-win probability")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${body8}</tbody>
+                </table>
+            </div>
+            <div>
+                <div class="result-meta-label mb-1">${tr("probability.qdrop.group9Title", "9-card fit group")}</div>
+                <table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
+                            <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
+                            <th>${tr("probability.qdrop.success", "All-win probability")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${body9}</tbody>
+                </table>
+            </div>
             <div class="text-xs text-slate-500 mt-2">${tr(
                 "probability.qdrop.note",
-                "Assumption: Q is missing and you cash two top honors.",
+                "Assumption: Q is missing. Each row shows all-win probability for its stated play line.",
             )}</div>
         `;
     }
@@ -1487,9 +1605,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             "ui.setProb",
                             "Set Prob",
                         )}</span>
-                        <span class="result-value-accent">${lead.per_of_set.toFixed(
-                            1,
-                        )}%</span>
+                        <span class="result-value-accent">${lead.per_of_set.toFixed(1)}%</span>
                     </div>
                 </div>
                 ${createDistributionTable(dist)}

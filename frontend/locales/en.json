@@ -159,13 +159,26 @@
             "note": "Shown range: 6-card fit to 13-card fit"
         },
         "qdrop": {
-            "title": "Q-missing cashing probability",
-            "help": "Probability of taking all tricks by cashing when Q is missing.",
+            "title": "Q-missing optimal-line all-win probability",
+            "help": "All-win probability under an optimal-line model when Q is missing.",
+            "group8Title": "8-card fit",
+            "group9Title": "9-card fit",
             "fit": "Fit",
-            "fit8": "8-card fit",
-            "fit9": "9-card fit",
+            "fit44": "4-4 fit",
+            "fit53": "5-3 fit",
+            "fit62": "6-2 fit",
+            "fit54": "5-4 fit",
+            "fit63": "6-3 fit",
+            "fit72": "7-2 fit",
+            "playLine": "Play line",
+            "line44": "Cash A then finesse.",
+            "line53": "Cash A then finesse.",
+            "line62": "Take two finesses.",
+            "line54": "Cash A and finesse if onside 4-0; otherwise, cash K.",
+            "line63": "Cash A and finesse if onside 4-0; otherwise, cash K.",
+            "line72": "Cash AK",
             "success": "All-win probability",
-            "note": "Assumption: Q is missing and you cash two top honors."
+            "note": "Assumption: Q is missing. Each row shows all-win probability for its stated play line."
         }
     },
     "terms": {
@@ -174,22 +187,22 @@
         "east": "East",
         "west": "West"
     },
-  "select": {
-    "any": "Any",
-    "balanced": "Balanced",
-    "semiBalanced": "Semi-balanced",
-    "unbalanced": "Unbalanced",
-    "balancedWithoutMajor": "Balanced without a 4-card major",
-    "fiveCardMajor": "5-card major",
-    "yes": "Yes",
-    "no": "No"
-  },
-  "glossaryTerms": {
-    "double1": "Double Dummy",
-    "single1": "Balanced Hand",
-    "single2": "Semi-balanced Hand",
-    "lead1": "Balanced Hand",
-    "lead2": "Semi-balanced Hand",
-    "lead3": "Set Probability"
-  }
+    "select": {
+        "any": "Any",
+        "balanced": "Balanced",
+        "semiBalanced": "Semi-balanced",
+        "unbalanced": "Unbalanced",
+        "balancedWithoutMajor": "Balanced without a 4-card major",
+        "fiveCardMajor": "5-card major",
+        "yes": "Yes",
+        "no": "No"
+    },
+    "glossaryTerms": {
+        "double1": "Double Dummy",
+        "single1": "Balanced Hand",
+        "single2": "Semi-balanced Hand",
+        "lead1": "Balanced Hand",
+        "lead2": "Semi-balanced Hand",
+        "lead3": "Set Probability"
+    }
 }
