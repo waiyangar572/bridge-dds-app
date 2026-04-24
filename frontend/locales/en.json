@@ -161,7 +161,7 @@
         "qdrop": {
             "title": "Q-missing optimal-line all-win probability",
             "help": "All-win probability under an optimal-line model when Q is missing.",
-            "compareHint": "Click a fit cell to toggle comparison for that holding.",
+            "compareHint": "Tap a holding inside the 8/9-card fit card to flip and view its line comparison.",
             "group8Title": "8-card fit",
             "group9Title": "9-card fit",
             "fit": "Fit",
@@ -172,6 +172,7 @@
             "fit63": "6-3",
             "fit72": "7-2",
             "playLine": "Play line",
+            "bestPlayLine": "Best play lines by fit",
             "line44": "Cash A then finesse.",
             "line53": "Cash A then finesse.",
             "line62": "Take two finesses.",

@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
-    let qdropComparisonFit = "";
+    let qdropFlippedGroups = new Set();
+    let qdropSelectedFitByGroup = { "8": "44", "9": "54" };
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -227,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "#prob-qdrop-click-hint",
             tr(
                 "probability.qdrop.compareHint",
-                "Click a fit cell to toggle comparison for that holding.",
+                "Tap a holding inside the 8/9-card fit card to flip and view its line comparison.",
             ),
         );
 
@@ -1227,100 +1228,99 @@ document.addEventListener("DOMContentLoaded", () => {
         return null;
     }
 
+    function getQDropCompareMarkup(fitKey) {
+        const comparison = getQDropComparisonRows(fitKey);
+        if (!comparison) return { fit: "", rowsHtml: "" };
+        const bestProbability = Math.max(...comparison.rows.map((cmp) => cmp.probability));
+        const rowsHtml = comparison.rows
+            .map((cmp) => {
+                const diff = bestProbability - cmp.probability;
+                return `
+                <li class="qdrop-card-compare-row">
+                    <div class="qdrop-card-compare-line">${cmp.line}</div>
+                    <div class="qdrop-card-compare-meta">
+                        <span class="qdrop-card-compare-prob">${cmp.probability.toFixed(2)}%</span>
+                        <span class="qdrop-card-compare-diff ${diff <= 0.005 ? "is-best" : ""}">${
+                            diff <= 0.005 ? "±0.00pt" : `-${diff.toFixed(2)}pt`
+                        }</span>
+                    </div>
+                </li>
+            `;
+            })
+            .join("");
+        return { fit: comparison.fit, rowsHtml };
+    }
+
     function updateProbabilityQDropResult() {
         const container = document.getElementById("prob-finesse-result");
         if (!container) return;
 
         const { rows8, rows9 } = getQDropBestRows();
-        const selectedComparison = getQDropComparisonRows(qdropComparisonFit);
-        const renderBody = (rows) =>
-            rows
-                .map((row) => {
-                    const expanded = selectedComparison && qdropComparisonFit === row.key;
-                    const expandedRow = expanded
-                        ? `
-                    <tr>
-                        <td colspan="3" class="text-left bg-slate-50">
-                            <div class="text-xs font-semibold text-slate-600 mb-2">${tr(
-                                "probability.qdrop.compareResultTitle",
-                                "Comparison for {fit}",
-                                { fit: selectedComparison.fit },
-                            )}</div>
-                            <table class="w-full result-table">
-                                <thead>
-                                    <tr>
-                                        <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
-                                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${selectedComparison.rows
-                                        .map(
-                                            (cmp) => `
-                                        <tr>
-                                            <td class="text-left">${cmp.line}</td>
-                                            <td>${cmp.probability.toFixed(2)}%</td>
-                                        </tr>
-                                    `,
-                                        )
-                                        .join("")}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                    `
-                        : "";
-                    return `
-                    <tr>
-                        <td class="text-left font-semibold">
-                            <button
-                                type="button"
-                                data-qdrop-fit="${row.key}"
-                                aria-pressed="${qdropComparisonFit === row.key ? "true" : "false"}"
-                                class="qdrop-fit-toggle ${qdropComparisonFit === row.key ? "is-active" : ""}">
-                                ${row.fit}
-                                <span class="qdrop-fit-toggle-caret">${
-                                    qdropComparisonFit === row.key ? "▼" : "▶"
-                                }</span>
-                            </button>
-                        </td>
-                        <td class="text-left">${row.line}</td>
-                        <td>${row.probability.toFixed(2)}%</td>
-                    </tr>
-                    ${expandedRow}
-                `;
-                })
+        const renderGroupCard = (groupKey, title, rows) => {
+            const defaultFitKey = rows[0]?.key || "";
+            const selectedFitKey = rows.some((row) => row.key === qdropSelectedFitByGroup[groupKey])
+                ? qdropSelectedFitByGroup[groupKey]
+                : defaultFitKey;
+            qdropSelectedFitByGroup[groupKey] = selectedFitKey;
+            const selectedRow = rows.find((row) => row.key === selectedFitKey) || rows[0];
+            const compareContent = getQDropCompareMarkup(selectedFitKey);
+            const fitOptions = rows
+                .map(
+                    (row) => `
+                <button
+                    type="button"
+                    data-qdrop-fit-option="${row.key}"
+                    data-qdrop-group="${groupKey}"
+                    class="qdrop-fit-option ${row.key === selectedFitKey ? "is-active" : ""}">
+                    <span class="qdrop-fit-option-head">
+                        <span>${row.fit}</span>
+                        <span>${row.probability.toFixed(2)}%</span>
+                    </span>
+                    <span class="qdrop-fit-option-line">${row.line}</span>
+                </button>
+            `,
+                )
                 .join("");
-
-        const body8 = renderBody(rows8);
-        const body9 = renderBody(rows9);
+            const flipped = qdropFlippedGroups.has(groupKey);
+            return `
+            <div class="qdrop-group-block">
+                <div class="result-meta-label mb-1">${title}</div>
+                <div
+                    class="qdrop-fit-card qdrop-group-card ${flipped ? "is-flipped" : ""}"
+                    data-qdrop-group-card="${groupKey}"
+                    aria-pressed="${flipped ? "true" : "false"}">
+                    <div class="qdrop-fit-card-inner">
+                        <div class="qdrop-fit-card-face qdrop-fit-card-front">
+                            <div class="qdrop-fit-card-head">
+                                <span class="qdrop-fit-card-group-title">${title}</span>
+                                <span class="qdrop-fit-card-caret">${flipped ? "◀" : "▶"}</span>
+                            </div>
+                            <span class="qdrop-fit-card-label">${tr(
+                                "probability.qdrop.bestPlayLine",
+                                "Best play line by fit",
+                            )}</span>
+                            <div class="qdrop-fit-option-list">${fitOptions}</div>
+                        </div>
+                        <div class="qdrop-fit-card-face qdrop-fit-card-back">
+                            <div class="qdrop-fit-card-head">
+                                <div class="qdrop-fit-card-back-title">${tr(
+                                    "probability.qdrop.compareResultTitle",
+                                    "Comparison for {fit}",
+                                    { fit: compareContent.fit || selectedRow.fit },
+                                )}</div>
+                            </div>
+                            <ul class="qdrop-card-compare-list">${compareContent.rowsHtml}</ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        };
 
         container.innerHTML = `
-            <div class="mb-4">
-                <div class="result-meta-label mb-1">${tr("probability.qdrop.group8Title", "8-card fit group")}</div>
-                <table class="w-full result-table">
-                    <thead>
-                        <tr>
-                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
-                            <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
-                            <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${body8}</tbody>
-                </table>
-            </div>
-            <div>
-                <div class="result-meta-label mb-1">${tr("probability.qdrop.group9Title", "9-card fit group")}</div>
-                <table class="w-full result-table">
-                    <thead>
-                        <tr>
-                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
-                            <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
-                            <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${body9}</tbody>
-                </table>
+            <div class="qdrop-card-grid">
+                ${renderGroupCard("8", tr("probability.qdrop.group8Title", "8-card fit group"), rows8)}
+                ${renderGroupCard("9", tr("probability.qdrop.group9Title", "9-card fit group"), rows9)}
             </div>
             <div class="text-xs text-slate-500 mt-2">${tr(
                 "probability.qdrop.note",
@@ -1929,11 +1929,51 @@ document.addEventListener("DOMContentLoaded", () => {
             qdropResult.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof Element)) return;
-                const toggle = target.closest("[data-qdrop-fit]");
-                if (!toggle) return;
-                const nextFit = toggle.getAttribute("data-qdrop-fit") || "";
-                qdropComparisonFit = qdropComparisonFit === nextFit ? "" : nextFit;
-                updateProbabilityQDropResult();
+                const option = target.closest("[data-qdrop-fit-option]");
+                if (option instanceof HTMLElement) {
+                    const fitKey = option.getAttribute("data-qdrop-fit-option") || "";
+                    const groupKey = option.getAttribute("data-qdrop-group") || "";
+                    if (!fitKey || !groupKey) return;
+
+                    qdropSelectedFitByGroup[groupKey] = fitKey;
+                    qdropFlippedGroups.add(groupKey);
+                    const card = option.closest("[data-qdrop-group-card]");
+                    if (!(card instanceof HTMLElement)) return;
+
+                    card.querySelectorAll("[data-qdrop-fit-option]").forEach((btn) => {
+                        btn.classList.toggle(
+                            "is-active",
+                            btn.getAttribute("data-qdrop-fit-option") === fitKey,
+                        );
+                    });
+                    const compareContent = getQDropCompareMarkup(fitKey);
+                    const backTitle = card.querySelector(".qdrop-fit-card-back-title");
+                    if (backTitle) {
+                        backTitle.textContent = tr(
+                            "probability.qdrop.compareResultTitle",
+                            "Comparison for {fit}",
+                            { fit: compareContent.fit },
+                        );
+                    }
+                    const compareList = card.querySelector(".qdrop-card-compare-list");
+                    if (compareList) compareList.innerHTML = compareContent.rowsHtml;
+
+                    card.classList.add("is-flipped");
+                    card.setAttribute("aria-pressed", "true");
+                    const caret = card.querySelector(".qdrop-fit-card-caret");
+                    if (caret) caret.textContent = "◀";
+                    return;
+                }
+
+                const groupCard = target.closest("[data-qdrop-group-card]");
+                if (groupCard instanceof HTMLElement && groupCard.classList.contains("is-flipped")) {
+                    const groupCardKey = groupCard.getAttribute("data-qdrop-group-card") || "";
+                    if (groupCardKey) qdropFlippedGroups.delete(groupCardKey);
+                    groupCard.classList.remove("is-flipped");
+                    groupCard.setAttribute("aria-pressed", "false");
+                    const groupCaret = groupCard.querySelector(".qdrop-fit-card-caret");
+                    if (groupCaret) groupCaret.textContent = "▶";
+                }
             });
         }
     }

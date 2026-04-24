@@ -490,6 +490,240 @@
                 opacity: 0.8;
             }
 
+            .qdrop-card-grid {
+                display: grid;
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            @media (min-width: 768px) {
+                .qdrop-card-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            .qdrop-fit-card {
+                display: block;
+                width: 100%;
+                border: none;
+                background: transparent;
+                padding: 0;
+                text-align: left;
+                cursor: default;
+                perspective: 1200px;
+            }
+
+            .qdrop-fit-card-inner {
+                position: relative;
+                display: flex;
+                height: 340px;
+                transform-style: preserve-3d;
+                transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+                will-change: transform;
+            }
+
+            @media (min-width: 768px) {
+                .qdrop-fit-card-inner {
+                    height: 320px;
+                }
+            }
+
+            .qdrop-fit-card.is-flipped .qdrop-fit-card-inner {
+                transform: rotateY(180deg) translateZ(0.01px);
+            }
+
+            .qdrop-fit-card-face {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                background: #ffffff;
+                padding: 12px;
+                box-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px,
+                    rgba(0, 0, 0, 0.027) 0px 2px 8px;
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+            }
+
+            .qdrop-fit-card-front {
+                justify-content: flex-start;
+                transform: rotateY(0deg) translateZ(0.01px);
+            }
+
+            .qdrop-fit-card-back {
+                transform: rotateY(180deg) translateZ(0.01px);
+                overflow: hidden;
+            }
+
+            .qdrop-fit-card-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            .qdrop-fit-card-caret {
+                font-size: 12px;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .qdrop-fit-card-group-title {
+                font-size: 13px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .qdrop-fit-card-label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qdrop-fit-option-list {
+                display: grid;
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+                gap: 8px;
+                margin-top: 2px;
+            }
+
+            .qdrop-fit-option {
+                width: 100%;
+                border: var(--border-whisper);
+                border-radius: 10px;
+                background: #f8fafc;
+                color: #334155;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: flex-start;
+                padding: 8px 10px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                gap: 4px;
+            }
+
+            .qdrop-fit-option.is-active {
+                border: var(--border-whisper);
+                background: #f8fafc;
+                color: #334155;
+            }
+
+            .qdrop-fit-option-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .qdrop-fit-option-line {
+                font-size: 11px;
+                line-height: 1.35;
+                text-align: left;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                opacity: 0.95;
+            }
+
+            .qdrop-card-back-btn {
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: #475569;
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .qdrop-fit-card-line {
+                font-size: 13px;
+                line-height: 1.45;
+                color: #0f172a;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                min-height: 4.2em;
+            }
+
+            .qdrop-fit-card-probability {
+                font-size: 24px;
+                font-weight: 700;
+                line-height: 1.1;
+                color: #1e293b;
+            }
+
+            .qdrop-fit-card-back-title {
+                font-size: 12px;
+                font-weight: 700;
+                color: #475569;
+            }
+
+            .qdrop-card-compare-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .qdrop-card-compare-row {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #f8fafc;
+                padding: 6px;
+            }
+
+            .qdrop-card-compare-line {
+                font-size: 11px;
+                line-height: 1.35;
+                color: #0f172a;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .qdrop-card-compare-meta {
+                margin-top: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .qdrop-card-compare-prob {
+                font-size: 12px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .qdrop-card-compare-diff {
+                font-weight: 600;
+            }
+
+            .qdrop-card-compare-diff.is-best {
+                color: #097fe8;
+            }
+
             .dist-table {
                 width: 100%;
                 border-collapse: collapse;
