@@ -27,7 +27,7 @@
             "description": "Opening Lead候補ごとの期待トリック数とセット確率を比較できます。"
         },
         "probability": {
-            "title": "Bridge Solver | 確率表",
+            "title": "Bridge Solver | 確率早見表",
             "description": "ブリッジで頻出するスート分布確率とフィネス成功率を素早く確認できます。"
         },
         "privacy": {
@@ -141,7 +141,7 @@
         ]
     },
     "probability": {
-        "title": "確率表",
+        "title": "確率早見表",
         "lead": "ブリッジでよく使う確率をすばやく確認できます。",
         "calculate": "計算",
         "suit": {
@@ -163,12 +163,12 @@
             "group8Title": "8枚フィット",
             "group9Title": "9枚フィット",
             "fit": "フィット",
-            "fit44": "4-4 フィット",
-            "fit53": "5-3 フィット",
-            "fit62": "6-2 フィット",
-            "fit54": "5-4 フィット",
-            "fit63": "6-3 フィット",
-            "fit72": "7-2 フィット",
+            "fit44": "4-4",
+            "fit53": "5-3",
+            "fit62": "6-2",
+            "fit54": "5-4",
+            "fit63": "6-3",
+            "fit72": "7-2",
             "playLine": "プレイライン",
             "line44": "Aを叩いてからフィネス",
             "line53": "Aを叩いてからフィネス",
@@ -192,22 +192,22 @@
         "east": "East",
         "west": "West"
     },
-  "select": {
-    "any": "指定なし",
-    "balanced": "バランスハンド",
-    "semiBalanced": "セミバランスハンド",
-    "unbalanced": "アンバランスハンド",
-    "balancedWithoutMajor": "メジャー4枚なしバランス",
-    "fiveCardMajor": "5枚メジャー",
-    "yes": "あり",
-    "no": "なし"
-  },
-  "glossaryTerms": {
-    "double1": "Double Dummy",
-    "single1": "バランスハンド",
-    "single2": "セミバランスハンド",
-    "lead1": "バランスハンド",
-    "lead2": "セミバランスハンド",
-    "lead3": "Set Prob"
-  }
+    "select": {
+        "any": "指定なし",
+        "balanced": "バランスハンド",
+        "semiBalanced": "セミバランスハンド",
+        "unbalanced": "アンバランスハンド",
+        "balancedWithoutMajor": "メジャー4枚なしバランス",
+        "fiveCardMajor": "5枚メジャー",
+        "yes": "あり",
+        "no": "なし"
+    },
+    "glossaryTerms": {
+        "double1": "Double Dummy",
+        "single1": "バランスハンド",
+        "single2": "セミバランスハンド",
+        "lead1": "バランスハンド",
+        "lead2": "セミバランスハンド",
+        "lead3": "Set Prob"
+    }
 }
