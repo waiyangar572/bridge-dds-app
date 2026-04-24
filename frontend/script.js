@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
-    let qdropComparisonFit = "";
+    let qdropComparisonFits = new Set();
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -994,6 +994,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 ok = isQDrop(state);
             } else if (model === "onside-only") {
                 ok = state.side === "onside";
+            } else if (model === "72-onside-only") {
+                ok = state.siede === "onside" && state.qLen <= 3;
             }
             return ok ? sum + state.p : sum;
         }, 0);
@@ -1219,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.compareLineFinesseFirst",
                         "Take finesse first.",
                         4,
-                        "onside-only",
+                        "72-onside-only",
                     ),
                 ],
             };
@@ -1232,62 +1234,44 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
 
         const { rows8, rows9 } = getQDropBestRows();
-        const selectedComparison = getQDropComparisonRows(qdropComparisonFit);
         const renderBody = (rows) =>
             rows
                 .map((row) => {
-                    const expanded = selectedComparison && qdropComparisonFit === row.key;
-                    const expandedRow = expanded
-                        ? `
-                    <tr>
-                        <td colspan="3" class="text-left bg-slate-50">
-                            <div class="text-xs font-semibold text-slate-600 mb-2">${tr(
-                                "probability.qdrop.compareResultTitle",
-                                "Comparison for {fit}",
-                                { fit: selectedComparison.fit },
-                            )}</div>
-                            <table class="w-full result-table">
-                                <thead>
-                                    <tr>
-                                        <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
-                                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${selectedComparison.rows
-                                        .map(
-                                            (cmp) => `
-                                        <tr>
-                                            <td class="text-left">${cmp.line}</td>
-                                            <td>${cmp.probability.toFixed(2)}%</td>
-                                        </tr>
-                                    `,
-                                        )
-                                        .join("")}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                    `
+                    const expanded = qdropComparisonFits.has(row.key);
+                    const comparison = expanded ? getQDropComparisonRows(row.key) : null;
+                    const compareRows = comparison
+                        ? comparison.rows
+                              .map(
+                                  (cmp, index) => `
+                        <tr class="qdrop-compare-row ${index === 0 ? "is-first" : ""}">
+                            <td class="text-left qdrop-compare-fit-cell">
+                                <span class="qdrop-compare-prefix">${index === 0 ? "↳" : ""}</span>
+                            </td>
+                            <td class="text-left qdrop-compare-line-cell">${cmp.line}</td>
+                            <td>${cmp.probability.toFixed(2)}%</td>
+                        </tr>
+                    `,
+                              )
+                              .join("")
                         : "";
                     return `
-                    <tr>
+                    <tr class="qdrop-base-row ${expanded ? "is-expanded" : ""}">
                         <td class="text-left font-semibold">
                             <button
                                 type="button"
                                 data-qdrop-fit="${row.key}"
-                                aria-pressed="${qdropComparisonFit === row.key ? "true" : "false"}"
-                                class="qdrop-fit-toggle ${qdropComparisonFit === row.key ? "is-active" : ""}">
+                                aria-pressed="${qdropComparisonFits.has(row.key) ? "true" : "false"}"
+                                class="qdrop-fit-toggle ${qdropComparisonFits.has(row.key) ? "is-active" : ""}">
                                 ${row.fit}
                                 <span class="qdrop-fit-toggle-caret">${
-                                    qdropComparisonFit === row.key ? "▼" : "▶"
+                                    qdropComparisonFits.has(row.key) ? "▼" : "▶"
                                 }</span>
                             </button>
                         </td>
                         <td class="text-left">${row.line}</td>
                         <td>${row.probability.toFixed(2)}%</td>
                     </tr>
-                    ${expandedRow}
+                    ${compareRows}
                 `;
                 })
                 .join("");
@@ -1298,7 +1282,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = `
             <div class="mb-4">
                 <div class="result-meta-label mb-1">${tr("probability.qdrop.group8Title", "8-card fit group")}</div>
-                <table class="w-full result-table">
+                <table class="w-full result-table qdrop-result-table">
                     <thead>
                         <tr>
                             <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
@@ -1311,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div>
                 <div class="result-meta-label mb-1">${tr("probability.qdrop.group9Title", "9-card fit group")}</div>
-                <table class="w-full result-table">
+                <table class="w-full result-table qdrop-result-table">
                     <thead>
                         <tr>
                             <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
@@ -1932,7 +1916,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const toggle = target.closest("[data-qdrop-fit]");
                 if (!toggle) return;
                 const nextFit = toggle.getAttribute("data-qdrop-fit") || "";
-                qdropComparisonFit = qdropComparisonFit === nextFit ? "" : nextFit;
+                if (!nextFit) return;
+                if (qdropComparisonFits.has(nextFit)) qdropComparisonFits.delete(nextFit);
+                else qdropComparisonFits.add(nextFit);
                 updateProbabilityQDropResult();
             });
         }
