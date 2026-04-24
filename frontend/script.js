@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
-    let qdropComparisonFit = "";
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -227,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "#prob-qdrop-click-hint",
             tr(
                 "probability.qdrop.compareHint",
-                "Click a fit cell to toggle comparison for that holding.",
+                "Click a fit row to open line comparison in a dialog.",
             ),
         );
 
@@ -1232,62 +1231,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
 
         const { rows8, rows9 } = getQDropBestRows();
-        const selectedComparison = getQDropComparisonRows(qdropComparisonFit);
         const renderBody = (rows) =>
             rows
                 .map((row) => {
-                    const expanded = selectedComparison && qdropComparisonFit === row.key;
-                    const expandedRow = expanded
-                        ? `
-                    <tr>
-                        <td colspan="3" class="text-left bg-slate-50">
-                            <div class="text-xs font-semibold text-slate-600 mb-2">${tr(
-                                "probability.qdrop.compareResultTitle",
-                                "Comparison for {fit}",
-                                { fit: selectedComparison.fit },
-                            )}</div>
-                            <table class="w-full result-table">
-                                <thead>
-                                    <tr>
-                                        <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
-                                        <th>${tr("probability.qdrop.success", "All-win probability")}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${selectedComparison.rows
-                                        .map(
-                                            (cmp) => `
-                                        <tr>
-                                            <td class="text-left">${cmp.line}</td>
-                                            <td>${cmp.probability.toFixed(2)}%</td>
-                                        </tr>
-                                    `,
-                                        )
-                                        .join("")}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                    `
-                        : "";
                     return `
                     <tr>
                         <td class="text-left font-semibold">
                             <button
                                 type="button"
                                 data-qdrop-fit="${row.key}"
-                                aria-pressed="${qdropComparisonFit === row.key ? "true" : "false"}"
-                                class="qdrop-fit-toggle ${qdropComparisonFit === row.key ? "is-active" : ""}">
+                                class="qdrop-fit-toggle">
                                 ${row.fit}
-                                <span class="qdrop-fit-toggle-caret">${
-                                    qdropComparisonFit === row.key ? "▼" : "▶"
-                                }</span>
+                                <span class="qdrop-fit-toggle-caret">↗</span>
                             </button>
                         </td>
                         <td class="text-left">${row.line}</td>
                         <td>${row.probability.toFixed(2)}%</td>
                     </tr>
-                    ${expandedRow}
                 `;
                 })
                 .join("");
@@ -1326,7 +1286,54 @@ document.addEventListener("DOMContentLoaded", () => {
                 "probability.qdrop.note",
                 "Assumption: Q is missing. Each row shows all-win probability for its stated play line.",
             )}</div>
+            <div id="qdrop-compare-dialog" class="qdrop-dialog hidden" aria-hidden="true">
+                <div class="qdrop-dialog-backdrop" data-qdrop-dialog-close="true"></div>
+                <div class="qdrop-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="qdrop-dialog-title">
+                    <div class="flex items-center justify-between mb-2">
+                        <div id="qdrop-dialog-title" class="text-sm font-semibold text-slate-700"></div>
+                        <button type="button" data-qdrop-dialog-close="true" class="qdrop-dialog-close" aria-label="Close">×</button>
+                    </div>
+                    <table class="w-full result-table">
+                        <thead>
+                            <tr>
+                                <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
+                                <th>${tr("probability.qdrop.success", "All-win probability")}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qdrop-dialog-body"></tbody>
+                    </table>
+                </div>
+            </div>
         `;
+    }
+
+    function setQDropDialogOpen(isOpen) {
+        const dialog = document.getElementById("qdrop-compare-dialog");
+        if (!dialog) return;
+        dialog.classList.toggle("hidden", !isOpen);
+        dialog.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    }
+
+    function openQDropComparisonDialog(fitKey) {
+        const comparison = getQDropComparisonRows(fitKey);
+        if (!comparison) return;
+        const titleEl = document.getElementById("qdrop-dialog-title");
+        const bodyEl = document.getElementById("qdrop-dialog-body");
+        if (!titleEl || !bodyEl) return;
+        titleEl.textContent = tr("probability.qdrop.compareResultTitle", "Comparison for {fit}", {
+            fit: comparison.fit,
+        });
+        bodyEl.innerHTML = comparison.rows
+            .map(
+                (cmp) => `
+            <tr>
+                <td class="text-left">${cmp.line}</td>
+                <td>${cmp.probability.toFixed(2)}%</td>
+            </tr>
+        `,
+            )
+            .join("");
+        setQDropDialogOpen(true);
     }
 
     function initProbabilityUI() {
@@ -1929,12 +1936,24 @@ document.addEventListener("DOMContentLoaded", () => {
             qdropResult.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof Element)) return;
+                const close = target.closest("[data-qdrop-dialog-close]");
+                if (close) {
+                    setQDropDialogOpen(false);
+                    return;
+                }
                 const toggle = target.closest("[data-qdrop-fit]");
                 if (!toggle) return;
                 const nextFit = toggle.getAttribute("data-qdrop-fit") || "";
-                qdropComparisonFit = qdropComparisonFit === nextFit ? "" : nextFit;
-                updateProbabilityQDropResult();
+                if (!nextFit) return;
+                openQDropComparisonDialog(nextFit);
             });
         }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape") return;
+            const dialog = document.getElementById("qdrop-compare-dialog");
+            if (!dialog || dialog.classList.contains("hidden")) return;
+            setQDropDialogOpen(false);
+        });
     }
 });

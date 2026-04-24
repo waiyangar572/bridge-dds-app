@@ -161,7 +161,7 @@
         "qdrop": {
             "title": "Q-missing optimal-line all-win probability",
             "help": "All-win probability under an optimal-line model when Q is missing.",
-            "compareHint": "Click a fit cell to toggle comparison for that holding.",
+            "compareHint": "Click a fit row to open line comparison in a dialog.",
             "group8Title": "8-card fit",
             "group9Title": "9-card fit",
             "fit": "Fit",
