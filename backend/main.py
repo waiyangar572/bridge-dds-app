@@ -21,6 +21,7 @@ app = FastAPI()
 
 origins = [
     "https://bridge-analyzer.web.app",
+    "https://bridge-solver.waiyangar.com",
     "http://localhost",
     "http://localhost:8080",
     "http://127.0.0.1:5500",
