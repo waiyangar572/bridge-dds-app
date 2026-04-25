@@ -305,7 +305,7 @@ def analyse_single_dummy(request: SingleDummyRequest):
 
                 return int(part1), int(part2)
 
-        player_conditions = []
+        player_conditions = ["1"]
         for p in request.shapes:
             shape_parts = request.shapes[p].split(",")
             suits = ["spades", "hearts", "diamonds", "clubs"]
