@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Constants ---
-    const API_BASE = "https://bridge-analyzer-backend-338315263430.asia-northeast1.run.app/api";
-    const SITE_ORIGIN = "https://bridge-analyzer.web.app";
+    const API_BASE = "https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api";
+
+    const SITE_ORIGIN = "https://bridge-solver.waiyangar.com";
     const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/favicon-96x96.png`;
     const SUPPORTED_LANGS = ["en", "ja"];
     const DEFAULT_ROUTE = "/double-dummy";

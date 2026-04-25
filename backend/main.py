@@ -22,10 +22,24 @@ app = FastAPI()
 origins = [
     "https://bridge-analyzer.web.app",
     "https://bridge-solver.waiyangar.com",
+    "https://www.bridge-solver.waiyangar.com",
     "http://localhost",
     "http://localhost:8080",
     "http://127.0.0.1:5500",
 ]
+
+
+def build_cors_headers(request: Request) -> Dict[str, str]:
+    origin = request.headers.get("origin", "")
+    if origin not in origins:
+        return {}
+    return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Vary": "Origin",
+    }
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -71,6 +85,7 @@ async def add_process_time_header(request: Request, call_next):
             content={
                 "error": f"An unexpected server error occurred: {str(e)}"
             },
+            headers=build_cors_headers(request),
         )
 
 

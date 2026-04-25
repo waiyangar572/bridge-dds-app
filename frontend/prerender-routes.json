@@ -1,5 +1,5 @@
 {
-    "baseUrl": "https://bridge-analyzer.web.app",
+    "baseUrl": "https://bridge-solver.waiyangar.com",
     "strategy": "static-snapshot-manifest",
     "routes": [
         "/en/double-dummy",
