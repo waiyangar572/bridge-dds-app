@@ -948,6 +948,67 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    /**
+     * ディフェンスの1スートについてありえるカード配置の組み合わせ数を与える関数
+     * * @param {number} missing ディフェンス側のカードの枚数
+     * @param {string[]} honors 特に持っているかを気にしたいカードの配列 (例: ['K', 'Q'])
+     * @returns {Array} {E: State, W: State, combination: number} の配列
+     */
+    function getSuitDistributions(missing, honors) {
+        const results = [];
+        const numHonors = honors.length;
+        const spotCards = missing - numHonors; // 指定されたオナー以外のカード（スモールカード）の枚数
+        const denominator = combination(26, 13);
+
+        // オナーの分配パターンは 2^(オナーの枚数) 通り
+        const totalHonorCombos = 1 << numHonors;
+
+        // Eastの持つ枚数(0枚 〜 missing枚)でループ
+        for (let lengthE = 0; lengthE <= missing; lengthE++) {
+            let lengthW = missing - lengthE;
+
+            // オナーの分配パターンでループ (ビットマスクを使用)
+            for (let mask = 0; mask < totalHonorCombos; mask++) {
+                let stateE = { length: lengthE };
+                let stateW = { length: lengthW };
+                let honorsCountE = 0;
+
+                // 各オナーがEastとWestのどちらにあるかを割り当て
+                for (let i = 0; i < numHonors; i++) {
+                    const honor = honors[i];
+                    // i番目のビットが立っていればEastがそのオナーを持つと判定
+                    if ((mask & (1 << i)) !== 0) {
+                        stateE[honor] = true;
+                        stateW[honor] = false;
+                        honorsCountE++;
+                    } else {
+                        stateE[honor] = false;
+                        stateW[honor] = true;
+                    }
+                }
+
+                // Eastがこのオナー配置を満たすために必要なスモールカードの枚数
+                let spotsNeededE = lengthE - honorsCountE;
+
+                // 必要なスモールカードの枚数が物理的に可能（0枚以上、全体のスモールカード枚数以下）な場合のみ計算
+                if (spotsNeededE >= 0 && spotsNeededE <= spotCards) {
+                    // 組み合わせ数 = (全体のスモールカード) C (Eastが必要なスモールカード)
+                    let prob =
+                        (combination(spotCards, spotsNeededE) *
+                            combination(26 - missing, 13 - lengthE)) /
+                        denominator;
+
+                    results.push({
+                        E: stateE,
+                        W: stateW,
+                        prob: prob,
+                    });
+                }
+            }
+        }
+
+        return results;
+    }
     function buildQMissingStates(missing) {
         const states = [];
         const denominator = combination(26, 13);
@@ -968,37 +1029,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function computeQLineProbability(missing, model) {
-        const states = buildQMissingStates(missing);
-        const isQDrop = (state) => state.qLen <= 2;
-        const isOnsideFourZero = (state) => state.side === "onside" && state.qLen === missing;
+        // const states = buildQMissingStates(missing);
+        // const isQDrop = (state) => state.qLen <= 2;
+        // const isOnsideFourZero = (state) => state.side === "onside" && state.qLen === missing;
+
+        // const win = states.reduce((sum, state) => {
+        //     let ok = false;
+        //     if (model === "44-optimal") {
+        //         ok = state.side === "onside" || (state.side === "offside" && state.qLen === 1);
+        //     } else if (model === "53-optimal") {
+        //         ok =
+        //             (state.side === "onside" && state.qLen <= 4) ||
+        //             (state.side === "offside" && state.qLen === 1);
+        //     } else if (model === "62-double-finesse") {
+        //         ok = state.side === "onside" && state.qLen <= 4;
+        //     } else if (model == "62-cash-and-finesse") {
+        //         ok =
+        //             (state.side === "onside" && state.qLen <= 3) ||
+        //             (state.side === "offside" && state.qLen === 1);
+        //     } else if (model === "9fit-ak-drop-or-onside-40") {
+        //         ok = isQDrop(state) || isOnsideFourZero(state);
+        //     } else if (model === "9fit-drop-only") {
+        //         ok = isQDrop(state);
+        //     } else if (model === "drop-only") {
+        //         ok = isQDrop(state);
+        //     } else if (model === "onside-only") {
+        //         ok = state.side === "onside";
+        //     }
+        //     return ok ? sum + state.p : sum;
+        // }, 0);
+
+        // return win * 100;
+        const states = getSuitDistributions(missing, ["Q"]);
 
         const win = states.reduce((sum, state) => {
-            let ok = false;
-            if (model === "44-optimal") {
-                ok = state.side === "onside" || (state.side === "offside" && state.qLen === 1);
-            } else if (model === "53-optimal") {
-                ok =
-                    (state.side === "onside" && state.qLen <= 4) ||
-                    (state.side === "offside" && state.qLen === 1);
-            } else if (model === "62-double-finesse") {
-                ok = state.side === "onside" && state.qLen <= 4;
-            } else if (model == "62-cash-and-finesse") {
-                ok =
-                    (state.side === "onside" && state.qLen <= 3) ||
-                    (state.side === "offside" && state.qLen === 1);
-            } else if (model === "9fit-ak-drop-or-onside-40") {
-                ok = isQDrop(state) || isOnsideFourZero(state);
-            } else if (model === "9fit-drop-only") {
-                ok = isQDrop(state);
-            } else if (model === "drop-only") {
-                ok = isQDrop(state);
-            } else if (model === "onside-only") {
-                ok = state.side === "onside";
-            }
-            return ok ? sum + state.p : sum;
+            return model(state) ? sum + state.prob : sum;
         }, 0);
 
-        return win * 100;
+        return win;
     }
 
     function getQDropBestRows() {
@@ -1010,7 +1078,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     "probability.qdrop.line44",
                     "Cash A then finesse. Covers offside singleton Q and onside Q.",
                 ),
-                probability: computeQLineProbability(5, "44-optimal"),
+                probability: computeQLineProbability(
+                    5,
+                    (state) => state.E["Q"] || state.W.length == 1,
+                ),
             },
             {
                 key: "53",
@@ -1019,7 +1090,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     "probability.qdrop.line53",
                     "Cash one top honor then finesse. Even with onside Q, a 5-0 break cannot all-win.",
                 ),
-                probability: computeQLineProbability(5, "53-optimal"),
+                probability: computeQLineProbability(
+                    5,
+                    (state) =>
+                        (state.E["Q"] && state.E.length < 5) ||
+                        (state.W["Q"] && state.W.length == 1),
+                ),
             },
             {
                 key: "62",
@@ -1028,7 +1104,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     "probability.qdrop.line62",
                     "Do not cash on Q side; take two finesses. All-win when onside Q is 4 or fewer.",
                 ),
-                probability: computeQLineProbability(5, "62-double-finesse"),
+                probability: computeQLineProbability(
+                    5,
+                    (state) => state.E["Q"] && state.E.length < 5,
+                ),
             },
         ];
 
@@ -1040,7 +1119,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     "probability.qdrop.line54",
                     "Cash A and K. Win on Q-drop or onside 4-0 only.",
                 ),
-                probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
+                probability: computeQLineProbability(
+                    4,
+                    (state) =>
+                        (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
+                        (state.W["Q"] && state.W.length < 3),
+                ),
             },
             {
                 key: "63",
@@ -1049,13 +1133,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     "probability.qdrop.line63",
                     "Cash A and K. Win on Q-drop or onside 4-0 only.",
                 ),
-                probability: computeQLineProbability(4, "9fit-ak-drop-or-onside-40"),
+                probability: computeQLineProbability(
+                    4,
+                    (state) =>
+                        (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
+                        (state.W["Q"] && state.W.length < 3),
+                ),
             },
             {
                 key: "72",
                 fit: tr("probability.qdrop.fit72", "7-2 fit"),
                 line: tr("probability.qdrop.line72", "Play for Q-drop only."),
-                probability: computeQLineProbability(4, "9fit-drop-only"),
+                probability: computeQLineProbability(
+                    4,
+                    (state) =>
+                        (state.E["Q"] && state.E.length < 3) ||
+                        (state.W["Q"] && state.W.length < 3),
+                ),
             },
         ];
 
@@ -1082,20 +1176,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line44",
                         "Cash A then finesse.",
                         5,
-                        "44-optimal",
+                        (state) => state.E["Q"] || state.W.length == 1,
                         true,
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
                         "Take finesse first.",
                         5,
-                        "onside-only",
+                        (state) => state.E["Q"],
                     ),
                     make(
                         "probability.qdrop.compareLineCashAK",
                         "Cash AK and play for drop.",
                         5,
-                        "drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                     ),
                 ],
             };
@@ -1108,20 +1204,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line53",
                         "Cash A then finesse.",
                         5,
-                        "53-optimal",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 5) ||
+                            (state.W["Q"] && state.W.length == 1),
                         true,
                     ),
                     make(
                         "probability.qdrop.compareLineDoubleFinesse",
                         "Take two finesses.",
                         5,
-                        "62-double-finesse",
+                        (state) => state.E["Q"],
                     ),
                     make(
                         "probability.qdrop.compareLineCashAK",
                         "Cash AK and play for drop.",
                         5,
-                        "drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                     ),
                 ],
             };
@@ -1134,20 +1234,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line62",
                         "Do not cash on Q side; take two finesses.",
                         5,
-                        "62-double-finesse",
+                        (state) => state.E["Q"] && state.E.length < 5,
                         true,
                     ),
                     make(
                         "probability.qdrop.compareLineCashAThenFinesse",
                         "Cash A then finesse.",
                         5,
-                        "62-cash-and-finesse",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 4) ||
+                            (state.W["Q"] && state.W.length == 1),
                     ),
                     make(
                         "probability.qdrop.compareLineCashAK",
                         "Cash AK and play for drop.",
                         5,
-                        "drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                     ),
                 ],
             };
@@ -1160,20 +1264,30 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line54",
                         "Cash A and K.",
                         4,
-                        "9fit-ak-drop-or-onside-40",
+                        (state) =>
+                            (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
+                            (state.W["Q"] && state.W.length < 3),
                         true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAThenFinesse",
+                        "Cash A then finesse.",
+                        4,
+                        (state) => state.E["Q"] || state.W.length == 1,
                     ),
                     make(
                         "probability.qdrop.compareLineCashAK",
                         "Cash AK and play for drop.",
                         4,
-                        "drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
                         "Take finesse first.",
                         4,
-                        "onside-only",
+                        (state) => state.E["Q"],
                     ),
                 ],
             };
@@ -1186,20 +1300,32 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line63",
                         "Cash A and K.",
                         4,
-                        "9fit-ak-drop-or-onside-40",
+                        (state) =>
+                            (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
+                            (state.W["Q"] && state.W.length < 3),
                         true,
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAThenFinesse",
+                        "Cash A then finesse.",
+                        4,
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 4) ||
+                            (state.W["Q"] && state.W.length == 1),
                     ),
                     make(
                         "probability.qdrop.compareLineCashAK",
                         "Cash AK and play for drop.",
                         4,
-                        "drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
                         "Take finesse first.",
                         4,
-                        "onside-only",
+                        (state) => state.E["Q"],
                     ),
                 ],
             };
@@ -1212,14 +1338,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         "probability.qdrop.line72",
                         "Play for Q-drop only.",
                         4,
-                        "9fit-drop-only",
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 3) ||
+                            (state.W["Q"] && state.W.length < 3),
                         true,
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
                         "Take finesse first.",
                         4,
-                        "onside-only",
+                        (state) => state.E["Q"],
                     ),
                 ],
             };
@@ -1247,7 +1375,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </button>
                         </td>
                         <td class="text-left">${row.line}</td>
-                        <td>${row.probability.toFixed(2)}%</td>
+                        <td>${(row.probability * 100).toFixed(2)}%</td>
                     </tr>
                 `;
                 })
@@ -1329,7 +1457,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 (cmp) => `
             <tr>
                 <td class="text-left">${cmp.line}</td>
-                <td>${cmp.probability.toFixed(2)}%</td>
+                <td>${(cmp.probability * 100).toFixed(2)}%</td>
             </tr>
         `,
             )
