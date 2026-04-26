@@ -747,6 +747,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function toggleSDMode(hand, mode) {
+        if (sdModes[hand] == "hand" && mode == "feature") {
+            sdState[hand] = [];
+            updateSDUI();
+        }
         sdModes[hand] = mode;
         updateSDModeUI(hand);
     }
@@ -1738,7 +1742,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             ["north", "south", "east", "west"].forEach((hand) => {
                 if ((hand === "north" || hand === "south") && sdModes[hand] === "hand") {
-                    if (sdState[hand].length === 13) {
+                    if (sdState[hand].length > 0) {
                         const suitsStr = SUITS.map((suit) => {
                             return sdState[hand]
                                 .filter((c) => c.startsWith(suit.id))
@@ -1747,14 +1751,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 .join("");
                         }).join(".");
                         pbnParts[hand] = suitsStr;
-                    } else {
-                        if (sdState[hand].length > 0) {
-                            throw new Error(
-                                tr("toasts.handNeed13", "{hand} must contain exactly 13 cards.", {
-                                    hand: tr(`terms.${hand}`, hand),
-                                }),
-                            );
-                        }
                     }
                 } else {
                     const minH = document.getElementById(`sd-${hand}-hcp-min`).value || 0;
