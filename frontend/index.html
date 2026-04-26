@@ -576,6 +576,25 @@
                 -ms-overflow-style: none;
                 scrollbar-width: none;
             }
+
+            /* --- アニメーション用クラス --- */
+            @keyframes shake-horizontal {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-3px); }
+                75% { transform: translateX(3px); }
+            }
+            .shake-animation {
+                animation: shake-horizontal 0.15s ease-in-out 0s 2;
+            }
+
+            @keyframes pop-scale {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.15); }
+                100% { transform: scale(1); }
+            }
+            .pop-animation {
+                animation: pop-scale 0.15s ease-out;
+            }
         </style>
     </head>
     <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">

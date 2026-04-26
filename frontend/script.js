@@ -638,6 +638,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function triggerAnimation(elementId, animationClass, duration) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            // アニメーションをリセットして再再生できるようにする
+            el.classList.remove(animationClass);
+            void el.offsetWidth; // リフローを強制
+            el.classList.add(animationClass);
+
+            // アニメーション終了後にクラスを削除
+            setTimeout(() => {
+                el.classList.remove(animationClass);
+            }, duration);
+        }
+    }
+
     function getShapePresetValue(selectId) {
         const select = document.getElementById(selectId);
         if (!select) return "any";
@@ -760,28 +775,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function toggleCardSD(hand, cardId) {
         // Single Dummy Hand Toggle with Ownership Check (N vs S)
+        const btnId = `btn-sd-container-${hand}-${cardId}`;
         const otherHand = hand === "north" ? "south" : "north";
 
         // 1. If I already have it, remove it
         if (sdState[hand].includes(cardId)) {
             sdState[hand] = sdState[hand].filter((c) => c !== cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         }
         // 2. If opponent has it, steal it (remove from them, add to me)
         else if (sdState[otherHand].includes(cardId)) {
-            if (sdState[hand].length >= 13) {
-                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
-                return;
-            }
-            sdState[otherHand] = sdState[otherHand].filter((c) => c !== cardId);
-            sdState[hand].push(cardId);
+            triggerAnimation(btnId, "shake-animation", 300);
+            return;
         }
         // 3. Else, just add it
         else {
             if (sdState[hand].length >= 13) {
                 showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
+                triggerAnimation(btnId, "shake-animation", 300);
                 return;
             }
             sdState[hand].push(cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         }
         updateSDUI();
     }
@@ -836,12 +851,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function toggleCardLead(hand, cardId) {
         if (leadState[hand].includes(cardId)) {
             leadState[hand] = leadState[hand].filter((c) => c !== cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         } else {
             if (leadState[hand].length >= 13) {
                 showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
+                triggerAnimation(btnId, "shake-animation", 300);
                 return;
             }
             leadState[hand].push(cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         }
         updateLeadUI();
     }
@@ -1568,22 +1586,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- DD State Logic ---
     function toggleCardDD(hand, cardId) {
+        const btnId = `btn-container-${hand}-${cardId}`;
         const currentOwner = findCardOwner(ddState, cardId);
         if (currentOwner === hand) {
             ddState[hand] = ddState[hand].filter((c) => c !== cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         } else if (currentOwner) {
-            if (ddState[hand].length >= 13) {
-                showToast(tr("toasts.already13", "This hand already has 13 cards."));
-                return;
-            }
-            ddState[currentOwner] = ddState[currentOwner].filter((c) => c !== cardId);
-            ddState[hand].push(cardId);
+            triggerAnimation(btnId, "shake-animation", 300);
+            return;
         } else {
             if (ddState[hand].length >= 13) {
                 showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
+                triggerAnimation(btnId, "shake-animation", 300);
                 return;
             }
             ddState[hand].push(cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
         }
         updateDDUI();
     }
