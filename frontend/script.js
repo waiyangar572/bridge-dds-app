@@ -1602,8 +1602,55 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             ddState[hand].push(cardId);
             triggerAnimation(btnId, "pop-animation", 150);
+            checkAndAutoFillDD();
         }
         updateDDUI();
+    }
+    function checkAndAutoFillDD() {
+        const hands = ["north", "south", "east", "west"];
+        // 13枚ちょうど持っているハンドをカウント
+        const fullHands = hands.filter((h) => ddState[h].length === 13);
+        console.log(ddState["north"]);
+        console.log(ddState["south"]);
+        console.log(ddState["east"]);
+        console.log(ddState["west"]);
+
+        // 3人が確定し、かつ1人がまだ13枚未満の場合のみ実行
+        if (fullHands.length === 3) {
+            const emptyHand = hands.find((h) => ddState[h].length == 0);
+            if (!emptyHand) return;
+
+            // 全52枚のリストを作成
+            const allPossibleCards = [];
+            SUITS.forEach((suit) => {
+                RANKS.forEach((rank) => {
+                    allPossibleCards.push(suit.id + rank);
+                });
+            });
+
+            // 現在どこかのハンドに割り当てられているカードをすべて取得
+            const assignedCards = new Set();
+            hands.forEach((h) => {
+                ddState[h].forEach((c) => assignedCards.add(c));
+            });
+
+            // まだ誰にも持たれていないカードを抽出
+            const remainingCards = allPossibleCards.filter((c) => !assignedCards.has(c));
+
+            // 残りのカードがちょうど、最後の一人の不足分（13枚にするために必要な枚数）なら自動入力
+            if (remainingCards.length > 0) {
+                ddState[emptyHand] = [...ddState[emptyHand], ...remainingCards];
+                updateDDUI();
+
+                // 完了通知（必要に応じて）
+                const handName = tr(`terms.${emptyHand}`, emptyHand);
+                showToast(
+                    currentLanguage === "ja"
+                        ? `${handName}の残りのハンドを自動入力しました`
+                        : `Automatically filled the rest of ${handName}'s hand.`,
+                );
+            }
+        }
     }
 
     function findCardOwner(stateObj, cardId) {
