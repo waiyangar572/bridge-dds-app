@@ -27,7 +27,7 @@
             "description": "Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts."
         },
         "probability": {
-            "title": "Bridge Probability Quick Check | Bridge Solver",
+            "title": "Bridge Probability Table | Bridge Solver",
             "description": "Quickly check practical bridge odds such as suit split probability and basic finesse success rate."
         },
         "privacy": {
