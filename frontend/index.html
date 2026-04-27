@@ -28,7 +28,9 @@
         <meta
             name="twitter:description"
             content="Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract." />
-        <meta name="twitter:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png" />
+        <meta
+            name="twitter:image"
+            content="https://bridge-solver.waiyangar.com/favicon-96x96.png" />
         <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -561,6 +563,39 @@
                 color: #ffffff;
             }
 
+            .vp-boards-input {
+                width: 88px;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .vp-preset-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .vp-preset-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .vp-preset-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
             .dist-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -605,18 +640,31 @@
 
             /* --- アニメーション用クラス --- */
             @keyframes shake-horizontal {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-3px); }
-                75% { transform: translateX(3px); }
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-3px);
+                }
+                75% {
+                    transform: translateX(3px);
+                }
             }
             .shake-animation {
                 animation: shake-horizontal 0.15s ease-in-out 0s 2;
             }
 
             @keyframes pop-scale {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.15); }
-                100% { transform: scale(1); }
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                }
             }
             .pop-animation {
                 animation: pop-scale 0.15s ease-out;
@@ -1984,7 +2032,10 @@
                     Frequently used bridge probabilities at a glance.
                 </p>
 
-                <div class="flex items-center gap-2 mb-6" role="tablist" aria-label="Reference tabs">
+                <div
+                    class="flex items-center gap-2 mb-6"
+                    role="tablist"
+                    aria-label="Reference tabs">
                     <button
                         id="reference-tab-probability"
                         type="button"
@@ -2005,6 +2056,16 @@
                         aria-selected="false">
                         IMP Scale
                     </button>
+                    <button
+                        id="reference-tab-vp"
+                        type="button"
+                        class="reference-tab-btn"
+                        data-reference-tab="vp"
+                        role="tab"
+                        aria-controls="reference-panel-vp"
+                        aria-selected="false">
+                        VP Scale
+                    </button>
                 </div>
 
                 <div id="reference-panel-probability" role="tabpanel">
@@ -2020,7 +2081,9 @@
                         </section>
 
                         <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <h3 id="prob-finesse-title" class="text-lg font-bold text-slate-900 mb-3">
+                            <h3
+                                id="prob-finesse-title"
+                                class="text-lg font-bold text-slate-900 mb-3">
                                 Q-drop cashing probability
                             </h3>
                             <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
@@ -2036,11 +2099,62 @@
 
                 <div id="reference-panel-imp" role="tabpanel" class="hidden">
                     <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                        <h3 id="imp-title" class="text-lg font-bold text-slate-900 mb-3">IMP Scale</h3>
+                        <h3 id="imp-title" class="text-lg font-bold text-slate-900 mb-3">
+                            IMP Scale
+                        </h3>
                         <p id="imp-help" class="text-sm text-slate-600 mb-4">
                             Convert score difference to IMPs.
                         </p>
                         <div id="imp-result" class="text-sm text-slate-700"></div>
+                    </section>
+                </div>
+
+                <div id="reference-panel-vp" role="tabpanel" class="hidden">
+                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <h3 id="vp-title" class="text-lg font-bold text-slate-900 mb-3">
+                            WBF VP Scale
+                        </h3>
+                        <p id="vp-help" class="text-sm text-slate-600 mb-4">
+                            Check winner-side VP ranges by IMP difference.
+                        </p>
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <label
+                                id="vp-boards-label"
+                                for="vp-boards-input"
+                                class="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                                Boards
+                            </label>
+                            <input
+                                id="vp-boards-input"
+                                type="number"
+                                min="1"
+                                max="128"
+                                step="1"
+                                value="16"
+                                class="vp-boards-input" />
+                            <button
+                                id="vp-boards-8"
+                                type="button"
+                                data-vp-boards="8"
+                                class="vp-preset-btn is-active">
+                                8
+                            </button>
+                            <button
+                                id="vp-boards-16"
+                                type="button"
+                                data-vp-boards="16"
+                                class="vp-preset-btn is-active">
+                                16
+                            </button>
+                            <button
+                                id="vp-boards-32"
+                                type="button"
+                                data-vp-boards="32"
+                                class="vp-preset-btn">
+                                32
+                            </button>
+                        </div>
+                        <div id="vp-result" class="text-sm text-slate-700"></div>
                     </section>
                 </div>
 

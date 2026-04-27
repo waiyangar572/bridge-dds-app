@@ -142,11 +142,12 @@
     },
     "probability": {
         "title": "ブリッジ早見表",
-        "lead": "確率表とIMP表をタブで切り替えて確認できます。",
+        "lead": "確率表・IMP表・VP表をタブで切り替えて確認できます。",
         "calculate": "計算",
         "tabs": {
             "probability": "確率表",
-            "imp": "IMP表"
+            "imp": "IMP表",
+            "vp": "VP表"
         },
         "suit": {
             "title": "スート分布確率",
@@ -197,6 +198,18 @@
             "range": "{min}-{max}",
             "rangeOver": "{min}+",
             "note": "絶対値で表を引き、勝敗方向で符号（+/-）を付けてください。"
+        },
+        "vp": {
+            "title": "WBF VPスケール",
+            "help": "IMP差（0,1,2...）ごとの両者VPを確認できます。",
+            "impDiff": "IMP差（絶対値）",
+            "impValue": "IMP",
+            "boardsLabel": "ボード数",
+            "boards": "{boards}ボード",
+            "vpPair": "VP（両者）",
+            "winnerVp": "勝者VP",
+            "loserVp": "敗者VP",
+            "note": "{boards}ボードでは、{cap} IMP以上は 20.00-0.00 で固定です。"
         }
     },
     "terms": {

@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { min: 3500, max: 3990, imp: 23 },
         { min: 4000, max: null, imp: 24 },
     ];
+    let vpBoardCount = 16;
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -227,13 +228,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
         setNodeText(
             "#probability-lead",
-            tr("probability.lead", "Switch between probability and IMP quick references."),
+            tr("probability.lead", "Switch between probability, IMP, and VP quick references."),
         );
         setNodeText(
             "#reference-tab-probability",
             tr("probability.tabs.probability", "Probability Table"),
         );
         setNodeText("#reference-tab-imp", tr("probability.tabs.imp", "IMP Scale"));
+        setNodeText("#reference-tab-vp", tr("probability.tabs.vp", "VP Scale"));
         setNodeText(
             "#prob-suit-title",
             tr("probability.suit.title", "Suit distribution probability"),
@@ -265,6 +267,12 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         setNodeText("#imp-title", tr("probability.imp.title", "IMP scale"));
         setNodeText("#imp-help", tr("probability.imp.help", "Convert score difference to IMPs."));
+        setNodeText("#vp-title", tr("probability.vp.title", "VP scale"));
+        setNodeText(
+            "#vp-help",
+            tr("probability.vp.help", "Check VP pair values by individual IMP difference."),
+        );
+        setNodeText("#vp-boards-label", tr("probability.vp.boardsLabel", "Boards"));
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
@@ -348,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProbabilitySuitResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
+        setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
     }
 
@@ -1008,56 +1017,175 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateReferenceTabUI() {
-        const isProbability = referenceViewTab === "probability";
         const probabilityTab = document.getElementById("reference-tab-probability");
         const impTab = document.getElementById("reference-tab-imp");
+        const vpTab = document.getElementById("reference-tab-vp");
         const probabilityPanel = document.getElementById("reference-panel-probability");
         const impPanel = document.getElementById("reference-panel-imp");
+        const vpPanel = document.getElementById("reference-panel-vp");
 
         if (probabilityTab) {
-            probabilityTab.classList.toggle("is-active", isProbability);
-            probabilityTab.setAttribute("aria-selected", isProbability ? "true" : "false");
+            const isActive = referenceViewTab === "probability";
+            probabilityTab.classList.toggle("is-active", isActive);
+            probabilityTab.setAttribute("aria-selected", isActive ? "true" : "false");
         }
         if (impTab) {
-            impTab.classList.toggle("is-active", !isProbability);
-            impTab.setAttribute("aria-selected", !isProbability ? "true" : "false");
+            const isActive = referenceViewTab === "imp";
+            impTab.classList.toggle("is-active", isActive);
+            impTab.setAttribute("aria-selected", isActive ? "true" : "false");
         }
-        if (probabilityPanel) probabilityPanel.classList.toggle("hidden", !isProbability);
-        if (impPanel) impPanel.classList.toggle("hidden", isProbability);
+        if (vpTab) {
+            const isActive = referenceViewTab === "vp";
+            vpTab.classList.toggle("is-active", isActive);
+            vpTab.setAttribute("aria-selected", isActive ? "true" : "false");
+        }
+        if (probabilityPanel)
+            probabilityPanel.classList.toggle("hidden", referenceViewTab !== "probability");
+        if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
+        if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
     }
 
     function setReferenceTab(tabName) {
-        referenceViewTab = tabName === "imp" ? "imp" : "probability";
+        referenceViewTab = ["probability", "imp", "vp"].includes(tabName)
+            ? tabName
+            : "probability";
         updateReferenceTabUI();
     }
 
     function updateImpScaleResult() {
         const container = document.getElementById("imp-result");
         if (!container) return;
-        const rows = IMP_SCALE_ROWS.map((row) => {
-            const rangeLabel =
-                row.max === null
-                    ? tr("probability.imp.rangeOver", "{min}+", { min: row.min })
-                    : tr("probability.imp.range", "{min}-{max}", {
-                          min: row.min,
-                          max: row.max,
-                      });
-            return `<tr><td class="text-left font-semibold">${rangeLabel}</td><td>${row.imp}</td></tr>`;
-        }).join("");
+        const totalColumns = 3;
+        const chunkSize = Math.ceil(IMP_SCALE_ROWS.length / totalColumns);
+        const chunks = Array.from({ length: totalColumns }, (_, index) =>
+            IMP_SCALE_ROWS.slice(index * chunkSize, (index + 1) * chunkSize),
+        ).filter((chunk) => chunk.length > 0);
+        const columnsHtml = chunks
+            .map((chunk) => {
+                const rows = chunk
+                    .map((row) => {
+                        const rangeLabel =
+                            row.max === null
+                                ? tr("probability.imp.rangeOver", "{min}+", { min: row.min })
+                                : tr("probability.imp.range", "{min}-{max}", {
+                                      min: row.min,
+                                      max: row.max,
+                                  });
+                        return `<tr><td class="text-left font-semibold">${rangeLabel}</td><td>${row.imp}</td></tr>`;
+                    })
+                    .join("");
+                return `
+                <table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.imp.scoreDiff", "Score diff (absolute)")}</th>
+                            <th>${tr("probability.imp.imps", "IMPs")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+            })
+            .join("");
 
         container.innerHTML = `
-            <table class="w-full result-table">
-                <thead>
-                    <tr>
-                        <th class="text-left">${tr("probability.imp.scoreDiff", "Score diff (absolute)")}</th>
-                        <th>${tr("probability.imp.imps", "IMPs")}</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">${columnsHtml}</div>
             <div class="text-xs text-slate-500 mt-2">${tr(
                 "probability.imp.note",
                 "Use absolute score difference, then apply sign by result direction.",
+            )}</div>
+        `;
+    }
+
+    function normalizeVpBoardCount(value) {
+        const parsed = Number.parseInt(value, 10);
+        if (Number.isNaN(parsed)) return vpBoardCount;
+        return Math.max(1, Math.min(128, parsed));
+    }
+
+    // VP formula from plan.md
+    function calcVp(openImp, closedImp, numOfBoard) {
+        const diff = Math.abs(openImp - closedImp);
+        const tau = (Math.sqrt(5) - 1) / 2;
+        const b = 15 * Math.sqrt(numOfBoard);
+        let vp = 10 + 10 * ((1 - Math.pow(tau, (3 * diff) / b)) / (1 - Math.pow(tau, 3)));
+        let antiVp = 0;
+
+        if (diff > b) {
+            vp = 20.0;
+            antiVp = 0.0;
+        } else {
+            vp = Math.round(vp * 100) / 100;
+            antiVp = Math.round((20 - vp) * 100) / 100;
+        }
+
+        if (openImp > closedImp) return [vp, antiVp];
+        return [antiVp, vp];
+    }
+
+    function setVpBoardCount(nextValue) {
+        vpBoardCount = normalizeVpBoardCount(nextValue);
+        const input = document.getElementById("vp-boards-input");
+        if (input) input.value = String(vpBoardCount);
+        document.querySelectorAll("[data-vp-boards]").forEach((btn) => {
+            if (!(btn instanceof HTMLElement)) return;
+            const preset = Number.parseInt(btn.dataset.vpBoards || "", 10);
+            btn.classList.toggle("is-active", preset === vpBoardCount);
+        });
+        updateVpScaleResult();
+    }
+
+    function updateVpScaleResult() {
+        const container = document.getElementById("vp-result");
+        if (!container) return;
+        const boards = normalizeVpBoardCount(vpBoardCount);
+        if (boards !== vpBoardCount) vpBoardCount = boards;
+        const capImp = Math.floor(15 * Math.sqrt(boards)) + 1;
+        const rows = Array.from({ length: capImp + 1 }, (_, imp) => {
+            const [winnerVp, loserVp] = calcVp(imp, 0, boards);
+            return {
+                imp,
+                pair: `${winnerVp.toFixed(2)}-${loserVp.toFixed(2)}`,
+            };
+        });
+        const chunkCount = 4;
+        const chunkSize = Math.ceil(rows.length / chunkCount);
+        const chunks = Array.from({ length: chunkCount }, (_, index) =>
+            rows.slice(index * chunkSize, (index + 1) * chunkSize),
+        ).filter((chunk) => chunk.length > 0);
+
+        const columnsHtml = chunks
+            .map((chunk) => {
+                const body = chunk
+                    .map(
+                        (row) => `
+                    <tr>
+                        <td class="text-left font-semibold">${row.imp}</td>
+                        <td>${row.pair}</td>
+                    </tr>
+                `,
+                    )
+                    .join("");
+                return `
+                <table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.vp.impValue", "IMP")}</th>
+                            <th>${tr("probability.vp.vpPair", "VP (both sides)")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${body}</tbody>
+                </table>
+            `;
+            })
+            .join("");
+
+        container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-12">${columnsHtml}</div>
+            <div class="text-xs text-slate-500 mt-2">${tr(
+                "probability.vp.note",
+                "For {boards} boards, {cap} IMP and above is fixed at 20.00-0.00.",
+                { boards, cap: capImp },
             )}</div>
         `;
     }
@@ -1582,6 +1710,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProbabilitySuitResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
+        setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
     }
 
@@ -2218,6 +2347,23 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener("click", () => {
                 if (!(btn instanceof HTMLElement)) return;
                 setReferenceTab(btn.dataset.referenceTab || "probability");
+            });
+        });
+
+        const vpBoardsInput = document.getElementById("vp-boards-input");
+        if (vpBoardsInput) {
+            vpBoardsInput.addEventListener("change", () => setVpBoardCount(vpBoardsInput.value));
+            vpBoardsInput.addEventListener("blur", () => setVpBoardCount(vpBoardsInput.value));
+            vpBoardsInput.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter") return;
+                setVpBoardCount(vpBoardsInput.value);
+            });
+        }
+
+        document.querySelectorAll("[data-vp-boards]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                if (!(btn instanceof HTMLElement)) return;
+                setVpBoardCount(btn.dataset.vpBoards || "");
             });
         });
 

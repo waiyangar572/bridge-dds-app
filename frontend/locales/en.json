@@ -144,11 +144,12 @@
     },
     "probability": {
         "title": "Bridge Reference",
-        "lead": "Switch between probability and IMP quick references.",
+        "lead": "Switch between probability, IMP, and VP quick references.",
         "calculate": "Calculate",
         "tabs": {
             "probability": "Probability Table",
-            "imp": "IMP Scale"
+            "imp": "IMP Scale",
+            "vp": "VP Scale"
         },
         "suit": {
             "title": "Suit distribution probability",
@@ -199,6 +200,18 @@
             "range": "{min}-{max}",
             "rangeOver": "{min}+",
             "note": "Use absolute score difference, then apply sign by result direction."
+        },
+        "vp": {
+            "title": "WBF VP scale",
+            "help": "Check both-side VP by individual IMP difference (0,1,2...).",
+            "impDiff": "IMP diff (absolute)",
+            "impValue": "IMP",
+            "boardsLabel": "Boards",
+            "boards": "{boards} boards",
+            "vpPair": "VP (both sides)",
+            "winnerVp": "Winner VP",
+            "loserVp": "Loser VP",
+            "note": "For {boards} boards, {cap} IMP and above is fixed at 20.00-0.00."
         }
     },
     "terms": {
