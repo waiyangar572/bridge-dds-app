@@ -1393,7 +1393,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 data-qdrop-fit="${row.key}"
                                 class="qdrop-fit-toggle">
                                 ${row.fit}
-                                <span class="qdrop-fit-toggle-caret">↗</span>
                             </button>
                         </td>
                         <td class="text-left">${row.line}</td>
