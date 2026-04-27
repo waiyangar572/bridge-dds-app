@@ -7,7 +7,7 @@
         "double": "ダブルダミー分析",
         "single": "シングルダミー分析",
         "lead": "オープニングリード分析",
-        "probability": "確率表"
+        "probability": "早見表"
     },
     "buttons": {
         "analyze": "分析実行",
@@ -27,8 +27,8 @@
             "description": "Opening Lead候補ごとの期待トリック数とセット確率を比較できます。"
         },
         "probability": {
-            "title": "Bridge Solver | 確率早見表",
-            "description": "ブリッジで頻出するスート分布確率とフィネス成功率を素早く確認できます。"
+            "title": "Bridge Solver | ブリッジ早見表",
+            "description": "確率表とIMP表をタブで切り替えて確認できます。"
         },
         "privacy": {
             "title": "Bridge Solver | プライバシーポリシー",
@@ -141,9 +141,13 @@
         ]
     },
     "probability": {
-        "title": "確率早見表",
-        "lead": "ブリッジでよく使う確率をすばやく確認できます。",
+        "title": "ブリッジ早見表",
+        "lead": "確率表とIMP表をタブで切り替えて確認できます。",
         "calculate": "計算",
+        "tabs": {
+            "probability": "確率表",
+            "imp": "IMP表"
+        },
         "suit": {
             "title": "スート分布確率",
             "help": "6枚フィット以上について、フィット枚数ごとのオポ枚数分布確率を表示します。",
@@ -184,6 +188,15 @@
             "bestTag": "ベスト",
             "success": "全勝確率",
             "note": "前提: Q抜け。各行ごとに指定プレイラインの全勝確率を表示。"
+        },
+        "imp": {
+            "title": "IMPスケール",
+            "help": "スコア差からIMPを確認できます。",
+            "scoreDiff": "スコア差（絶対値）",
+            "imps": "IMP",
+            "range": "{min}-{max}",
+            "rangeOver": "{min}+",
+            "note": "絶対値で表を引き、勝敗方向で符号（+/-）を付けてください。"
         }
     },
     "terms": {

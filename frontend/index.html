@@ -535,6 +535,32 @@
                 cursor: pointer;
             }
 
+            .reference-tab-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 6px 14px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .reference-tab-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .reference-tab-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
             .dist-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -642,7 +668,7 @@
                         <a href="#view-double">Double Dummy</a> /
                         <a href="#view-single">Single Dummy</a> /
                         <a href="#view-lead">Opening Lead</a> /
-                        <a href="#view-probability">Probability</a>
+                        <a href="#view-probability">Reference</a>
                     </li>
                 </ul>
             </div>
@@ -685,7 +711,7 @@
                                 id="nav-probability"
                                 data-route="/probability"
                                 class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
-                                確率早見表
+                                早見表
                             </a>
                         </nav>
                         <div class="lang-switch flex items-center">
@@ -747,7 +773,7 @@
                         id="mob-nav-probability"
                         data-route="/probability"
                         class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
-                        確率早見表
+                        早見表
                     </a>
                 </div>
             </div>
@@ -1952,34 +1978,69 @@
 
             <div id="view-probability" class="hidden fade-in">
                 <h2 id="probability-title" class="text-2xl font-bold text-slate-800 mb-6">
-                    Probability Quick Check
+                    Bridge Reference
                 </h2>
                 <p id="probability-lead" class="text-sm text-slate-600 mb-6">
                     Frequently used bridge probabilities at a glance.
                 </p>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                        <h3 id="prob-suit-title" class="text-lg font-bold text-slate-900 mb-3">
-                            Suit distribution probability
-                        </h3>
-                        <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
-                            Estimate split probabilities for missing cards in one suit.
-                        </p>
-                        <div id="prob-suit-result" class="text-sm text-slate-700"></div>
-                    </section>
+                <div class="flex items-center gap-2 mb-6" role="tablist" aria-label="Reference tabs">
+                    <button
+                        id="reference-tab-probability"
+                        type="button"
+                        class="reference-tab-btn is-active"
+                        data-reference-tab="probability"
+                        role="tab"
+                        aria-controls="reference-panel-probability"
+                        aria-selected="true">
+                        Probability
+                    </button>
+                    <button
+                        id="reference-tab-imp"
+                        type="button"
+                        class="reference-tab-btn"
+                        data-reference-tab="imp"
+                        role="tab"
+                        aria-controls="reference-panel-imp"
+                        aria-selected="false">
+                        IMP Scale
+                    </button>
+                </div>
 
+                <div id="reference-panel-probability" role="tabpanel">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                            <h3 id="prob-suit-title" class="text-lg font-bold text-slate-900 mb-3">
+                                Suit distribution probability
+                            </h3>
+                            <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
+                                Estimate split probabilities for missing cards in one suit.
+                            </p>
+                            <div id="prob-suit-result" class="text-sm text-slate-700"></div>
+                        </section>
+
+                        <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                            <h3 id="prob-finesse-title" class="text-lg font-bold text-slate-900 mb-3">
+                                Q-drop cashing probability
+                            </h3>
+                            <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
+                                Probability of taking all tricks by cashing when Q is missing.
+                            </p>
+                            <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
+                                Click a fit cell to toggle comparison for that holding.
+                            </p>
+                            <div id="prob-finesse-result" class="text-sm text-slate-700"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="reference-panel-imp" role="tabpanel" class="hidden">
                     <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                        <h3 id="prob-finesse-title" class="text-lg font-bold text-slate-900 mb-3">
-                            Q-drop cashing probability
-                        </h3>
-                        <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
-                            Probability of taking all tricks by cashing when Q is missing.
+                        <h3 id="imp-title" class="text-lg font-bold text-slate-900 mb-3">IMP Scale</h3>
+                        <p id="imp-help" class="text-sm text-slate-600 mb-4">
+                            Convert score difference to IMPs.
                         </p>
-                        <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
-                            Click a fit cell to toggle comparison for that holding.
-                        </p>
-                        <div id="prob-finesse-result" class="text-sm text-slate-700"></div>
+                        <div id="imp-result" class="text-sm text-slate-700"></div>
                     </section>
                 </div>
 
@@ -2088,7 +2149,7 @@
                                     href="/probability"
                                     data-route="/probability"
                                     class="hover:text-white"
-                                    >Probability Quick Check</a
+                                    >Reference</a
                                 >
                             </li>
                         </ul>

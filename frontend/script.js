@@ -32,6 +32,34 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
+    let referenceViewTab = "probability";
+    const IMP_SCALE_ROWS = [
+        { min: 0, max: 10, imp: 0 },
+        { min: 20, max: 40, imp: 1 },
+        { min: 50, max: 80, imp: 2 },
+        { min: 90, max: 120, imp: 3 },
+        { min: 130, max: 160, imp: 4 },
+        { min: 170, max: 210, imp: 5 },
+        { min: 220, max: 260, imp: 6 },
+        { min: 270, max: 310, imp: 7 },
+        { min: 320, max: 360, imp: 8 },
+        { min: 370, max: 420, imp: 9 },
+        { min: 430, max: 490, imp: 10 },
+        { min: 500, max: 590, imp: 11 },
+        { min: 600, max: 740, imp: 12 },
+        { min: 750, max: 890, imp: 13 },
+        { min: 900, max: 1090, imp: 14 },
+        { min: 1100, max: 1290, imp: 15 },
+        { min: 1300, max: 1490, imp: 16 },
+        { min: 1500, max: 1740, imp: 17 },
+        { min: 1750, max: 1990, imp: 18 },
+        { min: 2000, max: 2240, imp: 19 },
+        { min: 2250, max: 2490, imp: 20 },
+        { min: 2500, max: 2990, imp: 21 },
+        { min: 3000, max: 3490, imp: 22 },
+        { min: 3500, max: 3990, imp: 23 },
+        { min: 4000, max: null, imp: 24 },
+    ];
 
     const NAV_KEYS = ["double", "single", "lead", "probability"];
     const VIEW_IDS = [
@@ -174,11 +202,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#nav-lead", tr("nav.lead", "Opening Lead"));
-        setNodeText("#nav-probability", tr("nav.probability", "Probability"));
+        setNodeText("#nav-probability", tr("nav.probability", "Reference"));
         setNodeText("#mob-nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#mob-nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#mob-nav-lead", tr("nav.lead", "Opening Lead"));
-        setNodeText("#mob-nav-probability", tr("nav.probability", "Probability"));
+        setNodeText("#mob-nav-probability", tr("nav.probability", "Reference"));
         setNodeText("#btn-run-double-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-lead-text", tr("buttons.analyze", "Analyze"));
@@ -196,11 +224,16 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#lead-sort-label", tr("ui.sortBy", "Sort"));
         setNodeText("#lead-sort-tricks", tr("ui.expTricks", "Exp Tricks"));
         setNodeText("#lead-sort-setprob", tr("ui.setProb", "Set Prob"));
-        setNodeText("#probability-title", tr("probability.title", "Probability Quick Check"));
+        setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
         setNodeText(
             "#probability-lead",
-            tr("probability.lead", "Frequently used bridge probabilities at a glance."),
+            tr("probability.lead", "Switch between probability and IMP quick references."),
         );
+        setNodeText(
+            "#reference-tab-probability",
+            tr("probability.tabs.probability", "Probability Table"),
+        );
+        setNodeText("#reference-tab-imp", tr("probability.tabs.imp", "IMP Scale"));
         setNodeText(
             "#prob-suit-title",
             tr("probability.suit.title", "Suit distribution probability"),
@@ -230,6 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Click a fit row to open line comparison in a dialog.",
             ),
         );
+        setNodeText("#imp-title", tr("probability.imp.title", "IMP scale"));
+        setNodeText("#imp-help", tr("probability.imp.help", "Convert score difference to IMPs."));
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
@@ -273,10 +308,10 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("footer h4:nth-of-type(2)", tr("footer.info", "Information"));
         setNodeText("footer .text-sm.leading-relaxed", tr("footer.description", ""));
         setNodeTexts("footer .space-y-2.text-sm a", [
-            "Double Dummy Solver",
-            "Single Dummy Solver",
-            "Opening Lead Analyzer",
-            "Probability Table",
+            tr("nav.double", "Double Dummy"),
+            tr("nav.single", "Single Dummy"),
+            tr("nav.lead", "Opening Lead"),
+            tr("nav.probability", "Reference"),
             tr("footer.privacy", "Privacy Policy"),
             tr("footer.about", "About Us"),
             tr("footer.contact", "Contact"),
@@ -312,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateProbabilitySuitResult();
         updateProbabilityQDropResult();
+        updateImpScaleResult();
+        updateReferenceTabUI();
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -970,6 +1007,61 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    function updateReferenceTabUI() {
+        const isProbability = referenceViewTab === "probability";
+        const probabilityTab = document.getElementById("reference-tab-probability");
+        const impTab = document.getElementById("reference-tab-imp");
+        const probabilityPanel = document.getElementById("reference-panel-probability");
+        const impPanel = document.getElementById("reference-panel-imp");
+
+        if (probabilityTab) {
+            probabilityTab.classList.toggle("is-active", isProbability);
+            probabilityTab.setAttribute("aria-selected", isProbability ? "true" : "false");
+        }
+        if (impTab) {
+            impTab.classList.toggle("is-active", !isProbability);
+            impTab.setAttribute("aria-selected", !isProbability ? "true" : "false");
+        }
+        if (probabilityPanel) probabilityPanel.classList.toggle("hidden", !isProbability);
+        if (impPanel) impPanel.classList.toggle("hidden", isProbability);
+    }
+
+    function setReferenceTab(tabName) {
+        referenceViewTab = tabName === "imp" ? "imp" : "probability";
+        updateReferenceTabUI();
+    }
+
+    function updateImpScaleResult() {
+        const container = document.getElementById("imp-result");
+        if (!container) return;
+        const rows = IMP_SCALE_ROWS.map((row) => {
+            const rangeLabel =
+                row.max === null
+                    ? tr("probability.imp.rangeOver", "{min}+", { min: row.min })
+                    : tr("probability.imp.range", "{min}-{max}", {
+                          min: row.min,
+                          max: row.max,
+                      });
+            return `<tr><td class="text-left font-semibold">${rangeLabel}</td><td>${row.imp}</td></tr>`;
+        }).join("");
+
+        container.innerHTML = `
+            <table class="w-full result-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">${tr("probability.imp.scoreDiff", "Score diff (absolute)")}</th>
+                        <th>${tr("probability.imp.imps", "IMPs")}</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div class="text-xs text-slate-500 mt-2">${tr(
+                "probability.imp.note",
+                "Use absolute score difference, then apply sign by result direction.",
+            )}</div>
+        `;
+    }
+
     /**
      * ディフェンスの1スートについてありえるカード配置の組み合わせ数を与える関数
      * * @param {number} missing ディフェンス側のカードの枚数
@@ -1489,6 +1581,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function initProbabilityUI() {
         updateProbabilitySuitResult();
         updateProbabilityQDropResult();
+        updateImpScaleResult();
+        updateReferenceTabUI();
     }
 
     // --- Shared Card Rendering ---
@@ -2119,6 +2213,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         }
+
+        document.querySelectorAll("[data-reference-tab]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                if (!(btn instanceof HTMLElement)) return;
+                setReferenceTab(btn.dataset.referenceTab || "probability");
+            });
+        });
 
         const qdropResult = document.getElementById("prob-finesse-result");
         if (qdropResult) {

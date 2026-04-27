@@ -7,7 +7,7 @@
         "double": "Double Dummy",
         "single": "Single Dummy",
         "lead": "Opening Lead",
-        "probability": "Probability"
+        "probability": "Reference"
     },
     "buttons": {
         "analyze": "Analyze",
@@ -27,8 +27,8 @@
             "description": "Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts."
         },
         "probability": {
-            "title": "Bridge Probability Table | Bridge Solver",
-            "description": "Quickly check practical bridge odds such as suit split probability and basic finesse success rate."
+            "title": "Bridge Reference Table | Bridge Solver",
+            "description": "Switch between bridge probability quick checks and an IMP conversion table."
         },
         "privacy": {
             "title": "Bridge Solver | Privacy Policy",
@@ -143,9 +143,13 @@
         ]
     },
     "probability": {
-        "title": "Probability Table",
-        "lead": "Frequently used bridge probabilities at a glance.",
+        "title": "Bridge Reference",
+        "lead": "Switch between probability and IMP quick references.",
         "calculate": "Calculate",
+        "tabs": {
+            "probability": "Probability Table",
+            "imp": "IMP Scale"
+        },
         "suit": {
             "title": "Suit distribution probability",
             "help": "Shows opponent split probabilities grouped by fit length.",
@@ -186,6 +190,15 @@
             "bestTag": "Best",
             "success": "All-win probability",
             "note": "Assumption: Q is missing. Each row shows all-win probability for its stated play line."
+        },
+        "imp": {
+            "title": "IMP scale",
+            "help": "Convert score difference to IMPs.",
+            "scoreDiff": "Score diff (absolute)",
+            "imps": "IMPs",
+            "range": "{min}-{max}",
+            "rangeOver": "{min}+",
+            "note": "Use absolute score difference, then apply sign by result direction."
         }
     },
     "terms": {
