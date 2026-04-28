@@ -1245,11 +1245,16 @@ document.addEventListener("DOMContentLoaded", () => {
      * @param {string[]} honors 特に持っているかを気にしたいカードの配列 (例: ['K', 'Q'])
      * @returns {Array} {E: State, W: State, combination: number} の配列
      */
-    function getSuitDistributions(missing, honors) {
+    function getSuitDistributions(missing, honors, knownCounts = {}) {
         const results = [];
         const numHonors = honors.length;
         const spotCards = missing - numHonors; // 指定されたオナー以外のカード（スモールカード）の枚数
-        const denominator = combination(26, 13);
+        const EastKnownCount = knownCounts.east !== null ? knownCounts.east : 0;
+        const WestKnownCount = knownCounts.west !== null ? knownCounts.west : 0;
+        const denominatorEast = combination(
+            26 - EastKnownCount - WestKnownCount,
+            13 - EastKnownCount,
+        );
 
         // オナーの分配パターンは 2^(オナーの枚数) 通り
         const totalHonorCombos = 1 << numHonors;
@@ -1286,8 +1291,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 組み合わせ数 = (全体のスモールカード) C (Eastが必要なスモールカード)
                     let prob =
                         (combination(spotCards, spotsNeededE) *
-                            combination(26 - missing, 13 - lengthE)) /
-                        denominator;
+                            combination(
+                                26 - EastKnownCount - WestKnownCount - missing,
+                                13 - EastKnownCount - lengthE,
+                            )) /
+                        denominatorEast;
 
                     results.push({
                         E: stateE,
@@ -1319,7 +1327,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return states;
     }
 
-    function computeQLineProbability(missing, model) {
+    function computeQLineProbability(missing, model, knownCounts = {}) {
         // const states = buildQMissingStates(missing);
         // const isQDrop = (state) => state.qLen <= 2;
         // const isOnsideFourZero = (state) => state.side === "onside" && state.qLen === missing;
@@ -1351,13 +1359,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // }, 0);
 
         // return win * 100;
-        const states = getSuitDistributions(missing, ["Q"]);
+        const states = getSuitDistributions(missing, ["Q"], knownCounts);
+
+        const totalProb = states.reduce((sum, state) => sum + state.prob, 0);
+        if (totalProb <= 0) return 0;
 
         const win = states.reduce((sum, state) => {
             return model(state) ? sum + state.prob : sum;
         }, 0);
 
-        return win;
+        return win / totalProb;
     }
 
     function getQDropBestRows() {
@@ -1447,7 +1458,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return { rows8, rows9 };
     }
 
-    function getQDropComparisonRows(fitKey) {
+    function getQDropComparisonRows(fitKey, knownCounts = {}) {
         if (!fitKey) return null;
         const bestTag = tr("probability.qdrop.bestTag", "Best");
         const make = (lineKey, fallback, missing, model, isBest = false) => ({
@@ -1456,12 +1467,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? ` <span class="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">${bestTag}</span>`
                     : ""
             }`,
-            probability: computeQLineProbability(missing, model),
+            probability: computeQLineProbability(missing, model, knownCounts),
         });
 
         if (fitKey === "44") {
             return {
                 fit: tr("probability.qdrop.fit44", "4-4 fit"),
+                missing: 5,
                 rows: [
                     make(
                         "probability.qdrop.line44",
@@ -1490,6 +1502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fitKey === "53") {
             return {
                 fit: tr("probability.qdrop.fit53", "5-3 fit"),
+                missing: 5,
                 rows: [
                     make(
                         "probability.qdrop.line53",
@@ -1520,6 +1533,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fitKey === "62") {
             return {
                 fit: tr("probability.qdrop.fit62", "6-2 fit"),
+                missing: 5,
                 rows: [
                     make(
                         "probability.qdrop.line62",
@@ -1550,6 +1564,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fitKey === "54") {
             return {
                 fit: tr("probability.qdrop.fit54", "5-4 fit"),
+                missing: 4,
                 rows: [
                     make(
                         "probability.qdrop.line54",
@@ -1586,6 +1601,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fitKey === "63") {
             return {
                 fit: tr("probability.qdrop.fit63", "6-3 fit"),
+                missing: 4,
                 rows: [
                     make(
                         "probability.qdrop.line63",
@@ -1624,6 +1640,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fitKey === "72") {
             return {
                 fit: tr("probability.qdrop.fit72", "7-2 fit"),
+                missing: 4,
                 rows: [
                     make(
                         "probability.qdrop.line72",
@@ -1713,6 +1730,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div id="qdrop-dialog-title" class="text-sm font-semibold text-slate-700"></div>
                         <button type="button" data-qdrop-dialog-close="true" class="qdrop-dialog-close" aria-label="Close">×</button>
                     </div>
+                    <div class="qdrop-dialog-controls mb-2">
+                        <label class="qdrop-dialog-field">
+                            <span class="qdrop-dialog-field-label">${tr("probability.qdrop.knownEast", "E known")}</span>
+                            <input
+                                id="qdrop-known-east"
+                                class="qdrop-dialog-input"
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                value="0" />
+                        </label>
+                        <label class="qdrop-dialog-field">
+                            <span class="qdrop-dialog-field-label">${tr("probability.qdrop.knownWest", "W known")}</span>
+                            <input
+                                id="qdrop-known-west"
+                                class="qdrop-dialog-input"
+                                type="number"
+                                inputmode="numeric"
+                                min="0"
+                                step="1"
+                                value="0" />
+                        </label>
+                    </div>
+                    <div id="qdrop-dialog-note" class="qdrop-dialog-note text-xs text-slate-500 mb-3"></div>
                     <table class="w-full result-table">
                         <thead>
                             <tr>
@@ -1744,6 +1786,119 @@ document.addEventListener("DOMContentLoaded", () => {
         startY: 0,
         currentOffset: 0,
     };
+
+    const qdropDialogState = {
+        fitKey: "",
+        east: "",
+        west: "",
+    };
+
+    function parseQDropKnownCount(rawValue, missing) {
+        const normalized = String(rawValue ?? "").trim();
+        if (normalized === "") return null;
+        const value = Number.parseInt(normalized, 10);
+        if (!Number.isFinite(value)) return null;
+        return Math.min(missing, Math.max(0, value));
+    }
+
+    function getQDropKnownCounts(missing) {
+        return {
+            east: parseQDropKnownCount(qdropDialogState.east, missing),
+            west: parseQDropKnownCount(qdropDialogState.west, missing),
+        };
+    }
+
+    function getQDropKnownCountsMessage(missing, knownCounts) {
+        if (knownCounts.east == null && knownCounts.west == null) {
+            return tr(
+                "probability.qdrop.knownHint",
+                "Leave blank to use the unconditional probability table.",
+            );
+        }
+        if (
+            knownCounts.east != null &&
+            knownCounts.west != null &&
+            knownCounts.east + knownCounts.west !== missing
+        ) {
+            return tr(
+                "probability.qdrop.knownInvalid",
+                "E and W known counts must add up to {missing}.",
+                { missing },
+            );
+        }
+        return tr(
+            "probability.qdrop.knownApplied",
+            "Showing conditional probabilities for the specified E/W suit lengths.",
+        );
+    }
+
+    function renderQDropComparisonDialog() {
+        if (!qdropDialogState.fitKey) return;
+        const titleEl = document.getElementById("qdrop-dialog-title");
+        const bodyEl = document.getElementById("qdrop-dialog-body");
+        const eastInput = document.getElementById("qdrop-known-east");
+        const westInput = document.getElementById("qdrop-known-west");
+        const noteEl = document.getElementById("qdrop-dialog-note");
+        if (!titleEl || !bodyEl || !eastInput || !westInput || !noteEl) return;
+
+        const baseComparison = getQDropComparisonRows(qdropDialogState.fitKey);
+        if (!baseComparison) return;
+        const knownCounts = getQDropKnownCounts(baseComparison.missing);
+        const comparison = getQDropComparisonRows(qdropDialogState.fitKey, knownCounts);
+        if (!comparison) return;
+
+        titleEl.textContent = tr("probability.qdrop.compareResultTitle", "Comparison for {fit}", {
+            fit: comparison.fit,
+        });
+        eastInput.value = qdropDialogState.east;
+        westInput.value = qdropDialogState.west;
+        eastInput.max = String(comparison.missing);
+        westInput.max = String(comparison.missing);
+        noteEl.textContent = getQDropKnownCountsMessage(comparison.missing, knownCounts);
+        noteEl.classList.toggle(
+            "text-amber-600",
+            knownCounts.east != null &&
+                knownCounts.west != null &&
+                knownCounts.east + knownCounts.west !== comparison.missing,
+        );
+        noteEl.classList.toggle(
+            "text-slate-500",
+            !(
+                knownCounts.east != null &&
+                knownCounts.west != null &&
+                knownCounts.east + knownCounts.west !== comparison.missing
+            ),
+        );
+        bodyEl.innerHTML = comparison.rows
+            .map(
+                (cmp) => `
+            <tr>
+                <td class="text-left">${cmp.line}</td>
+                <td>${(cmp.probability * 100).toFixed(2)}%</td>
+            </tr>
+        `,
+            )
+            .join("");
+    }
+
+    function bindQDropDialogInputs() {
+        const dialog = document.getElementById("qdrop-compare-dialog");
+        if (!dialog || dialog.dataset.inputsBound === "true") return;
+        const eastInput = document.getElementById("qdrop-known-east");
+        const westInput = document.getElementById("qdrop-known-west");
+        if (!(eastInput instanceof HTMLInputElement) || !(westInput instanceof HTMLInputElement))
+            return;
+
+        const handleInput = () => {
+            qdropDialogState.east = eastInput.value;
+            qdropDialogState.west = westInput.value;
+            renderQDropComparisonDialog();
+        };
+
+        eastInput.addEventListener("input", handleInput);
+        westInput.addEventListener("input", handleInput);
+        dialog.dataset.inputsBound = "true";
+    }
 
     function resetQDropSheetDrag(panel) {
         qdropSheetDragState.active = false;
@@ -1811,22 +1966,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function openQDropComparisonDialog(fitKey) {
         const comparison = getQDropComparisonRows(fitKey);
         if (!comparison) return;
-        const titleEl = document.getElementById("qdrop-dialog-title");
-        const bodyEl = document.getElementById("qdrop-dialog-body");
-        if (!titleEl || !bodyEl) return;
-        titleEl.textContent = tr("probability.qdrop.compareResultTitle", "Comparison for {fit}", {
-            fit: comparison.fit,
-        });
-        bodyEl.innerHTML = comparison.rows
-            .map(
-                (cmp) => `
-            <tr>
-                <td class="text-left">${cmp.line}</td>
-                <td>${(cmp.probability * 100).toFixed(2)}%</td>
-            </tr>
-        `,
-            )
-            .join("");
+        qdropDialogState.fitKey = fitKey;
+        qdropDialogState.east = "";
+        qdropDialogState.west = "";
+        bindQDropDialogInputs();
+        renderQDropComparisonDialog();
         bindQDropSheetSwipe();
         setQDropDialogOpen(true);
     }

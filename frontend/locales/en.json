@@ -199,6 +199,11 @@
             "compareLineCashAK": "Cash AK and play for Q-drop.",
             "compareLineDoubleFinesse": "Take two finesses.",
             "compareLineCashAThenFinesse": "Cash A then finesse.",
+            "knownEast": "E known",
+            "knownWest": "W known",
+            "knownHint": "Leave blank to use the unconditional probability table.",
+            "knownApplied": "Showing conditional probabilities for the specified E/W suit lengths.",
+            "knownInvalid": "E and W known counts must add up to {missing}.",
             "bestTag": "Best",
             "success": "All-win probability",
             "note": "Assumption: Q is missing. Each row shows all-win probability for its stated play line."
