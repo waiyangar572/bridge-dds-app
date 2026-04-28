@@ -27,8 +27,19 @@
             "description": "Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts."
         },
         "probability": {
-            "title": "Bridge Reference Table | Bridge Solver",
-            "description": "Switch between bridge probability quick checks and an IMP conversion table."
+            "title": "Bridge Reference Tables (Probability, IMP, VP) | Bridge Solver",
+            "description": "Use bridge reference tables to check probability lines, IMP scale, and VP scale by board count.",
+            "keywords": "bridge reference table, bridge probability table, imp scale bridge, vp scale bridge, contract bridge odds"
+        },
+        "imp": {
+            "title": "Bridge IMP Scale Table | Bridge Solver",
+            "description": "Check IMP conversion quickly with a readable multi-column bridge IMP scale table.",
+            "keywords": "bridge imp scale, imp conversion table, contract bridge imp"
+        },
+        "vp": {
+            "title": "Bridge VP Scale by Boards | Bridge Solver",
+            "description": "Check VP values by IMP difference and board count (including quick 16/32-board views).",
+            "keywords": "bridge vp scale, wbf 20-0 vp, bridge vp table by boards"
         },
         "privacy": {
             "title": "Bridge Solver | Privacy Policy",

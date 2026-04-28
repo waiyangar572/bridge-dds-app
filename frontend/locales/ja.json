@@ -28,7 +28,18 @@
         },
         "probability": {
             "title": "Bridge Solver | ブリッジ早見表",
-            "description": "確率表とIMP表をタブで切り替えて確認できます。"
+            "description": "確率表・IMP表・VP表を切り替えて確認でき、VPはボード数指定で早見できます。",
+            "keywords": "ブリッジ 早見表, ブリッジ 確率表, IMPスケール, VPスケール, コントラクトブリッジ"
+        },
+        "imp": {
+            "title": "Bridge Solver | IMPスケール表",
+            "description": "見やすい複数列のIMPスケール表で、スコア差からIMPを素早く確認できます。",
+            "keywords": "ブリッジ IMP, IMP換算表, コントラクトブリッジ IMP"
+        },
+        "vp": {
+            "title": "Bridge Solver | VPスケール表",
+            "description": "ボード数ごとのVPスケールを確認できます。16/32ボードはワンタップ対応。",
+            "keywords": "ブリッジ VP, VPスケール, WBF 20-0, ボード数 VP"
         },
         "privacy": {
             "title": "Bridge Solver | プライバシーポリシー",

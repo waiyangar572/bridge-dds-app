@@ -94,12 +94,38 @@ document.addEventListener("DOMContentLoaded", () => {
             nav: "lead",
             viewId: "view-lead",
         },
-        "/probability": {
+        "/reference/probability": {
             type: "tool",
             metaKey: "probability",
             tab: "probability",
             nav: "probability",
             viewId: "view-probability",
+            referenceTab: "probability",
+        },
+        "/reference/imp": {
+            type: "tool",
+            metaKey: "imp",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+            referenceTab: "imp",
+        },
+        "/reference/vp": {
+            type: "tool",
+            metaKey: "vp",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+            referenceTab: "vp",
+        },
+        "/probability": {
+            path: "/reference/probability",
+            type: "tool",
+            metaKey: "probability",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+            referenceTab: "probability",
         },
         "/privacy": {
             type: "page",
@@ -394,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
         meta.setAttribute("content", content);
     }
 
-    function setJsonLd(routePath, title, description, canonicalUrl) {
+    function setJsonLd(routePath, title, description, canonicalUrl, keywords = "") {
         const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
         let script = document.getElementById("seo-json-ld");
         if (!script) {
@@ -412,11 +438,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       "@type": "SoftwareApplication",
                       name: title,
                       applicationCategory: "GameApplication",
-                      operatingSystem: "Web",
-                      description,
-                      url: canonicalUrl,
-                      inLanguage: currentLanguage,
-                      offers: {
+                       operatingSystem: "Web",
+                       description,
+                       url: canonicalUrl,
+                       inLanguage: currentLanguage,
+                       keywords,
+                       offers: {
                           "@type": "Offer",
                           price: "0",
                           priceCurrency: "USD",
@@ -427,11 +454,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 : {
                       "@context": "https://schema.org",
                       "@type": "WebPage",
-                      name: title,
-                      description,
-                      url: canonicalUrl,
-                      inLanguage: currentLanguage,
-                      isPartOf: {
+                       name: title,
+                       description,
+                       url: canonicalUrl,
+                       inLanguage: currentLanguage,
+                       keywords,
+                       isPartOf: {
                           "@type": "WebSite",
                           name: "Bridge Solver",
                           url: `${SITE_ORIGIN}/`,
@@ -448,6 +476,10 @@ document.addEventListener("DOMContentLoaded", () => {
             `meta.${route.metaKey}.description`,
             "Contract bridge analysis tools.",
         );
+        const keywords = tr(
+            `meta.${route.metaKey}.keywords`,
+            "bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale",
+        );
         const localizedPath = buildLocalizedPath(currentLanguage, route.path || routePath);
         const canonicalUrl = `${SITE_ORIGIN}${localizedPath}`;
 
@@ -457,6 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "robots",
             "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
         );
+        upsertMetaByName("keywords", keywords);
         upsertMetaByProperty("og:title", title);
         upsertMetaByProperty("og:description", description);
         upsertMetaByProperty("og:type", "website");
@@ -468,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
         upsertMetaByName("twitter:title", title);
         upsertMetaByName("twitter:description", description);
         upsertMetaByName("twitter:image", DEFAULT_OG_IMAGE);
-        setJsonLd(route.path || routePath, title, description, canonicalUrl);
+        setJsonLd(route.path || routePath, title, description, canonicalUrl, keywords);
         setAlternateLinks(routePath);
     }
 
@@ -592,8 +625,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getRoute(pathname) {
         const normalizedPath = normalizePath(pathname);
-        if (ROUTES[normalizedPath]) return { ...ROUTES[normalizedPath], path: normalizedPath };
+        if (ROUTES[normalizedPath]) {
+            const route = ROUTES[normalizedPath];
+            return { ...route, path: route.path || normalizedPath };
+        }
         return { ...ROUTES[DEFAULT_ROUTE], path: DEFAULT_ROUTE };
+    }
+
+    function getReferenceTabRoute(tabName) {
+        if (tabName === "imp") return "/reference/imp";
+        if (tabName === "vp") return "/reference/vp";
+        return "/reference/probability";
     }
 
     function showView(viewId) {
@@ -641,6 +683,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.type === "tool") {
             showView(route.viewId);
             switchTab(route.tab);
+            if (route.viewId === "view-probability") {
+                setReferenceTab(route.referenceTab || "probability");
+            }
         } else {
             applyNavState(route);
             showView(route.viewId);
@@ -663,7 +708,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function bootstrapApp() {
         const parsed = parseLocalizedPath(window.location.pathname);
         const preferredLang = parsed.lang || getPreferredLanguage();
-        const routePath = ROUTES[parsed.routePath] ? parsed.routePath : DEFAULT_ROUTE;
+        const requestedRoutePath = ROUTES[parsed.routePath] ? parsed.routePath : DEFAULT_ROUTE;
+        const routePath = getRoute(requestedRoutePath).path;
         await setLanguage(preferredLang, { persist: false, refreshUI: false });
         applyTranslations();
 
@@ -676,7 +722,10 @@ document.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("popstate", async () => {
             const popParsed = parseLocalizedPath(window.location.pathname);
             const popLang = popParsed.lang || getPreferredLanguage();
-            const popRoutePath = ROUTES[popParsed.routePath] ? popParsed.routePath : DEFAULT_ROUTE;
+            const popRequestedRoutePath = ROUTES[popParsed.routePath]
+                ? popParsed.routePath
+                : DEFAULT_ROUTE;
+            const popRoutePath = getRoute(popRequestedRoutePath).path;
             if (popLang !== currentLanguage) {
                 await setLanguage(popLang, { persist: false, refreshUI: true });
             }
@@ -2346,7 +2395,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll("[data-reference-tab]").forEach((btn) => {
             btn.addEventListener("click", () => {
                 if (!(btn instanceof HTMLElement)) return;
-                setReferenceTab(btn.dataset.referenceTab || "probability");
+                navigateTo(getReferenceTabRoute(btn.dataset.referenceTab || "probability"));
             });
         });
 
