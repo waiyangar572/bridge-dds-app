@@ -438,12 +438,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       "@type": "SoftwareApplication",
                       name: title,
                       applicationCategory: "GameApplication",
-                       operatingSystem: "Web",
-                       description,
-                       url: canonicalUrl,
-                       inLanguage: currentLanguage,
-                       keywords,
-                       offers: {
+                      operatingSystem: "Web",
+                      description,
+                      url: canonicalUrl,
+                      inLanguage: currentLanguage,
+                      keywords,
+                      offers: {
                           "@type": "Offer",
                           price: "0",
                           priceCurrency: "USD",
@@ -454,12 +454,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 : {
                       "@context": "https://schema.org",
                       "@type": "WebPage",
-                       name: title,
-                       description,
-                       url: canonicalUrl,
-                       inLanguage: currentLanguage,
-                       keywords,
-                       isPartOf: {
+                      name: title,
+                      description,
+                      url: canonicalUrl,
+                      inLanguage: currentLanguage,
+                      keywords,
+                      isPartOf: {
                           "@type": "WebSite",
                           name: "Bridge Solver",
                           url: `${SITE_ORIGIN}/`,
@@ -1680,7 +1680,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <table class="w-full result-table">
                     <thead>
                         <tr>
-                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
+                            <th class="text-left min-w-20">${tr("probability.qdrop.fit", "Fit")}</th>
                             <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
                             <th>${tr("probability.qdrop.success", "All-win probability")}</th>
                         </tr>
@@ -1693,7 +1693,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <table class="w-full result-table">
                     <thead>
                         <tr>
-                            <th class="text-left">${tr("probability.qdrop.fit", "Fit")}</th>
+                            <th class="text-left min-w-20">${tr("probability.qdrop.fit", "Fit")}</th>
                             <th class="text-left">${tr("probability.qdrop.playLine", "Play line")}</th>
                             <th>${tr("probability.qdrop.success", "All-win probability")}</th>
                         </tr>
@@ -1708,6 +1708,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div id="qdrop-compare-dialog" class="qdrop-dialog hidden" aria-hidden="true">
                 <div class="qdrop-dialog-backdrop" data-qdrop-dialog-close="true"></div>
                 <div class="qdrop-dialog-panel" role="dialog" aria-modal="true" aria-labelledby="qdrop-dialog-title">
+                    <div class="qdrop-dialog-handle" data-qdrop-drag-handle="true" aria-hidden="true"></div>
                     <div class="flex items-center justify-between mb-2">
                         <div id="qdrop-dialog-title" class="text-sm font-semibold text-slate-700"></div>
                         <button type="button" data-qdrop-dialog-close="true" class="qdrop-dialog-close" aria-label="Close">×</button>
@@ -1729,8 +1730,82 @@ document.addEventListener("DOMContentLoaded", () => {
     function setQDropDialogOpen(isOpen) {
         const dialog = document.getElementById("qdrop-compare-dialog");
         if (!dialog) return;
+        const panel = dialog.querySelector(".qdrop-dialog-panel");
         dialog.classList.toggle("hidden", !isOpen);
         dialog.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        if (panel instanceof HTMLElement) {
+            panel.classList.remove("is-dragging");
+            panel.style.transform = "";
+        }
+    }
+
+    const qdropSheetDragState = {
+        active: false,
+        startY: 0,
+        currentOffset: 0,
+    };
+
+    function resetQDropSheetDrag(panel) {
+        qdropSheetDragState.active = false;
+        qdropSheetDragState.startY = 0;
+        qdropSheetDragState.currentOffset = 0;
+        if (!(panel instanceof HTMLElement)) return;
+        panel.classList.remove("is-dragging");
+        panel.style.transform = "";
+    }
+
+    function bindQDropSheetSwipe() {
+        const dialog = document.getElementById("qdrop-compare-dialog");
+        if (!dialog || dialog.dataset.swipeBound === "true") return;
+        const panel = dialog.querySelector(".qdrop-dialog-panel");
+        const handle = dialog.querySelector("[data-qdrop-drag-handle]");
+        if (!(panel instanceof HTMLElement) || !(handle instanceof HTMLElement)) return;
+
+        const closeThreshold = () => Math.min(160, Math.max(72, panel.offsetHeight * 0.2));
+
+        handle.addEventListener(
+            "touchstart",
+            (event) => {
+                if (window.innerWidth > 640) return;
+                const touch = event.touches[0];
+                if (!touch) return;
+                qdropSheetDragState.active = true;
+                qdropSheetDragState.startY = touch.clientY;
+                qdropSheetDragState.currentOffset = 0;
+                panel.classList.add("is-dragging");
+            },
+            { passive: true },
+        );
+
+        handle.addEventListener(
+            "touchmove",
+            (event) => {
+                if (!qdropSheetDragState.active) return;
+                const touch = event.touches[0];
+                if (!touch) return;
+                const deltaY = touch.clientY - qdropSheetDragState.startY;
+                if (deltaY <= 0) {
+                    qdropSheetDragState.currentOffset = 0;
+                    panel.style.transform = "";
+                    return;
+                }
+                qdropSheetDragState.currentOffset = deltaY;
+                panel.style.transform = `translateY(${deltaY}px)`;
+                event.preventDefault();
+            },
+            { passive: false },
+        );
+
+        const finishDrag = () => {
+            if (!qdropSheetDragState.active) return;
+            const shouldClose = qdropSheetDragState.currentOffset > closeThreshold();
+            resetQDropSheetDrag(panel);
+            if (shouldClose) setQDropDialogOpen(false);
+        };
+
+        handle.addEventListener("touchend", finishDrag);
+        handle.addEventListener("touchcancel", () => resetQDropSheetDrag(panel));
+        dialog.dataset.swipeBound = "true";
     }
 
     function openQDropComparisonDialog(fitKey) {
@@ -1752,6 +1827,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `,
             )
             .join("");
+        bindQDropSheetSwipe();
         setQDropDialogOpen(true);
     }
 

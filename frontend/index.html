@@ -537,6 +537,61 @@
                 cursor: pointer;
             }
 
+            @keyframes qdrop-sheet-in {
+                from {
+                    transform: translateY(24px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .qdrop-dialog {
+                    align-items: flex-end;
+                    justify-content: stretch;
+                    padding: 0;
+                }
+
+                .qdrop-dialog-panel {
+                    width: 100%;
+                    max-height: min(80vh, calc(100vh - 12px));
+                    border-radius: 20px 20px 0 0;
+                    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+                    animation: qdrop-sheet-in 0.2s ease-out;
+                    transition: transform 0.18s ease-out;
+                    will-change: transform;
+                    touch-action: pan-y;
+                }
+
+                .qdrop-dialog-panel.is-dragging {
+                    animation: none;
+                    transition: none;
+                }
+
+                .qdrop-dialog-handle {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: -16px -16px 8px;
+                    padding: 16px 16px 14px;
+                    touch-action: none;
+                }
+
+                .qdrop-dialog-handle::before {
+                    content: "";
+                    display: block;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 9999px;
+                    background: #cbd5e1;
+                }
+            }
+
             .reference-tab-btn {
                 border: var(--border-whisper);
                 background: #ffffff;
