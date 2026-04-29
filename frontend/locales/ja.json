@@ -201,7 +201,7 @@
             "knownWest": "W 判明枚数",
             "knownHint": "空欄なら無条件の確率を表示します。",
             "knownApplied": "指定した E/W 枚数を条件にした確率を表示しています。",
-            "knownInvalid": "E と W の判明枚数の合計は {missing} 枚にしてください。",
+            "knownInvalid": "E と W の判明枚数の合計は {13-missing} 枚以下にしてください。",
             "bestTag": "ベスト",
             "success": "全勝確率",
             "note": "前提: Q抜け。各行ごとに指定プレイラインの全勝確率を表示。"

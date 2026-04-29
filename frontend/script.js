@@ -1460,13 +1460,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getQDropComparisonRows(fitKey, knownCounts = {}) {
         if (!fitKey) return null;
-        const bestTag = tr("probability.qdrop.bestTag", "Best");
-        const make = (lineKey, fallback, missing, model, isBest = false) => ({
-            line: `${tr(lineKey, fallback)}${
-                isBest
-                    ? ` <span class="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">${bestTag}</span>`
-                    : ""
-            }`,
+        const make = (lineKey, fallback, missing, model) => ({
+            line: tr(lineKey, fallback),
             probability: computeQLineProbability(missing, model, knownCounts),
         });
 
@@ -1480,7 +1475,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Cash A then finesse.",
                         5,
                         (state) => state.E["Q"] || state.W.length == 1,
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
@@ -1511,7 +1505,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         (state) =>
                             (state.E["Q"] && state.E.length < 5) ||
                             (state.W["Q"] && state.W.length == 1),
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineDoubleFinesse",
@@ -1540,7 +1533,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Do not cash on Q side; take two finesses.",
                         5,
                         (state) => state.E["Q"] && state.E.length < 5,
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineCashAThenFinesse",
@@ -1573,7 +1565,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         (state) =>
                             (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
                             (state.W["Q"] && state.W.length < 3),
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineCashAThenFinesse",
@@ -1610,7 +1601,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         (state) =>
                             (state.E["Q"] && (state.E.length == 4 || state.E.length < 3)) ||
                             (state.W["Q"] && state.W.length < 3),
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineCashAThenFinesse",
@@ -1649,7 +1639,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         (state) =>
                             (state.E["Q"] && state.E.length < 3) ||
                             (state.W["Q"] && state.W.length < 3),
-                        true,
                     ),
                     make(
                         "probability.qdrop.compareLineFinesseFirst",
@@ -1789,8 +1778,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const qdropDialogState = {
         fitKey: "",
-        east: "",
-        west: "",
+        east: "0",
+        west: "0",
     };
 
     function parseQDropKnownCount(rawValue, missing) {
@@ -1818,11 +1807,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (
             knownCounts.east != null &&
             knownCounts.west != null &&
-            knownCounts.east + knownCounts.west !== missing
+            knownCounts.east + knownCounts.west + missing > 13
         ) {
             return tr(
                 "probability.qdrop.knownInvalid",
-                "E and W known counts must add up to {missing}.",
+                "The total number of known E and W cards must be {13-missing} or fewer.",
                 { missing },
             );
         }
@@ -1846,34 +1835,44 @@ document.addEventListener("DOMContentLoaded", () => {
         const knownCounts = getQDropKnownCounts(baseComparison.missing);
         const comparison = getQDropComparisonRows(qdropDialogState.fitKey, knownCounts);
         if (!comparison) return;
+        const bestTag = tr("probability.qdrop.bestTag", "Best");
+        const bestProbability = comparison.rows.reduce(
+            (max, row) => Math.max(max, row.probability),
+            Number.NEGATIVE_INFINITY,
+        );
+        const bestThreshold = 1e-9;
 
         titleEl.textContent = tr("probability.qdrop.compareResultTitle", "Comparison for {fit}", {
             fit: comparison.fit,
         });
         eastInput.value = qdropDialogState.east;
         westInput.value = qdropDialogState.west;
-        eastInput.max = String(comparison.missing);
-        westInput.max = String(comparison.missing);
+        eastInput.max = String(13);
+        westInput.max = String(13);
         noteEl.textContent = getQDropKnownCountsMessage(comparison.missing, knownCounts);
         noteEl.classList.toggle(
             "text-amber-600",
             knownCounts.east != null &&
                 knownCounts.west != null &&
-                knownCounts.east + knownCounts.west !== comparison.missing,
+                knownCounts.east + knownCounts.west + comparison.missing > 13,
         );
         noteEl.classList.toggle(
             "text-slate-500",
             !(
                 knownCounts.east != null &&
                 knownCounts.west != null &&
-                knownCounts.east + knownCounts.west !== comparison.missing
+                knownCounts.east + knownCounts.west + comparison.missing > 13
             ),
         );
         bodyEl.innerHTML = comparison.rows
             .map(
                 (cmp) => `
             <tr>
-                <td class="text-left">${cmp.line}</td>
+                <td class="text-left">${cmp.line}${
+                    Math.abs(cmp.probability - bestProbability) <= bestThreshold
+                        ? ` <span class="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">${bestTag}</span>`
+                        : ""
+                }</td>
                 <td>${(cmp.probability * 100).toFixed(2)}%</td>
             </tr>
         `,
@@ -1967,8 +1966,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const comparison = getQDropComparisonRows(fitKey);
         if (!comparison) return;
         qdropDialogState.fitKey = fitKey;
-        qdropDialogState.east = "";
-        qdropDialogState.west = "";
+        qdropDialogState.east = "0";
+        qdropDialogState.west = "0";
         bindQDropDialogInputs();
         renderQDropComparisonDialog();
         bindQDropSheetSwipe();
