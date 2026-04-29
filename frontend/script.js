@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const SITE_ORIGIN = "https://bridge-solver.waiyangar.com";
     const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/favicon-96x96.png`;
+    const WEBSITE_NAME = "Bridge Solver";
     const SUPPORTED_LANGS = ["en", "ja"];
     const DEFAULT_ROUTE = "/double-dummy";
     const LANGUAGE_STORAGE_KEY = "bridge_solver_lang";
@@ -420,6 +421,57 @@ document.addEventListener("DOMContentLoaded", () => {
         meta.setAttribute("content", content);
     }
 
+    function getSchemaPageType(route) {
+        if (route.metaKey === "about") return "AboutPage";
+        if (route.metaKey === "contact") return "ContactPage";
+        if (route.metaKey === "privacy") return "PrivacyPolicy";
+        if (route.metaKey === "probability" || route.metaKey === "imp" || route.metaKey === "vp") {
+            return "CollectionPage";
+        }
+        return "WebPage";
+    }
+
+    function getRouteLabel(route) {
+        if (route.metaKey === "double-dummy") return tr("nav.double", "Double Dummy");
+        if (route.metaKey === "single-dummy") return tr("nav.single", "Single Dummy");
+        if (route.metaKey === "opening-lead") return tr("nav.lead", "Opening Lead");
+        if (route.metaKey === "probability") {
+            return tr("probability.tabs.probability", "Probability Table");
+        }
+        if (route.metaKey === "imp") return tr("probability.tabs.imp", "IMP Scale");
+        if (route.metaKey === "vp") return tr("probability.tabs.vp", "VP Scale");
+        if (route.metaKey === "privacy") return tr("pages.privacyTitle", "Privacy Policy");
+        if (route.metaKey === "about") return tr("pages.aboutTitle", "About Us");
+        if (route.metaKey === "contact") return tr("pages.contactTitle", "Contact");
+        return WEBSITE_NAME;
+    }
+
+    function buildBreadcrumbList(route, canonicalUrl) {
+        const itemListElement = [
+            {
+                "@type": "ListItem",
+                position: 1,
+                name: WEBSITE_NAME,
+                item: `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, DEFAULT_ROUTE)}`,
+            },
+        ];
+
+        if (route.path !== DEFAULT_ROUTE) {
+            itemListElement.push({
+                "@type": "ListItem",
+                position: 2,
+                name: getRouteLabel(route),
+                item: canonicalUrl,
+            });
+        }
+
+        return {
+            "@type": "BreadcrumbList",
+            "@id": `${canonicalUrl}#breadcrumb`,
+            itemListElement,
+        };
+    }
+
     function setJsonLd(routePath, title, description, canonicalUrl, keywords = "") {
         const route = ROUTES[routePath] || ROUTES[DEFAULT_ROUTE];
         let script = document.getElementById("seo-json-ld");
@@ -430,43 +482,56 @@ document.addEventListener("DOMContentLoaded", () => {
             document.head.appendChild(script);
         }
 
-        const type = route.type === "tool" ? "SoftwareApplication" : "WebPage";
-        const jsonLd =
-            type === "SoftwareApplication"
-                ? {
-                      "@context": "https://schema.org",
-                      "@type": "SoftwareApplication",
-                      name: title,
-                      applicationCategory: "GameApplication",
-                      operatingSystem: "Web",
-                      description,
-                      url: canonicalUrl,
-                      inLanguage: currentLanguage,
-                      keywords,
-                      offers: {
-                          "@type": "Offer",
-                          price: "0",
-                          priceCurrency: "USD",
-                      },
-                      isAccessibleForFree: true,
-                      browserRequirements: "Requires JavaScript. Works on modern browsers.",
-                  }
-                : {
-                      "@context": "https://schema.org",
-                      "@type": "WebPage",
-                      name: title,
-                      description,
-                      url: canonicalUrl,
-                      inLanguage: currentLanguage,
-                      keywords,
-                      isPartOf: {
-                          "@type": "WebSite",
-                          name: "Bridge Solver",
-                          url: `${SITE_ORIGIN}/`,
-                      },
-                  };
+        const websiteId = `${SITE_ORIGIN}/#website`;
+        const webpageId = `${canonicalUrl}#webpage`;
+        const graph = [
+            {
+                "@type": "WebSite",
+                "@id": websiteId,
+                name: WEBSITE_NAME,
+                url: `${SITE_ORIGIN}/`,
+                inLanguage: currentLanguage,
+            },
+            {
+                "@type": getSchemaPageType(route),
+                "@id": webpageId,
+                url: canonicalUrl,
+                name: title,
+                description,
+                inLanguage: currentLanguage,
+                isPartOf: { "@id": websiteId },
+                breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
+                keywords,
+            },
+            buildBreadcrumbList(route, canonicalUrl),
+        ];
 
-        script.textContent = JSON.stringify(jsonLd);
+        if (route.type === "tool") {
+            graph.push({
+                "@type": "SoftwareApplication",
+                "@id": `${canonicalUrl}#software`,
+                name: title,
+                description,
+                url: canonicalUrl,
+                inLanguage: currentLanguage,
+                applicationCategory: "GameApplication",
+                applicationSubCategory: "Bridge analysis tool",
+                operatingSystem: "Web",
+                offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                },
+                isAccessibleForFree: true,
+                browserRequirements: "Requires JavaScript. Works on modern browsers.",
+            });
+            graph[1].mainEntity = { "@id": `${canonicalUrl}#software` };
+        }
+
+        script.textContent = JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": graph,
+        });
     }
 
     function setSeoMeta(routePath) {
@@ -501,8 +566,9 @@ document.addEventListener("DOMContentLoaded", () => {
         upsertMetaByName("twitter:title", title);
         upsertMetaByName("twitter:description", description);
         upsertMetaByName("twitter:image", DEFAULT_OG_IMAGE);
+        upsertMetaByProperty("og:site_name", WEBSITE_NAME);
         setJsonLd(route.path || routePath, title, description, canonicalUrl, keywords);
-        setAlternateLinks(routePath);
+        setAlternateLinks(route.path || routePath);
     }
 
     function setAlternateLinks(routePath) {
