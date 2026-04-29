@@ -203,7 +203,7 @@
             "knownWest": "W num of known side",
             "knownHint": "Leave blank to use the unconditional probability table.",
             "knownApplied": "Showing conditional probabilities for the specified E/W suit lengths.",
-            "knownInvalid": "The total number of known E and W cards must be {13 - missing} or fewer.",
+            "knownInvalid": "The total number of known E and W cards must be {side} or fewer.",
             "bestTag": "Best",
             "success": "All-win probability",
             "note": "Assumption: Q is missing. Each row shows all-win probability for its stated play line."

@@ -1875,10 +1875,11 @@ document.addEventListener("DOMContentLoaded", () => {
             knownCounts.west != null &&
             knownCounts.east + knownCounts.west + missing > 13
         ) {
+            const side = 13 - missing;
             return tr(
                 "probability.qdrop.knownInvalid",
-                "The total number of known E and W cards must be {13-missing} or fewer.",
-                { missing },
+                "The total number of known E and W cards must be {side} or fewer.",
+                { side },
             );
         }
         return tr(
