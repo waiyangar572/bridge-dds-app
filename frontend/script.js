@@ -1315,8 +1315,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const results = [];
         const numHonors = honors.length;
         const spotCards = missing - numHonors; // 指定されたオナー以外のカード（スモールカード）の枚数
-        const EastKnownCount = knownCounts.east !== null ? knownCounts.east : 0;
-        const WestKnownCount = knownCounts.west !== null ? knownCounts.west : 0;
+        const EastKnownCount = isNaN(knownCounts.east) ? 0 : knownCounts.east;
+        const WestKnownCount = isNaN(knownCounts.west) ? 0 : knownCounts.west;
         const denominatorEast = combination(
             26 - EastKnownCount - WestKnownCount,
             13 - EastKnownCount,
@@ -2170,10 +2170,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const hands = ["north", "south", "east", "west"];
         // 13枚ちょうど持っているハンドをカウント
         const fullHands = hands.filter((h) => ddState[h].length === 13);
-        console.log(ddState["north"]);
-        console.log(ddState["south"]);
-        console.log(ddState["east"]);
-        console.log(ddState["west"]);
 
         // 3人が確定し、かつ1人がまだ13枚未満の場合のみ実行
         if (fullHands.length === 3) {
