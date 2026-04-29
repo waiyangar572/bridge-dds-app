@@ -1848,18 +1848,18 @@ document.addEventListener("DOMContentLoaded", () => {
         west: "0",
     };
 
-    function parseQDropKnownCount(rawValue, missing) {
+    function normalizeKnownCount(rawValue) {
         const normalized = String(rawValue ?? "").trim();
         if (normalized === "") return null;
         const value = Number.parseInt(normalized, 10);
         if (!Number.isFinite(value)) return null;
-        return Math.min(missing, Math.max(0, value));
+        return Math.max(0, value);
     }
 
     function getQDropKnownCounts(missing) {
         return {
-            east: parseQDropKnownCount(qdropDialogState.east, missing),
-            west: parseQDropKnownCount(qdropDialogState.west, missing),
+            east: normalizeKnownCount(qdropDialogState.east),
+            west: normalizeKnownCount(qdropDialogState.west),
         };
     }
 
