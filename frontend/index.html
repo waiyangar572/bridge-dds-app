@@ -845,9 +845,11 @@
         <noscript>
             <style>
                 #view-single,
-                #view-lead,
-                #view-probability {
+                #view-lead {
                     display: none !important;
+                }
+                #view-probability {
+                    display: block !important;
                 }
                 #view-double:target,
                 #view-single:target,
@@ -867,6 +869,16 @@
                 main:has(#view-probability:target) #view-double,
                 main:has(#view-probability:target) #view-single,
                 main:has(#view-probability:target) #view-lead {
+                    display: none !important;
+                }
+                #reference-panel-probability,
+                #reference-panel-imp,
+                #reference-panel-vp {
+                    display: block !important;
+                }
+                #reference-tab-probability,
+                #reference-tab-imp,
+                #reference-tab-vp {
                     display: none !important;
                 }
             </style>
@@ -889,6 +901,10 @@
                         <a href="#view-probability">Reference</a>
                     </li>
                 </ul>
+                <p style="margin-top: 8px">
+                    Reference tables below remain visible without JavaScript so crawlers can read
+                    the key bridge probability, IMP, and VP content.
+                </p>
             </div>
         </noscript>
         <header class="site-header bg-white z-50">
@@ -2247,7 +2263,59 @@
                             <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
                                 Estimate split probabilities for missing cards in one suit.
                             </p>
-                            <div id="prob-suit-result" class="text-sm text-slate-700"></div>
+                            <div id="prob-suit-result" class="text-sm text-slate-700">
+                                <div class="text-xs text-slate-500 mb-2">
+                                    Static fallback summary for common fit lengths. JavaScript
+                                    expands this into the full table set.
+                                </div>
+                                <div class="mb-4">
+                                    <div class="result-meta-label mb-1">8-card fit</div>
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Opponent split</th>
+                                                <th>Probability</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-left font-semibold">3-2</td><td>67.8%</td></tr>
+                                            <tr><td class="text-left font-semibold">4-1</td><td>28.3%</td></tr>
+                                            <tr><td class="text-left font-semibold">5-0</td><td>3.9%</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="result-meta-label mb-1">9-card fit</div>
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Opponent split</th>
+                                                <th>Probability</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-left font-semibold">2-2</td><td>40.7%</td></tr>
+                                            <tr><td class="text-left font-semibold">3-1</td><td>49.7%</td></tr>
+                                            <tr><td class="text-left font-semibold">4-0</td><td>9.6%</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div>
+                                    <div class="result-meta-label mb-1">10-card fit</div>
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Opponent split</th>
+                                                <th>Probability</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-left font-semibold">2-1</td><td>78.3%</td></tr>
+                                            <tr><td class="text-left font-semibold">3-0</td><td>21.7%</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </section>
 
                         <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
@@ -2262,7 +2330,44 @@
                             <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
                                 Click a fit cell to toggle comparison for that holding.
                             </p>
-                            <div id="prob-finesse-result" class="text-sm text-slate-700"></div>
+                            <div id="prob-finesse-result" class="text-sm text-slate-700">
+                                <div class="text-xs text-slate-500 mb-2">
+                                    Static fallback summary of representative best lines when one
+                                    queen is missing.
+                                </div>
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Fit</th>
+                                            <th class="text-left">Recommended line</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-left font-semibold">4-4</td>
+                                            <td class="text-left">Cash A, then finesse.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">5-3</td>
+                                            <td class="text-left">Cash A, then finesse.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">6-2</td>
+                                            <td class="text-left">Take two finesses.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">5-4 / 6-3</td>
+                                            <td class="text-left">
+                                                Cash A and switch line depending on the count.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">7-2</td>
+                                            <td class="text-left">Cash AK.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </section>
                     </div>
                 </div>
@@ -2275,7 +2380,69 @@
                         <p id="imp-help" class="text-sm text-slate-600 mb-4">
                             Convert score difference to IMPs.
                         </p>
-                        <div id="imp-result" class="text-sm text-slate-700"></div>
+                        <div id="imp-result" class="text-sm text-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-left font-semibold">0-10</td><td>0</td></tr>
+                                        <tr><td class="text-left font-semibold">20-40</td><td>1</td></tr>
+                                        <tr><td class="text-left font-semibold">50-80</td><td>2</td></tr>
+                                        <tr><td class="text-left font-semibold">90-120</td><td>3</td></tr>
+                                        <tr><td class="text-left font-semibold">130-160</td><td>4</td></tr>
+                                        <tr><td class="text-left font-semibold">170-210</td><td>5</td></tr>
+                                        <tr><td class="text-left font-semibold">220-260</td><td>6</td></tr>
+                                        <tr><td class="text-left font-semibold">270-310</td><td>7</td></tr>
+                                    </tbody>
+                                </table>
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-left font-semibold">320-360</td><td>8</td></tr>
+                                        <tr><td class="text-left font-semibold">370-420</td><td>9</td></tr>
+                                        <tr><td class="text-left font-semibold">430-490</td><td>10</td></tr>
+                                        <tr><td class="text-left font-semibold">500-590</td><td>11</td></tr>
+                                        <tr><td class="text-left font-semibold">600-740</td><td>12</td></tr>
+                                        <tr><td class="text-left font-semibold">750-890</td><td>13</td></tr>
+                                        <tr><td class="text-left font-semibold">900-1090</td><td>14</td></tr>
+                                        <tr><td class="text-left font-semibold">1100-1290</td><td>15</td></tr>
+                                    </tbody>
+                                </table>
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-left font-semibold">1300-1490</td><td>16</td></tr>
+                                        <tr><td class="text-left font-semibold">1500-1740</td><td>17</td></tr>
+                                        <tr><td class="text-left font-semibold">1750-1990</td><td>18</td></tr>
+                                        <tr><td class="text-left font-semibold">2000-2240</td><td>19</td></tr>
+                                        <tr><td class="text-left font-semibold">2250-2490</td><td>20</td></tr>
+                                        <tr><td class="text-left font-semibold">2500-2990</td><td>21</td></tr>
+                                        <tr><td class="text-left font-semibold">3000-3490</td><td>22</td></tr>
+                                        <tr><td class="text-left font-semibold">3500-3990</td><td>23</td></tr>
+                                        <tr><td class="text-left font-semibold">4000+</td><td>24</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">
+                                Use absolute score difference, then apply sign by result
+                                direction.
+                            </div>
+                        </div>
                     </section>
                 </div>
 
@@ -2324,7 +2491,33 @@
                                 32
                             </button>
                         </div>
-                        <div id="vp-result" class="text-sm text-slate-700"></div>
+                        <div id="vp-result" class="text-sm text-slate-700">
+                            <div class="text-xs text-slate-500 mb-2">
+                                Static fallback example for 16 boards. JavaScript can switch board
+                                count and expand the full table.
+                            </div>
+                            <table class="w-full result-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">IMP diff</th>
+                                        <th>VP (winner-loser)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="text-left font-semibold">0</td><td>10.00-10.00</td></tr>
+                                    <tr><td class="text-left font-semibold">1</td><td>10.31-9.69</td></tr>
+                                    <tr><td class="text-left font-semibold">5</td><td>11.48-8.52</td></tr>
+                                    <tr><td class="text-left font-semibold">10</td><td>12.80-7.20</td></tr>
+                                    <tr><td class="text-left font-semibold">15</td><td>13.97-6.03</td></tr>
+                                    <tr><td class="text-left font-semibold">20</td><td>15.00-5.00</td></tr>
+                                    <tr><td class="text-left font-semibold">25</td><td>15.92-4.08</td></tr>
+                                    <tr><td class="text-left font-semibold">30</td><td>16.73-3.27</td></tr>
+                                    <tr><td class="text-left font-semibold">40</td><td>18.09-1.91</td></tr>
+                                    <tr><td class="text-left font-semibold">50</td><td>19.16-0.84</td></tr>
+                                    <tr><td class="text-left font-semibold">60+</td><td>20.00-0.00</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
                 </div>
 

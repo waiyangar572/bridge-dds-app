@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bridge Solver | VPスケール表</title>
+        <meta
+            name="description"
+            content="ボード数ごとのVPスケールを確認できます。16/32ボードはワンタップ対応。" />
+        <meta
+            name="robots"
+            content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+        <link rel="canonical" href="https://bridge-solver.waiyangar.com/ja/reference/vp" />
+        <style>
+            body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; color: #0f172a; }
+            main { max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
+            .card { background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+            .tabs a { display: inline-block; margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 999px; text-decoration: none; color: #0f172a; }
+            .tabs a.active { background: #1f2937; border-color: #1f2937; color: #fff; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border-bottom: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section class="card">
+                <h1>VPスケール表</h1>
+                <p>16ボードの静的早見表です。</p>
+                <div class="tabs">
+                    <a href="/ja/reference/probability">確率表</a>
+                    <a href="/ja/reference/imp">IMP表</a>
+                    <a class="active" href="/ja/reference/vp">VP表</a>
+                </div>
+            </section>
+            <section class="card">
+                <table>
+                    <thead><tr><th>IMP差</th><th>VP（勝者-敗者）</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>10.00-10.00</td></tr><tr><td>1</td><td>10.31-9.69</td></tr><tr><td>5</td><td>11.48-8.52</td></tr><tr><td>10</td><td>12.80-7.20</td></tr><tr><td>15</td><td>13.97-6.03</td></tr><tr><td>20</td><td>15.00-5.00</td></tr><tr><td>25</td><td>15.92-4.08</td></tr><tr><td>30</td><td>16.73-3.27</td></tr><tr><td>40</td><td>18.09-1.91</td></tr><tr><td>50</td><td>19.16-0.84</td></tr><tr><td>60+</td><td>20.00-0.00</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </body>
+</html>
