@@ -283,6 +283,17 @@ document.addEventListener("DOMContentLoaded", () => {
             ),
         );
         setNodeText(
+            "#prob-hcp-title",
+            tr("probability.hcp.title", "HCP distribution probability"),
+        );
+        setNodeText(
+            "#prob-hcp-help",
+            tr(
+                "probability.hcp.help",
+                "Shows the probability for each HCP total in a random 13-card hand.",
+            ),
+        );
+        setNodeText(
             "#prob-finesse-title",
             tr("probability.qdrop.title", "Q-drop cashing probability"),
         );
@@ -389,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#glossary-lead-term-3", tr("glossaryTerms.lead3", "Set Probability"));
 
         updateProbabilitySuitResult();
+        updateProbabilityHcpResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
@@ -1138,6 +1150,94 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = `
             <div class="text-xs text-slate-500 mb-2">${tr("probability.suit.note", "Fit lengths shown: 6 to 13 cards.")}</div>
             ${sections}
+        `;
+    }
+
+    function computeHcpDistribution() {
+        const groups = [
+            { points: 4, count: 4 },
+            { points: 3, count: 4 },
+            { points: 2, count: 4 },
+            { points: 1, count: 4 },
+            { points: 0, count: 36 },
+        ];
+        const dp = Array.from({ length: 14 }, () => new Map());
+        dp[0].set(0, 1);
+
+        groups.forEach(({ points, count }) => {
+            const next = Array.from({ length: 14 }, () => new Map());
+            for (let cards = 0; cards <= 13; cards++) {
+                dp[cards].forEach((ways, hcp) => {
+                    const maxTake = Math.min(count, 13 - cards);
+                    for (let take = 0; take <= maxTake; take++) {
+                        const nextCards = cards + take;
+                        const nextHcp = hcp + points * take;
+                        const nextWays = ways * combination(count, take);
+                        next[nextCards].set(nextHcp, (next[nextCards].get(nextHcp) || 0) + nextWays);
+                    }
+                });
+            }
+            for (let cards = 0; cards <= 13; cards++) {
+                dp[cards] = next[cards];
+            }
+        });
+
+        const denominator = combination(52, 13);
+        const rows = Array.from(dp[13].entries())
+            .map(([hcp, ways]) => ({
+                hcp,
+                probability: (ways / denominator) * 100,
+            }))
+            .sort((a, b) => a.hcp - b.hcp);
+        let atLeast = 0;
+        return rows
+            .slice()
+            .reverse()
+            .map((row) => {
+                atLeast += row.probability;
+                return { ...row, atLeast };
+            })
+            .reverse();
+    }
+
+    function updateProbabilityHcpResult() {
+        const container = document.getElementById("prob-hcp-result");
+        if (!container) return;
+
+        const rows = computeHcpDistribution();
+        const chunkCount = 3;
+        const chunkSize = Math.ceil(rows.length / chunkCount);
+        const chunks = Array.from({ length: chunkCount }, (_, index) =>
+            rows.slice(index * chunkSize, (index + 1) * chunkSize),
+        ).filter((chunk) => chunk.length > 0);
+
+        const columnsHtml = chunks
+            .map((chunk) => {
+                const body = chunk
+                    .map(
+                        (row) =>
+                            `<tr><td class="text-left font-semibold">${row.hcp}</td><td>${row.probability.toFixed(3)}%</td><td>${row.atLeast.toFixed(2)}%</td></tr>`,
+                    )
+                    .join("");
+                return `<table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.hcp.hcp", "HCP")}</th>
+                            <th>${tr("probability.hcp.probability", "Probability")}</th>
+                            <th>${tr("probability.hcp.atLeast", "At least")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${body}</tbody>
+                </table>`;
+            })
+            .join("");
+
+        container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">${columnsHtml}</div>
+            <div class="text-xs text-slate-500 mt-2">${tr(
+                "probability.hcp.note",
+                "Calculated from all 13-card hands using A=4, K=3, Q=2, J=1.",
+            )}</div>
         `;
     }
 
@@ -2061,6 +2161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initProbabilityUI() {
         updateProbabilitySuitResult();
+        updateProbabilityHcpResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
