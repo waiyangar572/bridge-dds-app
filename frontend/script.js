@@ -294,6 +294,17 @@ document.addEventListener("DOMContentLoaded", () => {
             ),
         );
         setNodeText(
+            "#prob-shape-title",
+            tr("probability.shape.title", "Shape distribution probability"),
+        );
+        setNodeText(
+            "#prob-shape-help",
+            tr(
+                "probability.shape.help",
+                "Shows suit-order-independent shape probabilities for a random 13-card hand.",
+            ),
+        );
+        setNodeText(
             "#prob-finesse-title",
             tr("probability.qdrop.title", "Q-drop cashing probability"),
         );
@@ -401,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateProbabilitySuitResult();
         updateProbabilityHcpResult();
+        updateProbabilityShapeResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
@@ -1237,6 +1249,88 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="text-xs text-slate-500 mt-2">${tr(
                 "probability.hcp.note",
                 "Calculated from all 13-card hands using A=4, K=3, Q=2, J=1.",
+            )}</div>
+        `;
+    }
+
+    function getUniquePermutationCount(values) {
+        const counts = new Map();
+        values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
+        return factorial(values.length) / Array.from(counts.values()).reduce((acc, count) => acc * factorial(count), 1);
+    }
+
+    function factorial(n) {
+        let result = 1;
+        for (let i = 2; i <= n; i++) result *= i;
+        return result;
+    }
+
+    function computeShapeDistribution() {
+        const denominator = combination(52, 13);
+        const shapes = [];
+
+        for (let a = 13; a >= 0; a--) {
+            for (let b = Math.min(a, 13 - a); b >= 0; b--) {
+                for (let c = Math.min(b, 13 - a - b); c >= 0; c--) {
+                    const d = 13 - a - b - c;
+                    if (d < 0 || d > c) continue;
+                    const lengths = [a, b, c, d];
+                    const suitChoices = lengths.reduce((acc, length) => acc * combination(13, length), 1);
+                    const permutations = getUniquePermutationCount(lengths);
+                    shapes.push({
+                        shape: lengths.join("-"),
+                        probability: (suitChoices * permutations * 100) / denominator,
+                    });
+                }
+            }
+        }
+
+        return shapes.sort((a, b) => {
+            const left = a.shape.split("-").map(Number);
+            const right = b.shape.split("-").map(Number);
+            for (let i = 0; i < left.length; i++) {
+                if (left[i] !== right[i]) return left[i] - right[i];
+            }
+            return 0;
+        });
+    }
+
+    function updateProbabilityShapeResult() {
+        const container = document.getElementById("prob-shape-result");
+        if (!container) return;
+
+        const rows = computeShapeDistribution();
+        const chunkCount = 3;
+        const chunkSize = Math.ceil(rows.length / chunkCount);
+        const chunks = Array.from({ length: chunkCount }, (_, index) =>
+            rows.slice(index * chunkSize, (index + 1) * chunkSize),
+        ).filter((chunk) => chunk.length > 0);
+
+        const columnsHtml = chunks
+            .map((chunk) => {
+                const body = chunk
+                    .map(
+                        (row) =>
+                            `<tr><td class="text-left font-semibold">${row.shape}</td><td>${row.probability.toFixed(3)}%</td></tr>`,
+                    )
+                    .join("");
+                return `<table class="w-full result-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">${tr("probability.shape.shape", "Shape")}</th>
+                            <th>${tr("probability.shape.probability", "Probability")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${body}</tbody>
+                </table>`;
+            })
+            .join("");
+
+        container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">${columnsHtml}</div>
+            <div class="text-xs text-slate-500 mt-2">${tr(
+                "probability.shape.note",
+                "Suit order is ignored; for example, 5332 and 3532 are grouped as 5332.",
             )}</div>
         `;
     }
@@ -2162,6 +2256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function initProbabilityUI() {
         updateProbabilitySuitResult();
         updateProbabilityHcpResult();
+        updateProbabilityShapeResult();
         updateProbabilityQDropResult();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
