@@ -3,8 +3,7 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass
-from functools import lru_cache
-from typing import Dict, Iterable, List, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 HANDS: Tuple[str, ...] = ("north", "south", "east", "west")
 HAND_INDEX = {hand: idx for idx, hand in enumerate(HANDS)}
@@ -13,8 +12,8 @@ SUITS: Tuple[str, ...] = ("S", "H", "D", "C")
 SUIT_INDEX = {suit: idx for idx, suit in enumerate(SUITS)}
 
 HONORS: Tuple[str, ...] = ("A", "K", "Q", "J")
-RANK_POINTS = {"A": 4, "K": 3, "Q": 2, "J": 1, "x": 0}
 BUCKET_RANKS: Tuple[str, ...] = ("A", "K", "Q", "J", "x")
+RANK_POINTS = {"A": 4, "K": 3, "Q": 2, "J": 1, "x": 0}
 
 POINT_ORDER_DESC = (4, 3, 2, 1, 0)
 POINT_ORDER_ASC = (0, 1, 2, 3, 4)
@@ -52,12 +51,14 @@ def calculate_conditional_probability(
     queries_payload: List[dict],
 ) -> dict:
     constraints = _normalize_constraints(constraints_payload or {})
-    known_cards_by_hand = [set() for _ in HANDS]
 
+    known_cards_by_hand = [set() for _ in HANDS]
     known_owner: Dict[str, int] = {}
     known_hcp = [0, 0, 0, 0]
     known_suit_counts = [[0, 0, 0, 0] for _ in HANDS]
     known_rank_presence = [{rank: False for rank in HONORS} for _ in HANDS]
+
+    bucket_defs = _bucket_definitions()
     bucket_counts = _initial_bucket_counts()
 
     for hand_idx, hand in enumerate(HANDS):
@@ -67,9 +68,10 @@ def calculate_conditional_probability(
                 raise ValueError(f"Duplicate known card: {card}")
             known_owner[card] = hand_idx
             known_cards_by_hand[hand_idx].add(card)
+
             suit_idx = SUIT_INDEX[card[0]]
             rank = card[1]
-            known_hcp[hand_idx] += RANK_POINTS.get(rank, 0)
+            known_hcp[hand_idx] += _card_hcp(rank)
             known_suit_counts[hand_idx][suit_idx] += 1
             if rank in HONORS:
                 known_rank_presence[hand_idx][rank] = True
@@ -82,9 +84,7 @@ def calculate_conditional_probability(
     remaining_needs = [13 - len(known_cards_by_hand[idx]) for idx in range(4)]
     if any(need < 0 for need in remaining_needs):
         raise ValueError("Each hand must have at most 13 known cards.")
-
-    total_unknown = sum(remaining_needs)
-    if total_unknown != sum(bucket_counts):
+    if sum(remaining_needs) != sum(bucket_counts):
         raise ValueError("Known cards are inconsistent with a 52-card deck.")
 
     hcp_constraints: List[Tuple[int, int, int]] = []
@@ -125,54 +125,72 @@ def calculate_conditional_probability(
         tracked_rank_presence,
     )
 
+    suit_pressure = [0, 0, 0, 0]
+    for _, suit_idx, min_v, max_v in suit_constraints:
+        suit_pressure[suit_idx] += 13 - (max_v - min_v)
+
+    bucket_order = sorted(
+        range(len(bucket_defs)),
+        key=lambda idx: _bucket_priority(
+            bucket_defs[idx][0],
+            bucket_defs[idx][1],
+            bucket_counts[idx],
+            suit_pressure,
+        ),
+    )
+    ordered_bucket_defs = [bucket_defs[idx] for idx in bucket_order]
+    ordered_bucket_counts = [bucket_counts[idx] for idx in bucket_order]
+    bucket_count = len(ordered_bucket_defs)
+
     hcp_order = sorted(tracked_hcp_hands)
     suit_order = sorted(tracked_suit_fields)
-    specific_card_order = sorted(tracked_specific_cards)
+    specific_order = sorted(tracked_specific_cards)
     rank_order = sorted(tracked_rank_presence)
 
-    hcp_state_idx = {hand_idx: pos for pos, hand_idx in enumerate(hcp_order)}
+    base_offset = 3  # rem_n, rem_s, rem_e
+    hcp_state_idx = {
+        hand_idx: base_offset + pos for pos, hand_idx in enumerate(hcp_order)
+    }
     suit_state_idx = {
-        key: pos + len(hcp_order) for pos, key in enumerate(suit_order)
+        key: base_offset + len(hcp_order) + pos
+        for pos, key in enumerate(suit_order)
     }
-    specific_offset = len(hcp_order) + len(suit_order)
+    specific_offset = base_offset + len(hcp_order) + len(suit_order)
     specific_state_idx = {
-        key: pos + specific_offset for pos, key in enumerate(specific_card_order)
+        key: specific_offset + pos for pos, key in enumerate(specific_order)
     }
-    rank_offset = specific_offset + len(specific_card_order)
+    rank_offset = specific_offset + len(specific_order)
     rank_state_idx = {
-        key: pos + rank_offset for pos, key in enumerate(rank_order)
+        key: rank_offset + pos for pos, key in enumerate(rank_order)
     }
 
-    state_initial: List[int] = []
+    state_initial = [remaining_needs[0], remaining_needs[1], remaining_needs[2]]
     state_initial.extend(known_hcp[hand_idx] for hand_idx in hcp_order)
     state_initial.extend(
         known_suit_counts[hand_idx][suit_idx] for hand_idx, suit_idx in suit_order
     )
-    for hand_idx, suit_idx, rank in specific_card_order:
+    for hand_idx, suit_idx, rank in specific_order:
         card = SUITS[suit_idx] + rank
         state_initial.append(1 if card in known_cards_by_hand[hand_idx] else 0)
     for hand_idx, rank in rank_order:
         state_initial.append(1 if known_rank_presence[hand_idx][rank] else 0)
-    state_zero: Tuple[int, ...] = tuple(state_initial)
-
-    bucket_defs = _bucket_definitions()
-    bucket_count = len(bucket_defs)
+    initial_state = tuple(state_initial)
 
     remaining_total = [0] * (bucket_count + 1)
     remaining_suits = [[0, 0, 0, 0] for _ in range(bucket_count + 1)]
     remaining_points = [[0, 0, 0, 0, 0] for _ in range(bucket_count + 1)]
-
     point_to_idx = {4: 0, 3: 1, 2: 2, 1: 3, 0: 4}
+
     for idx in range(bucket_count - 1, -1, -1):
-        suit_idx, rank, points = bucket_defs[idx]
-        count = bucket_counts[idx]
-        remaining_total[idx] = remaining_total[idx + 1] + count
+        suit_idx, _, points = ordered_bucket_defs[idx]
+        amount = ordered_bucket_counts[idx]
+        remaining_total[idx] = remaining_total[idx + 1] + amount
         for suit in range(4):
             remaining_suits[idx][suit] = remaining_suits[idx + 1][suit]
-        remaining_suits[idx][suit_idx] += count
+        remaining_suits[idx][suit_idx] += amount
         for p_idx in range(5):
             remaining_points[idx][p_idx] = remaining_points[idx + 1][p_idx]
-        remaining_points[idx][point_to_idx[points]] += count
+        remaining_points[idx][point_to_idx[points]] += amount
 
     hcp_constraints_idx = [
         (hand_idx, min_v, max_v, hcp_state_idx[hand_idx])
@@ -188,32 +206,23 @@ def calculate_conditional_probability(
         [suit_state_idx.get((hand_idx, suit_idx), -1) for suit_idx in range(4)]
         for hand_idx in range(4)
     ]
-    specific_field_lookup = {
-        key: specific_state_idx[key] for key in specific_card_order
-    }
-    rank_field_lookup = {key: rank_state_idx[key] for key in rank_order}
 
     bucket_specific_fields: List[List[int]] = []
     bucket_rank_fields: List[List[int]] = []
-    for suit_idx, rank, _ in bucket_defs:
+    for suit_idx, rank, _ in ordered_bucket_defs:
         if rank in HONORS:
             bucket_specific_fields.append(
                 [
-                    specific_field_lookup.get((hand_idx, suit_idx, rank), -1)
+                    specific_state_idx.get((hand_idx, suit_idx, rank), -1)
                     for hand_idx in range(4)
                 ]
             )
             bucket_rank_fields.append(
-                [
-                    rank_field_lookup.get((hand_idx, rank), -1)
-                    for hand_idx in range(4)
-                ]
+                [rank_state_idx.get((hand_idx, rank), -1) for hand_idx in range(4)]
             )
         else:
             bucket_specific_fields.append([-1, -1, -1, -1])
             bucket_rank_fields.append([-1, -1, -1, -1])
-
-    zero_targets = tuple(0 for _ in queries)
 
     def get_hcp(hand_idx: int, state: Tuple[int, ...]) -> int:
         field_idx = hcp_state_idx.get(hand_idx)
@@ -269,34 +278,34 @@ def calculate_conditional_probability(
             take -= amount
         return min_add, max_add
 
-    def violates_pruning(
-        idx: int, rem_n: int, rem_s: int, rem_e: int, state: Tuple[int, ...]
-    ) -> bool:
+    def violates_pruning(next_state: Tuple[int, ...], next_layer_idx: int) -> bool:
+        rem_n, rem_s, rem_e = next_state[0], next_state[1], next_state[2]
         if rem_n < 0 or rem_s < 0 or rem_e < 0:
             return True
-        rem_total = remaining_total[idx]
+
+        rem_total = remaining_total[next_layer_idx]
         rem_w = rem_total - rem_n - rem_s - rem_e
         if rem_w < 0:
             return True
         rem_by_hand = (rem_n, rem_s, rem_e, rem_w)
 
-        point_counts = remaining_points[idx]
+        point_counts = remaining_points[next_layer_idx]
         for hand_idx, min_hcp, max_hcp, state_idx in hcp_constraints_idx:
-            current = state[state_idx]
+            current = next_state[state_idx]
             min_add, max_add = hcp_bounds(rem_by_hand[hand_idx], point_counts)
             if current + min_add > max_hcp or current + max_add < min_hcp:
                 return True
 
-        total_remaining = rem_total
         for hand_idx, suit_idx, min_len, max_len, state_idx in suit_constraints_idx:
-            current = state[state_idx]
+            current = next_state[state_idx]
             hand_remaining = rem_by_hand[hand_idx]
-            suit_remaining = remaining_suits[idx][suit_idx]
-            non_suit_remaining = total_remaining - suit_remaining
+            suit_remaining = remaining_suits[next_layer_idx][suit_idx]
+            non_suit_remaining = rem_total - suit_remaining
             min_possible = current + max(0, hand_remaining - non_suit_remaining)
             max_possible = current + min(hand_remaining, suit_remaining)
             if min_possible > max_len or max_possible < min_len:
                 return True
+
         return False
 
     def base_constraints_satisfied(state: Tuple[int, ...]) -> bool:
@@ -317,9 +326,7 @@ def calculate_conditional_probability(
             hcp = get_hcp(atom.hand_idx, state)
             return atom.min_value <= hcp <= atom.max_value
         if atom.kind == "shape":
-            counts = [
-                get_suit_count(atom.hand_idx, suit_idx, state) for suit_idx in range(4)
-            ]
+            counts = [get_suit_count(atom.hand_idx, suit_idx, state) for suit_idx in range(4)]
             counts.sort(reverse=True)
             return tuple(counts) == atom.shape
         if atom.kind == "specific_card":
@@ -337,118 +344,112 @@ def calculate_conditional_probability(
             return first or second
         return first and second
 
-    @lru_cache(maxsize=None)
-    def count_combinations(
-        bucket_index: int,
-        rem_n: int,
-        rem_s: int,
-        rem_e: int,
-        state: Tuple[int, ...],
-    ) -> Tuple[int, Tuple[int, ...]]:
-        if violates_pruning(bucket_index, rem_n, rem_s, rem_e, state):
-            return 0, zero_targets
+    dp_prev: Dict[Tuple[int, ...], int] = {initial_state: 1}
 
-        if bucket_index == bucket_count:
-            if rem_n != 0 or rem_s != 0 or rem_e != 0:
-                return 0, zero_targets
-            if not base_constraints_satisfied(state):
-                return 0, zero_targets
-            if not queries:
-                return 1, zero_targets
-            hits = tuple(1 if query_matches(query, state) else 0 for query in queries)
-            return 1, hits
+    for layer_idx, cards_in_bucket in enumerate(ordered_bucket_counts):
+        suit_idx, _, points = ordered_bucket_defs[layer_idx]
+        specific_fields = bucket_specific_fields[layer_idx]
+        rank_fields = bucket_rank_fields[layer_idx]
+        dp_curr: Dict[Tuple[int, ...], int] = {}
 
-        cards_in_bucket = bucket_counts[bucket_index]
         if cards_in_bucket == 0:
-            return count_combinations(bucket_index + 1, rem_n, rem_s, rem_e, state)
+            for state, ways in dp_prev.items():
+                if violates_pruning(state, layer_idx + 1):
+                    continue
+                dp_curr[state] = dp_curr.get(state, 0) + ways
+            dp_prev = dp_curr
+            if not dp_prev:
+                break
+            continue
 
-        rem_total = remaining_total[bucket_index]
-        rem_w = rem_total - rem_n - rem_s - rem_e
-        if rem_w < 0:
-            return 0, zero_targets
+        rem_total_before = remaining_total[layer_idx]
+        for state, ways in dp_prev.items():
+            rem_n, rem_s, rem_e = state[0], state[1], state[2]
+            rem_w = rem_total_before - rem_n - rem_s - rem_e
+            if rem_w < 0:
+                continue
 
-        suit_idx, _, points = bucket_defs[bucket_index]
-        specific_fields = bucket_specific_fields[bucket_index]
-        rank_fields = bucket_rank_fields[bucket_index]
+            max_n = min(cards_in_bucket, rem_n)
+            for n_take in range(max_n + 1):
+                rem_after_n = cards_in_bucket - n_take
+                max_s = min(rem_after_n, rem_s)
+                for s_take in range(max_s + 1):
+                    rem_after_ns = rem_after_n - s_take
+                    max_e = min(rem_after_ns, rem_e)
+                    min_e = max(0, rem_after_ns - rem_w)
+                    for e_take in range(min_e, max_e + 1):
+                        w_take = rem_after_ns - e_take
+                        counts = (n_take, s_take, e_take, w_take)
 
-        total = 0
-        numerators = [0 for _ in queries]
+                        next_rem_n = rem_n - n_take
+                        next_rem_s = rem_s - s_take
+                        next_rem_e = rem_e - e_take
 
-        max_n = min(cards_in_bucket, rem_n)
-        for n_take in range(max_n + 1):
-            rem_after_n = cards_in_bucket - n_take
-            max_s = min(rem_after_n, rem_s)
-            for s_take in range(max_s + 1):
-                rem_after_ns = rem_after_n - s_take
-                max_e = min(rem_after_ns, rem_e)
-                min_e = max(0, rem_after_ns - rem_w)
-                for e_take in range(min_e, max_e + 1):
-                    w_take = rem_after_ns - e_take
-                    weight = (
-                        math.comb(cards_in_bucket, n_take)
-                        * math.comb(cards_in_bucket - n_take, s_take)
-                        * math.comb(cards_in_bucket - n_take - s_take, e_take)
-                    )
+                        next_state = state
+                        state_mut = None
 
-                    counts = (n_take, s_take, e_take, w_take)
-                    next_state = state
-                    need_update = False
-                    for hand_idx, count in enumerate(counts):
-                        if count == 0:
-                            continue
-                        if points > 0 and hcp_field_per_hand[hand_idx] != -1:
-                            need_update = True
-                            break
-                        if suit_field_per_hand[hand_idx][suit_idx] != -1:
-                            need_update = True
-                            break
-                        if specific_fields[hand_idx] != -1:
-                            need_update = True
-                            break
-                        if rank_fields[hand_idx] != -1:
-                            need_update = True
-                            break
-
-                    if need_update:
-                        state_mut = list(state)
-                        for hand_idx, count in enumerate(counts):
-                            if count == 0:
+                        for hand_idx, allocated in enumerate(counts):
+                            if allocated == 0:
                                 continue
-                            hcp_idx = hcp_field_per_hand[hand_idx]
-                            if points > 0 and hcp_idx != -1:
-                                state_mut[hcp_idx] += points * count
+                            need_update = (
+                                (points > 0 and hcp_field_per_hand[hand_idx] != -1)
+                                or suit_field_per_hand[hand_idx][suit_idx] != -1
+                                or specific_fields[hand_idx] != -1
+                                or rank_fields[hand_idx] != -1
+                            )
+                            if need_update:
+                                if state_mut is None:
+                                    state_mut = list(state)
+                                    state_mut[0] = next_rem_n
+                                    state_mut[1] = next_rem_s
+                                    state_mut[2] = next_rem_e
+                                hcp_idx = hcp_field_per_hand[hand_idx]
+                                if points > 0 and hcp_idx != -1:
+                                    state_mut[hcp_idx] += points * allocated
 
-                            suit_idx_field = suit_field_per_hand[hand_idx][suit_idx]
-                            if suit_idx_field != -1:
-                                state_mut[suit_idx_field] += count
+                                suit_idx_field = suit_field_per_hand[hand_idx][suit_idx]
+                                if suit_idx_field != -1:
+                                    state_mut[suit_idx_field] += allocated
 
-                            specific_idx = specific_fields[hand_idx]
-                            if specific_idx != -1:
-                                state_mut[specific_idx] = 1
+                                specific_idx = specific_fields[hand_idx]
+                                if specific_idx != -1:
+                                    state_mut[specific_idx] = 1
 
-                            rank_idx = rank_fields[hand_idx]
-                            if rank_idx != -1:
-                                state_mut[rank_idx] = 1
-                        next_state = tuple(state_mut)
+                                rank_idx = rank_fields[hand_idx]
+                                if rank_idx != -1:
+                                    state_mut[rank_idx] = 1
 
-                    sub_total, sub_num = count_combinations(
-                        bucket_index + 1,
-                        rem_n - n_take,
-                        rem_s - s_take,
-                        rem_e - e_take,
-                        next_state,
-                    )
-                    if sub_total == 0:
-                        continue
-                    total += weight * sub_total
-                    for idx, value in enumerate(sub_num):
-                        numerators[idx] += weight * value
+                        if state_mut is None:
+                            next_state = (next_rem_n, next_rem_s, next_rem_e, *state[3:])
+                        else:
+                            next_state = tuple(state_mut)
 
-        return total, tuple(numerators)
+                        if violates_pruning(next_state, layer_idx + 1):
+                            continue
 
-    denominator, numerators = count_combinations(
-        0, remaining_needs[0], remaining_needs[1], remaining_needs[2], state_zero
-    )
+                        transition_count = (
+                            math.comb(cards_in_bucket, n_take)
+                            * math.comb(cards_in_bucket - n_take, s_take)
+                            * math.comb(cards_in_bucket - n_take - s_take, e_take)
+                        )
+                        add = ways * transition_count
+                        dp_curr[next_state] = dp_curr.get(next_state, 0) + add
+
+        dp_prev = dp_curr
+        if not dp_prev:
+            break
+
+    denominator = 0
+    numerators = [0 for _ in queries]
+    for state, ways in dp_prev.items():
+        if state[0] != 0 or state[1] != 0 or state[2] != 0:
+            continue
+        if not base_constraints_satisfied(state):
+            continue
+        denominator += ways
+        for idx, query in enumerate(queries):
+            if query_matches(query, state):
+                numerators[idx] += ways
 
     results = []
     for idx, query in enumerate(queries):
@@ -462,12 +463,26 @@ def calculate_conditional_probability(
             }
         )
 
-    print(denominator)
-    print(results)
-    return {
-        "denominator": str(denominator),
-        "results": results,
-    }
+    return {"denominator": str(denominator), "results": results}
+
+
+def _bucket_priority(
+    suit_idx: int,
+    rank: str,
+    count: int,
+    suit_pressure: List[int],
+) -> Tuple[int, int, int, int, int, int]:
+    is_honor = 1 if rank in HONORS else 0
+    points = RANK_POINTS[rank]
+    rank_order = BUCKET_RANKS.index(rank)
+    return (
+        -is_honor,  # honor first
+        -suit_pressure[suit_idx],  # strict suit first
+        -points,  # A,K,Q,J order inside honors
+        -count,  # denser bucket first
+        suit_idx,
+        rank_order,
+    )
 
 
 def _compile_queries(
@@ -658,3 +673,15 @@ def _initial_bucket_counts() -> List[int]:
     for _ in range(4):
         counts.extend([1, 1, 1, 1, 9])
     return counts
+
+
+def _card_hcp(rank: str) -> int:
+    if rank == "A":
+        return 4
+    if rank == "K":
+        return 3
+    if rank == "Q":
+        return 2
+    if rank == "J":
+        return 1
+    return 0
