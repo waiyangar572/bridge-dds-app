@@ -697,6 +697,45 @@
                 color: #ffffff;
             }
 
+            .prob-section-toggle {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                color: var(--text-primary);
+                text-align: left;
+            }
+
+            .prob-section-toggle:hover {
+                text-decoration: none;
+            }
+
+            .prob-section-toggle-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                color: var(--text-secondary);
+                background: #ffffff;
+                transition:
+                    transform 0.15s ease,
+                    background-color 0.15s ease;
+            }
+
+            .prob-section-toggle:hover .prob-section-toggle-icon {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .prob-section-toggle[aria-expanded="false"] .prob-section-toggle-icon {
+                transform: rotate(-90deg);
+            }
+
             .vp-boards-input {
                 width: 88px;
                 border: var(--border-whisper);
@@ -2257,13 +2296,26 @@
                 <div id="reference-panel-probability" role="tabpanel">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <h3 id="prob-suit-title" class="text-lg font-bold text-slate-900 mb-3">
-                                Suit distribution probability
-                            </h3>
-                            <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
-                                Estimate split probabilities for missing cards in one suit.
-                            </p>
-                            <div id="prob-suit-result" class="text-sm text-slate-700">
+                            <button
+                                type="button"
+                                class="prob-section-toggle mb-3"
+                                data-prob-section-toggle="prob-suit-content"
+                                aria-expanded="true"
+                                aria-controls="prob-suit-content">
+                                <span
+                                    id="prob-suit-title"
+                                    class="text-lg font-bold text-slate-900">
+                                    Suit distribution probability
+                                </span>
+                                <span class="prob-section-toggle-icon" aria-hidden="true">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </span>
+                            </button>
+                            <div id="prob-suit-content">
+                                <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
+                                    Estimate split probabilities for missing cards in one suit.
+                                </p>
+                                <div id="prob-suit-result" class="text-sm text-slate-700">
                                 <div class="text-xs text-slate-500 mb-2">
                                     Static fallback summary for common fit lengths. JavaScript
                                     expands this into the full table set.
@@ -2315,22 +2367,34 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                </div>
                             </div>
                         </section>
 
                         <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <h3
-                                id="prob-finesse-title"
-                                class="text-lg font-bold text-slate-900 mb-3">
-                                Q-drop cashing probability
-                            </h3>
-                            <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
-                                Probability of taking all tricks by cashing when Q is missing.
-                            </p>
-                            <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
-                                Click a fit cell to toggle comparison for that holding.
-                            </p>
-                            <div id="prob-finesse-result" class="text-sm text-slate-700">
+                            <button
+                                type="button"
+                                class="prob-section-toggle mb-3"
+                                data-prob-section-toggle="prob-finesse-content"
+                                aria-expanded="true"
+                                aria-controls="prob-finesse-content">
+                                <span
+                                    id="prob-finesse-title"
+                                    class="text-lg font-bold text-slate-900">
+                                    Q-drop cashing probability
+                                </span>
+                                <span class="prob-section-toggle-icon" aria-hidden="true">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </span>
+                            </button>
+                            <div id="prob-finesse-content">
+                                <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
+                                    Probability of taking all tricks by cashing when Q is missing.
+                                </p>
+                                <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
+                                    Click a fit cell to toggle comparison for that holding.
+                                </p>
+                                <div id="prob-finesse-result" class="text-sm text-slate-700">
                                 <div class="text-xs text-slate-500 mb-2">
                                     Static fallback summary of representative best lines when one
                                     queen is missing.
@@ -2367,18 +2431,30 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         </section>
                     </div>
 
                     <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
-                        <h3 id="prob-hcp-title" class="text-lg font-bold text-slate-900 mb-3">
-                            HCP distribution probability
-                        </h3>
-                        <p id="prob-hcp-help" class="text-sm text-slate-600 mb-4">
-                            Probability for each HCP total in a random 13-card hand.
-                        </p>
-                        <div id="prob-hcp-result" class="text-sm text-slate-700">
+                        <button
+                            type="button"
+                            class="prob-section-toggle mb-3"
+                            data-prob-section-toggle="prob-hcp-content"
+                            aria-expanded="true"
+                            aria-controls="prob-hcp-content">
+                            <span id="prob-hcp-title" class="text-lg font-bold text-slate-900">
+                                HCP distribution probability
+                            </span>
+                            <span class="prob-section-toggle-icon" aria-hidden="true">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </span>
+                        </button>
+                        <div id="prob-hcp-content">
+                            <p id="prob-hcp-help" class="text-sm text-slate-600 mb-4">
+                                Probability for each HCP total in a random 13-card hand.
+                            </p>
+                            <div id="prob-hcp-result" class="text-sm text-slate-700">
                             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
                                 <table class="w-full result-table">
                                     <thead>
@@ -2397,17 +2473,29 @@
                                     </tbody>
                                 </table>
                             </div>
+                            </div>
                         </div>
                     </section>
 
                     <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
-                        <h3 id="prob-shape-title" class="text-lg font-bold text-slate-900 mb-3">
-                            Shape distribution probability
-                        </h3>
-                        <p id="prob-shape-help" class="text-sm text-slate-600 mb-4">
-                            Suit-order-independent probabilities for random 13-card hand shapes.
-                        </p>
-                        <div id="prob-shape-result" class="text-sm text-slate-700">
+                        <button
+                            type="button"
+                            class="prob-section-toggle mb-3"
+                            data-prob-section-toggle="prob-shape-content"
+                            aria-expanded="true"
+                            aria-controls="prob-shape-content">
+                            <span id="prob-shape-title" class="text-lg font-bold text-slate-900">
+                                Shape distribution probability
+                            </span>
+                            <span class="prob-section-toggle-icon" aria-hidden="true">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </span>
+                        </button>
+                        <div id="prob-shape-content">
+                            <p id="prob-shape-help" class="text-sm text-slate-600 mb-4">
+                                Suit-order-independent probabilities for random 13-card hand shapes.
+                            </p>
+                            <div id="prob-shape-result" class="text-sm text-slate-700">
                             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
                                 <table class="w-full result-table">
                                     <thead>
@@ -2424,6 +2512,7 @@
                                         <tr><td class="text-left font-semibold">5-4-2-2</td><td>10.580%</td></tr>
                                     </tbody>
                                 </table>
+                            </div>
                             </div>
                         </div>
                     </section>

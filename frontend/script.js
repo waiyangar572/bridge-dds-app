@@ -1335,6 +1335,23 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    function setProbabilitySectionOpen(toggle, isOpen) {
+        const targetId = toggle.dataset.probSectionToggle;
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        target.classList.toggle("hidden", !isOpen);
+    }
+
+    function initProbabilitySectionToggles() {
+        document.querySelectorAll("[data-prob-section-toggle]").forEach((toggle) => {
+            if (!(toggle instanceof HTMLElement)) return;
+            const isOpen = toggle.getAttribute("aria-expanded") !== "false";
+            setProbabilitySectionOpen(toggle, isOpen);
+        });
+    }
+
     function updateReferenceTabUI() {
         const probabilityTab = document.getElementById("reference-tab-probability");
         const impTab = document.getElementById("reference-tab-imp");
@@ -2260,6 +2277,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProbabilityQDropResult();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
+        initProbabilitySectionToggles();
         updateReferenceTabUI();
     }
 
@@ -2892,6 +2910,14 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener("click", () => {
                 if (!(btn instanceof HTMLElement)) return;
                 navigateTo(getReferenceTabRoute(btn.dataset.referenceTab || "probability"));
+            });
+        });
+
+        document.querySelectorAll("[data-prob-section-toggle]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                if (!(btn instanceof HTMLElement)) return;
+                const isOpen = btn.getAttribute("aria-expanded") === "true";
+                setProbabilitySectionOpen(btn, !isOpen);
             });
         });
 
