@@ -1883,9 +1883,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (
             knownCounts.east != null &&
             knownCounts.west != null &&
-            knownCounts.east + knownCounts.west + missing > 13
+            knownCounts.east + knownCounts.west + missing > 26
         ) {
-            const side = 13 - missing;
+            const side = 26 - missing;
             return tr(
                 "probability.qdrop.knownInvalid",
                 "The total number of known E and W cards must be {side} or fewer.",
@@ -1931,14 +1931,14 @@ document.addEventListener("DOMContentLoaded", () => {
             "text-amber-600",
             knownCounts.east != null &&
                 knownCounts.west != null &&
-                knownCounts.east + knownCounts.west + comparison.missing > 13,
+                knownCounts.east + knownCounts.west + comparison.missing > 26,
         );
         noteEl.classList.toggle(
             "text-slate-500",
             !(
                 knownCounts.east != null &&
                 knownCounts.west != null &&
-                knownCounts.east + knownCounts.west + comparison.missing > 13
+                knownCounts.east + knownCounts.west + comparison.missing > 26
             ),
         );
         bodyEl.innerHTML = comparison.rows
