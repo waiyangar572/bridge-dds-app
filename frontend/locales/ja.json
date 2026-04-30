@@ -157,6 +157,7 @@
         "calculate": "計算",
         "tabs": {
             "probability": "確率表",
+            "conditional": "条件付き確率",
             "imp": "IMP表",
             "vp": "VP表"
         },

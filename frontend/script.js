@@ -113,6 +113,14 @@ document.addEventListener("DOMContentLoaded", () => {
             viewId: "view-probability",
             referenceTab: "imp",
         },
+        "/reference/conditional": {
+            type: "tool",
+            metaKey: "probability",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+            referenceTab: "conditional",
+        },
         "/reference/vp": {
             type: "tool",
             metaKey: "vp",
@@ -269,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "#reference-tab-probability",
             tr("probability.tabs.probability", "Probability Table"),
         );
+        setNodeText("#reference-tab-conditional", tr("probability.tabs.conditional", "Conditional"));
         setNodeText("#reference-tab-imp", tr("probability.tabs.imp", "IMP Scale"));
         setNodeText("#reference-tab-vp", tr("probability.tabs.vp", "VP Scale"));
         setNodeText(
@@ -731,6 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getReferenceTabRoute(tabName) {
+        if (tabName === "conditional") return "/reference/conditional";
         if (tabName === "imp") return "/reference/imp";
         if (tabName === "vp") return "/reference/vp";
         return "/reference/probability";
@@ -1354,9 +1364,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateReferenceTabUI() {
         const probabilityTab = document.getElementById("reference-tab-probability");
+        const conditionalTab = document.getElementById("reference-tab-conditional");
         const impTab = document.getElementById("reference-tab-imp");
         const vpTab = document.getElementById("reference-tab-vp");
         const probabilityPanel = document.getElementById("reference-panel-probability");
+        const conditionalPanel = document.getElementById("reference-panel-conditional");
         const impPanel = document.getElementById("reference-panel-imp");
         const vpPanel = document.getElementById("reference-panel-vp");
 
@@ -1364,6 +1376,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const isActive = referenceViewTab === "probability";
             probabilityTab.classList.toggle("is-active", isActive);
             probabilityTab.setAttribute("aria-selected", isActive ? "true" : "false");
+        }
+        if (conditionalTab) {
+            const isActive = referenceViewTab === "conditional";
+            conditionalTab.classList.toggle("is-active", isActive);
+            conditionalTab.setAttribute("aria-selected", isActive ? "true" : "false");
         }
         if (impTab) {
             const isActive = referenceViewTab === "imp";
@@ -1377,12 +1394,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (probabilityPanel)
             probabilityPanel.classList.toggle("hidden", referenceViewTab !== "probability");
+        if (conditionalPanel)
+            conditionalPanel.classList.toggle("hidden", referenceViewTab !== "conditional");
         if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
         if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
     }
 
     function setReferenceTab(tabName) {
-        referenceViewTab = ["probability", "imp", "vp"].includes(tabName)
+        referenceViewTab = ["probability", "conditional", "imp", "vp"].includes(tabName)
             ? tabName
             : "probability";
         updateReferenceTabUI();
@@ -2275,10 +2294,225 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProbabilityHcpResult();
         updateProbabilityShapeResult();
         updateProbabilityQDropResult();
+        initConditionalProbabilityUI();
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
         initProbabilitySectionToggles();
         updateReferenceTabUI();
+    }
+
+    function cardIdFromText(value) {
+        const text = String(value || "").trim().toUpperCase();
+        if (!text) return "";
+        const suitMap = { S: "s", H: "h", D: "d", C: "c", "♠": "s", "♥": "h", "♦": "d", "♣": "c" };
+        const suit = suitMap[text[0]];
+        const rank = text.slice(1).replace("10", "T");
+        return suit && RANKS.includes(rank) ? suit + rank : "";
+    }
+
+    function parseCardsText(value) {
+        return String(value || "")
+            .split(/[\s,]+/)
+            .map(cardIdFromText)
+            .filter(Boolean);
+    }
+
+    function rangeFromInputs(prefix, fallbackMin, fallbackMax) {
+        const min = Number.parseInt(document.getElementById(`${prefix}-min`)?.value, 10);
+        const max = Number.parseInt(document.getElementById(`${prefix}-max`)?.value, 10);
+        return {
+            min: Number.isNaN(min) ? fallbackMin : min,
+            max: Number.isNaN(max) ? fallbackMax : max,
+        };
+    }
+
+    function initConditionalProbabilityUI() {
+        renderConditionalHandPanels();
+        if (document.querySelectorAll("[data-cond-query]").length === 0) addConditionalQuery();
+    }
+
+    function renderConditionalHandPanels() {
+        const container = document.getElementById("cond-hands");
+        if (!container) return;
+        container.innerHTML = HANDS.map((hand) => {
+            const label = tr(`terms.${hand}`, hand);
+            return `
+                <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <h4 class="font-bold text-slate-900">${label}</h4>
+                        <select id="cond-${hand}-mode" class="p-2 border rounded text-xs font-bold">
+                            <option value="feature">Feature</option>
+                            <option value="hand">Full hand</option>
+                        </select>
+                    </div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase">Known cards</label>
+                    <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm mb-3" placeholder="SA HK DQ C2" />
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <label class="text-xs font-semibold text-slate-500 uppercase">HCP min
+                            <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
+                        </label>
+                        <label class="text-xs font-semibold text-slate-500 uppercase">HCP max
+                            <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
+                        </label>
+                    </div>
+                    <label class="text-xs font-semibold text-slate-500 uppercase">Suit length ranges</label>
+                    <div class="grid grid-cols-4 gap-2 mt-1">
+                        ${SUITS.map(
+                            (suit) => `
+                            <div>
+                                <div class="${suit.color} text-center font-bold">${suit.label}</div>
+                                <input id="cond-${hand}-${suit.id}-min" type="number" min="0" max="13" value="0" class="w-full p-1 border rounded text-xs text-center mb-1" />
+                                <input id="cond-${hand}-${suit.id}-max" type="number" min="0" max="13" value="13" class="w-full p-1 border rounded text-xs text-center" />
+                            </div>`,
+                        ).join("")}
+                    </div>
+                </div>`;
+        }).join("");
+    }
+
+    function conditionInputHtml(prefix) {
+        return `
+            <select data-cond-field="${prefix}-hand" class="p-2 border rounded text-sm">
+                ${HANDS.map((hand) => `<option value="${hand}">${tr(`terms.${hand}`, hand)}</option>`).join("")}
+            </select>
+            <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm">
+                <option value="hcp">HCP range</option>
+                <option value="shape">Shape</option>
+                <option value="card">Has honor/card</option>
+            </select>
+            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / 5-3-3-2 / SA" />
+        `;
+    }
+
+    function addConditionalQuery() {
+        const container = document.getElementById("cond-queries");
+        if (!container) return;
+        const row = document.createElement("div");
+        row.className = "border border-slate-200 rounded-lg p-3 bg-white";
+        row.dataset.condQuery = "true";
+        row.innerHTML = `
+            <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
+                <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="Label" />
+                <select data-cond-field="join" class="p-2 border rounded text-sm">
+                    <option value="single">single</option>
+                    <option value="and">AND</option>
+                    <option value="or">OR</option>
+                </select>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">${conditionInputHtml("a")}</div>
+                <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">Remove</button>
+            </div>
+            <div class="cond-second-condition grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 hidden">${conditionInputHtml("b")}</div>
+        `;
+        container.appendChild(row);
+        row.querySelector('[data-cond-field="join"]').addEventListener("change", (event) => {
+            row.querySelector(".cond-second-condition").classList.toggle(
+                "hidden",
+                event.target.value === "single",
+            );
+        });
+        row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
+        if (container.children.length === 1) {
+            row.querySelector('[data-cond-field="name"]').value = "North 10-12 HCP";
+            row.querySelector('[data-cond-field="a-hand"]').value = "north";
+            row.querySelector('[data-cond-field="a-type"]').value = "hcp";
+            row.querySelector('[data-cond-field="a-value"]').value = "10-12";
+        }
+    }
+
+    function readConditionalBase() {
+        const seen = new Set();
+        const constraints = {};
+        for (const hand of HANDS) {
+            const cards = parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
+            for (const card of cards) {
+                if (seen.has(card)) throw new Error(`Duplicate known card: ${card.toUpperCase()}`);
+                seen.add(card);
+            }
+            constraints[hand] = {
+                mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
+                knownCards: cards,
+                hcp: rangeFromInputs(`cond-${hand}-hcp`, 0, 37),
+                suitRanges: SUITS.map((suit) => rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13)),
+            };
+            if (constraints[hand].mode === "hand" && cards.length !== 13) {
+                throw new Error(`${tr(`terms.${hand}`, hand)} full hand needs 13 cards.`);
+            }
+            if (cards.length > 13) throw new Error(`${tr(`terms.${hand}`, hand)} has more than 13 known cards.`);
+        }
+        return constraints;
+    }
+
+    function handMatchesBase(cards, constraint) {
+        if (constraint.mode === "hand") return cards.length === 13;
+        const hcp = handHcp(cards);
+        if (hcp < constraint.hcp.min || hcp > constraint.hcp.max) return false;
+        const counts = handSuitCounts(cards);
+        return counts.every(
+            (count, index) =>
+                count >= constraint.suitRanges[index].min && count <= constraint.suitRanges[index].max,
+        );
+    }
+
+    function readConditionalQueries() {
+        return Array.from(document.querySelectorAll("[data-cond-query]")).map((row, index) => {
+            const get = (name) => row.querySelector(`[data-cond-field="${name}"]`)?.value || "";
+            return {
+                name: get("name") || `Query ${index + 1}`,
+                join: get("join"),
+                a: { hand: get("a-hand"), type: get("a-type"), value: get("a-value") },
+                b: { hand: get("b-hand"), type: get("b-type"), value: get("b-value") },
+            };
+        });
+    }
+
+    async function runConditionalExact() {
+        const status = document.getElementById("cond-status");
+        const result = document.getElementById("cond-result");
+        if (status) status.textContent = "Counting exact deals...";
+        if (result) result.innerHTML = "";
+        try {
+            const response = await fetch(`${API_BASE}/conditional_probability`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    constraints: readConditionalBase(),
+                    queries: readConditionalQueries(),
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                throw new Error(data.error || `Request failed: ${response.status}`);
+            }
+
+            const denominator = String(data.denominator || "0");
+            if (status) status.textContent = `Exact deals counted: ${denominator}`;
+            if (!result) return;
+            if (denominator === "0") {
+                result.innerHTML = `<div class="text-sm text-red-600">No deals match the known conditions.</div>`;
+                return;
+            }
+
+            const rows = Array.isArray(data.results) ? data.results : [];
+            result.innerHTML = `
+                <table class="w-full result-table">
+                    <thead><tr><th class="text-left">Event</th><th>Probability</th><th>Count</th></tr></thead>
+                    <tbody>
+                        ${rows
+                            .map((entry, index) => {
+                                const probability = Number(entry?.probability);
+                                const pct = Number.isFinite(probability) ? probability * 100 : 0;
+                                const numerator = String(entry?.numerator ?? "0");
+                                const name = String(entry?.name || `Query ${index + 1}`);
+                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${numerator} / ${denominator}</td></tr>`;
+                            })
+                            .join("")}
+                    </tbody>
+                </table>`;
+        } catch (error) {
+            if (status) status.textContent = "";
+            const message = error instanceof Error ? error.message : String(error);
+            if (result) result.innerHTML = `<div class="text-sm text-red-600">${message}</div>`;
+        }
     }
 
     // --- Shared Card Rendering ---
@@ -2920,6 +3154,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 setProbabilitySectionOpen(btn, !isOpen);
             });
         });
+
+        const condAddQuery = document.getElementById("cond-add-query");
+        if (condAddQuery) condAddQuery.addEventListener("click", () => addConditionalQuery());
+        const condRun = document.getElementById("cond-run");
+        if (condRun) condRun.addEventListener("click", runConditionalExact);
 
         const vpBoardsInput = document.getElementById("vp-boards-input");
         if (vpBoardsInput) {

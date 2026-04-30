@@ -159,6 +159,7 @@
         "calculate": "Calculate",
         "tabs": {
             "probability": "Probability Table",
+            "conditional": "Conditional",
             "imp": "IMP Scale",
             "vp": "VP Scale"
         },

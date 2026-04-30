@@ -11,6 +11,7 @@ from ctypes import byref, c_int
 from typing import Dict, List, Optional, Tuple
 
 import dds
+from conditional_probability import calculate_conditional_probability
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -71,6 +72,43 @@ class LeadSolverRequest(BaseModel):
     leader: str
     simulations: int = Field(default=1000, ge=10, le=5000)
     advanced_tcl: Optional[str] = ""
+
+
+class RangeRequest(BaseModel):
+    min: int
+    max: int
+
+
+class ConditionalHandConstraintRequest(BaseModel):
+    mode: str = "feature"
+    knownCards: List[str] = Field(default_factory=list)
+    hcp: RangeRequest = Field(default_factory=lambda: RangeRequest(min=0, max=37))
+    suitRanges: List[RangeRequest] = Field(
+        default_factory=lambda: [
+            RangeRequest(min=0, max=13),
+            RangeRequest(min=0, max=13),
+            RangeRequest(min=0, max=13),
+            RangeRequest(min=0, max=13),
+        ]
+    )
+
+
+class ConditionalAtomRequest(BaseModel):
+    hand: str = ""
+    type: str = ""
+    value: str = ""
+
+
+class ConditionalQueryRequest(BaseModel):
+    name: str = ""
+    join: str = "single"
+    a: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
+    b: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
+
+
+class ConditionalProbabilityRequest(BaseModel):
+    constraints: Dict[str, ConditionalHandConstraintRequest]
+    queries: List[ConditionalQueryRequest] = Field(default_factory=list)
 
 
 @app.middleware("http")
@@ -204,6 +242,22 @@ def analyse_deal(deal_pbn: DealPBN):
             "West": results.resTable[suit_idx][hand_map["West"]],
         }
     return response_data
+
+
+@app.post("/api/conditional_probability")
+def conditional_probability(request: ConditionalProbabilityRequest):
+    try:
+        payload = request.dict()
+        return calculate_conditional_probability(
+            payload.get("constraints", {}),
+            payload.get("queries", []),
+        )
+    except ValueError as e:
+        return {"error": str(e)}
+    except Exception as e:
+        return {
+            "error": f"An error occurred during conditional probability analysis: {str(e)}"
+        }
 
 
 def runDeal(tcl_text, num):
