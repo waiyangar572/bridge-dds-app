@@ -1683,7 +1683,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Cash A then finesse.",
                         4,
                         (state) =>
-                            (state.E["Q"] && state.E.length < 4) ||
+                            (state.E["Q"] && state.E.length < 5) ||
                             (state.W["Q"] && state.W.length == 1),
                     ),
                     make(
@@ -1721,6 +1721,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Take finesse first.",
                         4,
                         (state) => state.E["Q"],
+                    ),
+                    make(
+                        "probability.qdrop.compareLineCashAThenFinesse",
+                        "Cash A then finesse.",
+                        4,
+                        (state) =>
+                            (state.E["Q"] && state.E.length < 4) ||
+                            (state.W["Q"] && state.W.length == 1),
                     ),
                 ],
             };
