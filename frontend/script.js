@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    window.__PRERENDER_READY__ = false;
+
     // --- Constants ---
     const API_BASE = "https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api";
 
@@ -156,6 +158,12 @@ document.addEventListener("DOMContentLoaded", () => {
     initShapePresetMajorToggles();
     setupEventListeners();
     bootstrapApp();
+
+    function markPrerenderReady() {
+        window.__PRERENDER_READY__ = true;
+        document.documentElement.dataset.prerenderReady = "true";
+        window.dispatchEvent(new Event("bridge:route-ready"));
+    }
 
     function getNestedValue(obj, path) {
         return path
@@ -784,6 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
             history.replaceState({}, "", expectedPath);
         }
         navigateTo(routePath, false);
+        markPrerenderReady();
 
         window.addEventListener("popstate", async () => {
             const popParsed = parseLocalizedPath(window.location.pathname);
@@ -796,6 +805,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 await setLanguage(popLang, { persist: false, refreshUI: true });
             }
             navigateTo(popRoutePath, false);
+            markPrerenderReady();
         });
     }
 
