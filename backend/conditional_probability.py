@@ -462,6 +462,8 @@ def calculate_conditional_probability(
             }
         )
 
+    print(denominator)
+    print(results)
     return {
         "denominator": str(denominator),
         "results": results,

@@ -65,6 +65,7 @@ COPY --from=dealBuilder /tmp/deal319/input/ ./input/
 # 3. アプリケーションのコードと設定ファイルをコピー
 COPY requirements.txt .
 COPY main.py .
+COPY conditional_probability.py .
 COPY dds.py .
 COPY leadsolver.cpp .
 COPY dll.h .

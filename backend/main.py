@@ -10,8 +10,19 @@ from contextlib import asynccontextmanager
 from ctypes import byref, c_int
 from typing import Dict, List, Optional, Tuple
 
-import dds
-from conditional_probability import calculate_conditional_probability
+# Support both execution styles:
+# - uvicorn main:app (cwd=backend)
+# - uvicorn backend.main:app (cwd=repo root)
+try:
+    from . import dds
+except ImportError:
+    import dds
+
+try:
+    from .conditional_probability import calculate_conditional_probability
+except ImportError:
+    from conditional_probability import calculate_conditional_probability
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
