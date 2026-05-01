@@ -31,6 +31,11 @@
             "description": "Use bridge reference tables to check probability lines, IMP scale, and VP scale by board count.",
             "keywords": "bridge reference table, bridge probability table, imp scale bridge, vp scale bridge, contract bridge odds"
         },
+        "probability-solver": {
+            "title": "Bridge Probability Solver | Bridge Solver",
+            "description": "Calculate exact conditional bridge probabilities from known cards, HCP ranges, and suit-length constraints using combinatorial enumeration.",
+            "keywords": "bridge probability solver, conditional probability bridge, contract bridge odds, HCP probability, suit distribution"
+        },
         "imp": {
             "title": "Bridge IMP Scale Table | Bridge Solver",
             "description": "Check IMP conversion quickly with a readable multi-column bridge IMP scale table.",
@@ -159,7 +164,7 @@
         "calculate": "Calculate",
         "tabs": {
             "probability": "Probability Table",
-            "conditional": "Conditional",
+            "conditional": "Probability Solver",
             "imp": "IMP Scale",
             "vp": "VP Scale"
         },
@@ -223,6 +228,34 @@
             "bestTag": "Best",
             "success": "All-win probability",
             "note": "Assumption: Q is missing. Each row shows all-win probability for its stated play line."
+        },
+        "conditional": {
+            "title": "Probability Solver",
+            "help": "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
+            "modeFeature": "Feature",
+            "modeHand": "Full hand",
+            "knownCards": "Known cards",
+            "hcpMin": "HCP min",
+            "hcpMax": "HCP max",
+            "suitRanges": "Suit length ranges",
+            "compareEvents": "Compare events",
+            "add": "Add",
+            "typeHcp": "HCP range",
+            "typeCard": "Has specific card",
+            "labelPlaceholder": "Label",
+            "remove": "Remove",
+            "defaultQueryName": "North 10-12 HCP",
+            "fullHandNeeds13": "{hand} full hand needs 13 cards.",
+            "moreThan13": "{hand} has more than 13 known cards.",
+            "counting": "Counting exact deals...",
+            "counted": "Exact deals counted: {denominator}{engine}",
+            "noDeals": "No deals match the known conditions.",
+            "event": "Event",
+            "probability": "Probability",
+            "exactFraction": "Exact fraction",
+            "count": "Count",
+            "calculateExact": "Calculate exact probability",
+            "description": "Exact enumeration for known cards and hand-feature conditions. If the condition space is too broad, narrow known cards, HCP, or shape ranges."
         },
         "imp": {
             "title": "IMP scale",

@@ -114,8 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
             referenceTab: "imp",
         },
         "/reference/conditional": {
+            path: "/probability-solver",
             type: "tool",
-            metaKey: "probability",
+            metaKey: "probability-solver",
+            tab: "probability",
+            nav: "probability",
+            viewId: "view-probability",
+            referenceTab: "conditional",
+        },
+        "/probability-solver": {
+            type: "tool",
+            metaKey: "probability-solver",
             tab: "probability",
             nav: "probability",
             viewId: "view-probability",
@@ -339,6 +348,26 @@ document.addEventListener("DOMContentLoaded", () => {
             tr("probability.vp.help", "Check VP pair values by individual IMP difference."),
         );
         setNodeText("#vp-boards-label", tr("probability.vp.boardsLabel", "Boards"));
+        setNodeText(
+            "#reference-panel-conditional h3",
+            tr("probability.conditional.title", "Conditional probability"),
+        );
+        setNodeText(
+            "#reference-panel-conditional > section > p",
+            tr(
+                "probability.conditional.description",
+                "Exact enumeration for known cards and hand-feature conditions. If the condition space is too broad, narrow known cards, HCP, or shape ranges.",
+            ),
+        );
+        setNodeText(
+            "#reference-panel-conditional h4",
+            tr("probability.conditional.compareEvents", "Compare events"),
+        );
+        setNodeText("#cond-add-query", tr("probability.conditional.add", "Add"));
+        setNodeText(
+            "#cond-run",
+            tr("probability.conditional.calculateExact", "Calculate exact probability"),
+        );
 
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
@@ -466,7 +495,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.metaKey === "about") return "AboutPage";
         if (route.metaKey === "contact") return "ContactPage";
         if (route.metaKey === "privacy") return "PrivacyPolicy";
-        if (route.metaKey === "probability" || route.metaKey === "imp" || route.metaKey === "vp") {
+        if (
+            route.metaKey === "probability" ||
+            route.metaKey === "probability-solver" ||
+            route.metaKey === "imp" ||
+            route.metaKey === "vp"
+        ) {
             return "CollectionPage";
         }
         return "WebPage";
@@ -478,6 +512,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.metaKey === "opening-lead") return tr("nav.lead", "Opening Lead");
         if (route.metaKey === "probability") {
             return tr("probability.tabs.probability", "Probability Table");
+        }
+        if (route.metaKey === "probability-solver") {
+            return tr("probability.conditional.title", "Conditional probability");
         }
         if (route.metaKey === "imp") return tr("probability.tabs.imp", "IMP Scale");
         if (route.metaKey === "vp") return tr("probability.tabs.vp", "VP Scale");
@@ -740,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getReferenceTabRoute(tabName) {
-        if (tabName === "conditional") return "/reference/conditional";
+        if (tabName === "conditional") return "/probability-solver";
         if (tabName === "imp") return "/reference/imp";
         if (tabName === "vp") return "/reference/vp";
         return "/reference/probability";
@@ -1398,6 +1435,26 @@ document.addEventListener("DOMContentLoaded", () => {
             conditionalPanel.classList.toggle("hidden", referenceViewTab !== "conditional");
         if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
         if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
+
+        if (referenceViewTab === "conditional") {
+            setNodeText(
+                "#probability-title",
+                tr("probability.conditional.title", "Conditional probability"),
+            );
+            setNodeText(
+                "#probability-lead",
+                tr(
+                    "probability.conditional.help",
+                    "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
+                ),
+            );
+        } else {
+            setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
+            setNodeText(
+                "#probability-lead",
+                tr("probability.lead", "Switch between probability, IMP, and VP quick references."),
+            );
+        }
     }
 
     function setReferenceTab(tabName) {
@@ -2341,21 +2398,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h4 class="font-bold text-slate-900">${label}</h4>
                         <select id="cond-${hand}-mode" class="p-2 border rounded text-xs font-bold">
-                            <option value="feature">Feature</option>
-                            <option value="hand">Full hand</option>
+                            <option value="feature">${tr("probability.conditional.modeFeature", "Feature")}</option>
+                            <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
-                    <label class="text-xs font-semibold text-slate-500 uppercase">Known cards</label>
+                    <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
                     <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm mb-3" placeholder="SA HK DQ C2" />
                     <div class="grid grid-cols-2 gap-2 mb-3">
-                        <label class="text-xs font-semibold text-slate-500 uppercase">HCP min
+                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
                             <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
                         </label>
-                        <label class="text-xs font-semibold text-slate-500 uppercase">HCP max
+                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMax", "HCP max")}
                             <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
                         </label>
                     </div>
-                    <label class="text-xs font-semibold text-slate-500 uppercase">Suit length ranges</label>
+                    <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
                     <div class="grid grid-cols-4 gap-2 mt-1">
                         ${SUITS.map(
                             (suit) => `
@@ -2376,8 +2433,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${HANDS.map((hand) => `<option value="${hand}">${tr(`terms.${hand}`, hand)}</option>`).join("")}
             </select>
             <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm">
-                <option value="hcp">HCP range</option>
-                <option value="card">Has specific card</option>
+                <option value="hcp">${tr("probability.conditional.typeHcp", "HCP range")}</option>
+                <option value="card">${tr("probability.conditional.typeCard", "Has specific card")}</option>
             </select>
             <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / SA" />
         `;
@@ -2391,14 +2448,14 @@ document.addEventListener("DOMContentLoaded", () => {
         row.dataset.condQuery = "true";
         row.innerHTML = `
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
-                <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="Label" />
+                <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
                 <select data-cond-field="join" class="p-2 border rounded text-sm">
                     <option value="single">single</option>
                     <option value="and">AND</option>
                     <option value="or">OR</option>
                 </select>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">${conditionInputHtml("a")}</div>
-                <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">Remove</button>
+                <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
             </div>
             <div class="cond-second-condition grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 hidden">${conditionInputHtml("b")}</div>
         `;
@@ -2411,7 +2468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
         if (container.children.length === 1) {
-            row.querySelector('[data-cond-field="name"]').value = "North 10-12 HCP";
+            row.querySelector('[data-cond-field="name"]').value = tr("probability.conditional.defaultQueryName", "North 10-12 HCP");
             row.querySelector('[data-cond-field="a-hand"]').value = "north";
             row.querySelector('[data-cond-field="a-type"]').value = "hcp";
             row.querySelector('[data-cond-field="a-value"]').value = "10-12";
@@ -2434,9 +2491,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 suitRanges: SUITS.map((suit) => rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13)),
             };
             if (constraints[hand].mode === "hand" && cards.length !== 13) {
-                throw new Error(`${tr(`terms.${hand}`, hand)} full hand needs 13 cards.`);
+                throw new Error(tr("probability.conditional.fullHandNeeds13", "{hand} full hand needs 13 cards.", { hand: tr(`terms.${hand}`, hand) }));
             }
-            if (cards.length > 13) throw new Error(`${tr(`terms.${hand}`, hand)} has more than 13 known cards.`);
+            if (cards.length > 13) throw new Error(tr("probability.conditional.moreThan13", "{hand} has more than 13 known cards.", { hand: tr(`terms.${hand}`, hand) }));
         }
         return constraints;
     }
@@ -2467,7 +2524,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function runConditionalExact() {
         const status = document.getElementById("cond-status");
         const result = document.getElementById("cond-result");
-        if (status) status.textContent = "Counting exact deals...";
+        if (status) status.textContent = tr("probability.conditional.counting", "Counting exact deals...");
         if (result) result.innerHTML = "";
         try {
             const response = await fetch(`${API_BASE}/conditional_probability`, {
@@ -2485,17 +2542,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const denominator = String(data.denominator || "0");
             const engineName = data.engine ? ` (${data.engine})` : "";
-            if (status) status.textContent = `Exact deals counted: ${denominator}${engineName}`;
+            if (status) status.textContent = tr("probability.conditional.counted", "Exact deals counted: {denominator}{engine}", {
+                denominator,
+                engine: engineName,
+            });
             if (!result) return;
             if (denominator === "0") {
-                result.innerHTML = `<div class="text-sm text-red-600">No deals match the known conditions.</div>`;
+                result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noDeals", "No deals match the known conditions.")}</div>`;
                 return;
             }
 
             const rows = Array.isArray(data.results) ? data.results : [];
             result.innerHTML = `
                 <table class="w-full result-table">
-                    <thead><tr><th class="text-left">Event</th><th>Probability</th><th>Exact fraction</th><th>Count</th></tr></thead>
+                    <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th><th>${tr("probability.conditional.count", "Count")}</th></tr></thead>
                     <tbody>
                         ${rows
                             .map((entry, index) => {

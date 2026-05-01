@@ -25,6 +25,12 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://bridge-solver.waiyangar.com/en/probability-solver</loc>
+    <priority>0.8</priority>
+    <lastmod>2026-05-01T00:00:00+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://bridge-solver.waiyangar.com/en/reference/probability</loc>
     <priority>0.8</priority>
     <lastmod>2026-04-28T21:43:47+09:00</lastmod>
@@ -76,6 +82,12 @@
     <loc>https://bridge-solver.waiyangar.com/ja/opening-lead</loc>
     <priority>0.8</priority>
     <lastmod>2026-04-28T21:43:47+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://bridge-solver.waiyangar.com/ja/probability-solver</loc>
+    <priority>0.8</priority>
+    <lastmod>2026-05-01T00:00:00+09:00</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
