@@ -19,9 +19,9 @@ except ImportError:
     import dds
 
 try:
-    from .conditional_probability import calculate_conditional_probability
+    from .conditional_probability_api import calculate_conditional_probability
 except ImportError:
-    from conditional_probability import calculate_conditional_probability
+    from conditional_probability_api import calculate_conditional_probability
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,9 +35,6 @@ origins = [
     "https://bridge-analyzer.web.app",
     "https://bridge-solver.waiyangar.com",
     "https://www.bridge-solver.waiyangar.com",
-    "http://localhost",
-    "http://localhost:8080",
-    "http://127.0.0.1:5500",
 ]
 
 
@@ -93,7 +90,9 @@ class RangeRequest(BaseModel):
 class ConditionalHandConstraintRequest(BaseModel):
     mode: str = "feature"
     knownCards: List[str] = Field(default_factory=list)
-    hcp: RangeRequest = Field(default_factory=lambda: RangeRequest(min=0, max=37))
+    hcp: RangeRequest = Field(
+        default_factory=lambda: RangeRequest(min=0, max=37)
+    )
     suitRanges: List[RangeRequest] = Field(
         default_factory=lambda: [
             RangeRequest(min=0, max=13),

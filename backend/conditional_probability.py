@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple
 
 HANDS: Tuple[str, ...] = ("north", "south", "east", "west")
 HAND_INDEX = {hand: idx for idx, hand in enumerate(HANDS)}
@@ -51,72 +51,12 @@ def calculate_conditional_probability(
     queries_payload: List[dict],
 ) -> dict:
     constraints = _normalize_constraints(constraints_payload or {})
+    known_state = _known_state_from_constraints(constraints)
 
-    known_cards_by_hand = [set() for _ in HANDS]
-    known_owner: Dict[str, int] = {}
-    known_hcp = [0, 0, 0, 0]
-    known_suit_counts = [[0, 0, 0, 0] for _ in HANDS]
-    known_rank_presence = [{rank: False for rank in HONORS} for _ in HANDS]
-
-    bucket_defs = _bucket_definitions()
-    bucket_counts = _initial_bucket_counts()
-
-    for hand_idx, hand in enumerate(HANDS):
-        for raw_card in constraints[hand].known_cards:
-            card = _normalize_card(raw_card)
-            if card in known_owner:
-                raise ValueError(f"Duplicate known card: {card}")
-            known_owner[card] = hand_idx
-            known_cards_by_hand[hand_idx].add(card)
-
-            suit_idx = SUIT_INDEX[card[0]]
-            rank = card[1]
-            known_hcp[hand_idx] += _card_hcp(rank)
-            known_suit_counts[hand_idx][suit_idx] += 1
-            if rank in HONORS:
-                known_rank_presence[hand_idx][rank] = True
-
-            bucket_idx = _bucket_index_for_card(card)
-            bucket_counts[bucket_idx] -= 1
-            if bucket_counts[bucket_idx] < 0:
-                raise ValueError(f"Invalid known cards for bucket count: {card}")
-
-    remaining_needs = [13 - len(known_cards_by_hand[idx]) for idx in range(4)]
-    if any(need < 0 for need in remaining_needs):
-        raise ValueError("Each hand must have at most 13 known cards.")
-    if sum(remaining_needs) != sum(bucket_counts):
-        raise ValueError("Known cards are inconsistent with a 52-card deck.")
-
-    hcp_constraints: List[Tuple[int, int, int]] = []
-    suit_constraints: List[Tuple[int, int, int, int]] = []
     tracked_hcp_hands: Set[int] = set()
     tracked_suit_fields: Set[Tuple[int, int]] = set()
     tracked_specific_cards: Set[Tuple[int, int, str]] = set()
     tracked_rank_presence: Set[Tuple[int, str]] = set()
-
-    for hand_idx, hand in enumerate(HANDS):
-        constraint = constraints[hand]
-        if constraint.mode == "hand":
-            if len(constraint.known_cards) != 13:
-                raise ValueError(f"{hand} full hand mode requires exactly 13 known cards.")
-            continue
-
-        hcp_min, hcp_max = constraint.hcp
-        if not (0 <= hcp_min <= hcp_max <= 37):
-            raise ValueError(f"Invalid HCP range for {hand}: {hcp_min}-{hcp_max}")
-        if (hcp_min, hcp_max) != (0, 37):
-            hcp_constraints.append((hand_idx, hcp_min, hcp_max))
-            tracked_hcp_hands.add(hand_idx)
-
-        for suit_idx, (suit_min, suit_max) in enumerate(constraint.suit_ranges):
-            if not (0 <= suit_min <= suit_max <= 13):
-                raise ValueError(
-                    f"Invalid suit range for {hand} {SUITS[suit_idx]}: {suit_min}-{suit_max}"
-                )
-            if (suit_min, suit_max) != (0, 13):
-                suit_constraints.append((hand_idx, suit_idx, suit_min, suit_max))
-                tracked_suit_fields.add((hand_idx, suit_idx))
-
     queries = _compile_queries(
         queries_payload or [],
         tracked_hcp_hands,
@@ -125,331 +65,89 @@ def calculate_conditional_probability(
         tracked_rank_presence,
     )
 
-    suit_pressure = [0, 0, 0, 0]
-    for _, suit_idx, min_v, max_v in suit_constraints:
-        suit_pressure[suit_idx] += 13 - (max_v - min_v)
+    atom_specs = _query_atom_specs(queries, known_state)
+    hcp_ranges = _effective_hcp_ranges(constraints, known_state["known_hcp"])
+    for hand_idx, hand in enumerate(HANDS):
+        constraint = constraints[hand]
+        if constraint.mode == "hand" or constraint.hcp != (0, 37):
+            tracked_hcp_hands.add(hand_idx)
+    tracked_hcp_mask = tuple(hand_idx in tracked_hcp_hands for hand_idx in range(4))
 
-    bucket_order = sorted(
-        range(len(bucket_defs)),
-        key=lambda idx: _bucket_priority(
-            bucket_defs[idx][0],
-            bucket_defs[idx][1],
-            bucket_counts[idx],
-            suit_pressure,
-        ),
-    )
-    ordered_bucket_defs = [bucket_defs[idx] for idx in bucket_order]
-    ordered_bucket_counts = [bucket_counts[idx] for idx in bucket_order]
-    bucket_count = len(ordered_bucket_defs)
-
-    hcp_order = sorted(tracked_hcp_hands)
-    suit_order = sorted(tracked_suit_fields)
-    specific_order = sorted(tracked_specific_cards)
-    rank_order = sorted(tracked_rank_presence)
-
-    base_offset = 3  # rem_n, rem_s, rem_e
-    hcp_state_idx = {
-        hand_idx: base_offset + pos for pos, hand_idx in enumerate(hcp_order)
-    }
-    suit_state_idx = {
-        key: base_offset + len(hcp_order) + pos
-        for pos, key in enumerate(suit_order)
-    }
-    specific_offset = base_offset + len(hcp_order) + len(suit_order)
-    specific_state_idx = {
-        key: specific_offset + pos for pos, key in enumerate(specific_order)
-    }
-    rank_offset = specific_offset + len(specific_order)
-    rank_state_idx = {
-        key: rank_offset + pos for pos, key in enumerate(rank_order)
-    }
-
-    state_initial = [remaining_needs[0], remaining_needs[1], remaining_needs[2]]
-    state_initial.extend(known_hcp[hand_idx] for hand_idx in hcp_order)
-    state_initial.extend(
-        known_suit_counts[hand_idx][suit_idx] for hand_idx, suit_idx in suit_order
-    )
-    for hand_idx, suit_idx, rank in specific_order:
-        card = SUITS[suit_idx] + rank
-        state_initial.append(1 if card in known_cards_by_hand[hand_idx] else 0)
-    for hand_idx, rank in rank_order:
-        state_initial.append(1 if known_rank_presence[hand_idx][rank] else 0)
-    initial_state = tuple(state_initial)
-
-    remaining_total = [0] * (bucket_count + 1)
-    remaining_suits = [[0, 0, 0, 0] for _ in range(bucket_count + 1)]
-    remaining_points = [[0, 0, 0, 0, 0] for _ in range(bucket_count + 1)]
-    point_to_idx = {4: 0, 3: 1, 2: 2, 1: 3, 0: 4}
-
-    for idx in range(bucket_count - 1, -1, -1):
-        suit_idx, _, points = ordered_bucket_defs[idx]
-        amount = ordered_bucket_counts[idx]
-        remaining_total[idx] = remaining_total[idx + 1] + amount
-        for suit in range(4):
-            remaining_suits[idx][suit] = remaining_suits[idx + 1][suit]
-        remaining_suits[idx][suit_idx] += amount
-        for p_idx in range(5):
-            remaining_points[idx][p_idx] = remaining_points[idx + 1][p_idx]
-        remaining_points[idx][point_to_idx[points]] += amount
-
-    hcp_constraints_idx = [
-        (hand_idx, min_v, max_v, hcp_state_idx[hand_idx])
-        for hand_idx, min_v, max_v in hcp_constraints
-    ]
-    suit_constraints_idx = [
-        (hand_idx, suit_idx, min_v, max_v, suit_state_idx[(hand_idx, suit_idx)])
-        for hand_idx, suit_idx, min_v, max_v in suit_constraints
-    ]
-
-    hcp_field_per_hand = [hcp_state_idx.get(hand_idx, -1) for hand_idx in range(4)]
-    suit_field_per_hand = [
-        [suit_state_idx.get((hand_idx, suit_idx), -1) for suit_idx in range(4)]
-        for hand_idx in range(4)
-    ]
-
-    bucket_specific_fields: List[List[int]] = []
-    bucket_rank_fields: List[List[int]] = []
-    for suit_idx, rank, _ in ordered_bucket_defs:
-        if rank in HONORS:
-            bucket_specific_fields.append(
-                [
-                    specific_state_idx.get((hand_idx, suit_idx, rank), -1)
-                    for hand_idx in range(4)
-                ]
-            )
-            bucket_rank_fields.append(
-                [rank_state_idx.get((hand_idx, rank), -1) for hand_idx in range(4)]
-            )
-        else:
-            bucket_specific_fields.append([-1, -1, -1, -1])
-            bucket_rank_fields.append([-1, -1, -1, -1])
-
-    def get_hcp(hand_idx: int, state: Tuple[int, ...]) -> int:
-        field_idx = hcp_state_idx.get(hand_idx)
-        if field_idx is None:
-            return known_hcp[hand_idx]
-        return state[field_idx]
-
-    def get_suit_count(hand_idx: int, suit_idx: int, state: Tuple[int, ...]) -> int:
-        field_idx = suit_state_idx.get((hand_idx, suit_idx))
-        if field_idx is None:
-            return known_suit_counts[hand_idx][suit_idx]
-        return state[field_idx]
-
-    def has_specific_card(hand_idx: int, suit_idx: int, rank: str, state: Tuple[int, ...]) -> bool:
-        field_idx = specific_state_idx.get((hand_idx, suit_idx, rank))
-        if field_idx is None:
-            return (SUITS[suit_idx] + rank) in known_cards_by_hand[hand_idx]
-        return state[field_idx] == 1
-
-    def has_rank(hand_idx: int, rank: str, state: Tuple[int, ...]) -> bool:
-        field_idx = rank_state_idx.get((hand_idx, rank))
-        if field_idx is None:
-            return known_rank_presence[hand_idx][rank]
-        return state[field_idx] == 1
-
-    def hcp_bounds(rem_cards: int, point_counts: List[int]) -> Tuple[int, int]:
-        if rem_cards <= 0:
-            return 0, 0
-        count_by_points = {
-            4: point_counts[0],
-            3: point_counts[1],
-            2: point_counts[2],
-            1: point_counts[3],
-            0: point_counts[4],
+    if not queries and _is_unrestricted_problem(constraints, known_state):
+        return {
+            "denominator": str(math.factorial(52) // (math.factorial(13) ** 4)),
+            "results": [],
         }
 
-        max_add = 0
-        take = rem_cards
-        for point in POINT_ORDER_DESC:
-            if take == 0:
-                break
-            amount = min(take, count_by_points[point])
-            max_add += amount * point
-            take -= amount
+    if _can_use_hcp_only_count(constraints, known_state, queries):
+        return _count_hcp_only(constraints, queries)
 
-        min_add = 0
-        take = rem_cards
-        for point in POINT_ORDER_ASC:
-            if take == 0:
-                break
-            amount = min(take, count_by_points[point])
-            min_add += amount * point
-            take -= amount
-        return min_add, max_add
-
-    def violates_pruning(next_state: Tuple[int, ...], next_layer_idx: int) -> bool:
-        rem_n, rem_s, rem_e = next_state[0], next_state[1], next_state[2]
-        if rem_n < 0 or rem_s < 0 or rem_e < 0:
-            return True
-
-        rem_total = remaining_total[next_layer_idx]
-        rem_w = rem_total - rem_n - rem_s - rem_e
-        if rem_w < 0:
-            return True
-        rem_by_hand = (rem_n, rem_s, rem_e, rem_w)
-
-        point_counts = remaining_points[next_layer_idx]
-        for hand_idx, min_hcp, max_hcp, state_idx in hcp_constraints_idx:
-            current = next_state[state_idx]
-            min_add, max_add = hcp_bounds(rem_by_hand[hand_idx], point_counts)
-            if current + min_add > max_hcp or current + max_add < min_hcp:
-                return True
-
-        for hand_idx, suit_idx, min_len, max_len, state_idx in suit_constraints_idx:
-            current = next_state[state_idx]
-            hand_remaining = rem_by_hand[hand_idx]
-            suit_remaining = remaining_suits[next_layer_idx][suit_idx]
-            non_suit_remaining = rem_total - suit_remaining
-            min_possible = current + max(0, hand_remaining - non_suit_remaining)
-            max_possible = current + min(hand_remaining, suit_remaining)
-            if min_possible > max_len or max_possible < min_len:
-                return True
-
-        return False
-
-    def base_constraints_satisfied(state: Tuple[int, ...]) -> bool:
-        for _, min_hcp, max_hcp, state_idx in hcp_constraints_idx:
-            value = state[state_idx]
-            if value < min_hcp or value > max_hcp:
-                return False
-        for _, _, min_len, max_len, state_idx in suit_constraints_idx:
-            value = state[state_idx]
-            if value < min_len or value > max_len:
-                return False
-        return True
-
-    def atom_matches(atom: QueryAtom, state: Tuple[int, ...]) -> bool:
-        if atom.kind == "always_false":
-            return False
-        if atom.kind == "hcp":
-            hcp = get_hcp(atom.hand_idx, state)
-            return atom.min_value <= hcp <= atom.max_value
-        if atom.kind == "shape":
-            counts = [get_suit_count(atom.hand_idx, suit_idx, state) for suit_idx in range(4)]
-            counts.sort(reverse=True)
-            return tuple(counts) == atom.shape
-        if atom.kind == "specific_card":
-            return has_specific_card(atom.hand_idx, atom.suit_idx, atom.rank, state)
-        if atom.kind == "rank_presence":
-            return has_rank(atom.hand_idx, atom.rank, state)
-        return False
-
-    def query_matches(query: Query, state: Tuple[int, ...]) -> bool:
-        first = atom_matches(query.a, state)
-        if query.join == "single":
-            return first
-        second = atom_matches(query.b, state)
-        if query.join == "or":
-            return first or second
-        return first and second
-
-    dp_prev: Dict[Tuple[int, ...], int] = {initial_state: 1}
-
-    for layer_idx, cards_in_bucket in enumerate(ordered_bucket_counts):
-        suit_idx, _, points = ordered_bucket_defs[layer_idx]
-        specific_fields = bucket_specific_fields[layer_idx]
-        rank_fields = bucket_rank_fields[layer_idx]
-        dp_curr: Dict[Tuple[int, ...], int] = {}
-
-        if cards_in_bucket == 0:
-            for state, ways in dp_prev.items():
-                if violates_pruning(state, layer_idx + 1):
-                    continue
-                dp_curr[state] = dp_curr.get(state, 0) + ways
-            dp_prev = dp_curr
-            if not dp_prev:
-                break
-            continue
-
-        rem_total_before = remaining_total[layer_idx]
-        for state, ways in dp_prev.items():
-            rem_n, rem_s, rem_e = state[0], state[1], state[2]
-            rem_w = rem_total_before - rem_n - rem_s - rem_e
-            if rem_w < 0:
-                continue
-
-            max_n = min(cards_in_bucket, rem_n)
-            for n_take in range(max_n + 1):
-                rem_after_n = cards_in_bucket - n_take
-                max_s = min(rem_after_n, rem_s)
-                for s_take in range(max_s + 1):
-                    rem_after_ns = rem_after_n - s_take
-                    max_e = min(rem_after_ns, rem_e)
-                    min_e = max(0, rem_after_ns - rem_w)
-                    for e_take in range(min_e, max_e + 1):
-                        w_take = rem_after_ns - e_take
-                        counts = (n_take, s_take, e_take, w_take)
-
-                        next_rem_n = rem_n - n_take
-                        next_rem_s = rem_s - s_take
-                        next_rem_e = rem_e - e_take
-
-                        next_state = state
-                        state_mut = None
-
-                        for hand_idx, allocated in enumerate(counts):
-                            if allocated == 0:
-                                continue
-                            need_update = (
-                                (points > 0 and hcp_field_per_hand[hand_idx] != -1)
-                                or suit_field_per_hand[hand_idx][suit_idx] != -1
-                                or specific_fields[hand_idx] != -1
-                                or rank_fields[hand_idx] != -1
-                            )
-                            if need_update:
-                                if state_mut is None:
-                                    state_mut = list(state)
-                                    state_mut[0] = next_rem_n
-                                    state_mut[1] = next_rem_s
-                                    state_mut[2] = next_rem_e
-                                hcp_idx = hcp_field_per_hand[hand_idx]
-                                if points > 0 and hcp_idx != -1:
-                                    state_mut[hcp_idx] += points * allocated
-
-                                suit_idx_field = suit_field_per_hand[hand_idx][suit_idx]
-                                if suit_idx_field != -1:
-                                    state_mut[suit_idx_field] += allocated
-
-                                specific_idx = specific_fields[hand_idx]
-                                if specific_idx != -1:
-                                    state_mut[specific_idx] = 1
-
-                                rank_idx = rank_fields[hand_idx]
-                                if rank_idx != -1:
-                                    state_mut[rank_idx] = 1
-
-                        if state_mut is None:
-                            next_state = (next_rem_n, next_rem_s, next_rem_e, *state[3:])
-                        else:
-                            next_state = tuple(state_mut)
-
-                        if violates_pruning(next_state, layer_idx + 1):
-                            continue
-
-                        transition_count = (
-                            math.comb(cards_in_bucket, n_take)
-                            * math.comb(cards_in_bucket - n_take, s_take)
-                            * math.comb(cards_in_bucket - n_take - s_take, e_take)
-                        )
-                        add = ways * transition_count
-                        dp_curr[next_state] = dp_curr.get(next_state, 0) + add
-
-        dp_prev = dp_curr
-        if not dp_prev:
-            break
+    if not _needs_hcp_or_honor_detail(constraints, queries):
+        return _count_shape_only(constraints, known_state, queries, atom_specs)
 
     denominator = 0
     numerators = [0 for _ in queries]
-    for state, ways in dp_prev.items():
-        if state[0] != 0 or state[1] != 0 or state[2] != 0:
+    option_cache: Dict[Tuple[int, Tuple[int, int, int, int]], Dict[Tuple[Tuple[int, int, int, int], int], int]] = {}
+
+    for matrix in generate_shape_matrices(None, constraints):
+        columns = [tuple(matrix[hand_idx][suit_idx] for hand_idx in range(4)) for suit_idx in range(4)]
+        suit_options: List[Dict[Tuple[Tuple[int, int, int, int], int], int]] = []
+        for suit_idx, counts_4 in enumerate(columns):
+            cache_key = (suit_idx, counts_4)
+            options = option_cache.get(cache_key)
+            if options is None:
+                options = _suit_option_counts(
+                    suit_idx,
+                    counts_4,
+                    known_state["suit_inventory"][suit_idx],
+                    atom_specs,
+                )
+                if not all(tracked_hcp_mask):
+                    options = _project_hcp_options(options, tracked_hcp_mask)
+                option_cache[cache_key] = options
+            if not options:
+                suit_options = []
+                break
+            suit_options.append(options)
+        if not suit_options:
             continue
-        if not base_constraints_satisfied(state):
-            continue
-        denominator += ways
-        for idx, query in enumerate(queries):
-            if query_matches(query, state):
-                numerators[idx] += ways
+
+        combined: Dict[Tuple[Tuple[int, int, int, int], int], int] = {
+            ((0, 0, 0, 0), known_state["initial_query_mask"]): 1
+        }
+        for suit_idx, options in enumerate(suit_options):
+            next_combined: Dict[Tuple[Tuple[int, int, int, int], int], int] = {}
+            suits_left = 3 - suit_idx
+            for (hcp_acc, mask_acc), acc_ways in combined.items():
+                for (hcp_add, mask_add), add_ways in options.items():
+                    next_hcp = tuple(hcp_acc[idx] + hcp_add[idx] for idx in range(4))
+                    if _violates_partial_hcp(next_hcp, suits_left, hcp_ranges, known_state["known_hcp"]):
+                        continue
+                    key = (next_hcp, mask_acc | mask_add)
+                    next_combined[key] = next_combined.get(key, 0) + acc_ways * add_ways
+            combined = next_combined
+            if not combined:
+                break
+
+        total_suit_counts = tuple(
+            tuple(
+                known_state["known_suit_counts"][hand_idx][suit_idx] + matrix[hand_idx][suit_idx]
+                for suit_idx in range(4)
+            )
+            for hand_idx in range(4)
+        )
+
+        for (unknown_hcp, mask), ways in combined.items():
+            total_hcp = tuple(
+                known_state["known_hcp"][hand_idx] + unknown_hcp[hand_idx]
+                for hand_idx in range(4)
+            )
+            if not _hcp_in_ranges(total_hcp, hcp_ranges):
+                continue
+            denominator += ways
+            for idx, query in enumerate(queries):
+                if _query_matches(query, total_hcp, total_suit_counts, mask, atom_specs):
+                    numerators[idx] += ways
 
     results = []
     for idx, query in enumerate(queries):
@@ -464,6 +162,604 @@ def calculate_conditional_probability(
         )
 
     return {"denominator": str(denominator), "results": results}
+
+
+def generate_shape_matrices(
+    known_cards: object = None,
+    constraints: Mapping[str, object] | None = None,
+) -> Iterator[Tuple[Tuple[int, int, int, int], ...]]:
+    """Yield 4x4 unknown-card shape matrices in N,S,E,W x S,H,D,C order.
+
+    Rows sum to each hand's remaining card need, columns sum to each suit's
+    remaining cards, and every generated row respects the hand's total suit
+    length ranges after known cards are added back in.
+    """
+    normalized = _coerce_constraints(constraints or {})
+    known_state = _known_state_from_constraints(normalized, known_cards)
+    remaining_needs = known_state["remaining_needs"]
+    remaining_suits = known_state["remaining_suits"]
+    known_suit_counts = known_state["known_suit_counts"]
+
+    row_bounds: List[List[Tuple[int, int]]] = []
+    for hand_idx, hand in enumerate(HANDS):
+        constraint = normalized[hand]
+        bounds: List[Tuple[int, int]] = []
+        if constraint.mode == "hand":
+            if remaining_needs[hand_idx] != 0:
+                raise ValueError(f"{hand} full hand mode requires exactly 13 known cards.")
+            bounds = [(0, 0) for _ in SUITS]
+        else:
+            for suit_idx, (min_len, max_len) in enumerate(constraint.suit_ranges):
+                if not (0 <= min_len <= max_len <= 13):
+                    raise ValueError(
+                        f"Invalid suit range for {hand} {SUITS[suit_idx]}: {min_len}-{max_len}"
+                    )
+                known_len = known_suit_counts[hand_idx][suit_idx]
+                lo = max(0, min_len - known_len)
+                hi = max_len - known_len
+                if hi < lo:
+                    return
+                bounds.append((lo, min(hi, remaining_suits[suit_idx])))
+        row_bounds.append(bounds)
+
+    matrix: List[List[int]] = [[0, 0, 0, 0] for _ in HANDS]
+    suffix_col_min = [[0, 0, 0, 0] for _ in range(5)]
+    suffix_col_max = [[0, 0, 0, 0] for _ in range(5)]
+    suffix_need = [0] * 5
+    suffix_row_min = [0] * 4
+    suffix_row_max = [0] * 4
+    for row_idx in range(3, -1, -1):
+        suffix_need[row_idx] = suffix_need[row_idx + 1] + remaining_needs[row_idx]
+        suffix_row_min[row_idx] = sum(lo for lo, _ in row_bounds[row_idx])
+        suffix_row_max[row_idx] = sum(hi for _, hi in row_bounds[row_idx])
+        for suit_idx in range(4):
+            suffix_col_min[row_idx][suit_idx] = (
+                suffix_col_min[row_idx + 1][suit_idx] + row_bounds[row_idx][suit_idx][0]
+            )
+            suffix_col_max[row_idx][suit_idx] = (
+                suffix_col_max[row_idx + 1][suit_idx] + row_bounds[row_idx][suit_idx][1]
+            )
+
+    def feasible_tail(row_idx: int, col_remaining: Sequence[int]) -> bool:
+        if suffix_need[row_idx] != sum(col_remaining):
+            return False
+        for suit_idx, col_left in enumerate(col_remaining):
+            if col_left < suffix_col_min[row_idx][suit_idx] or col_left > suffix_col_max[row_idx][suit_idx]:
+                return False
+        for pos in range(row_idx, 4):
+            if remaining_needs[pos] < suffix_row_min[pos] or remaining_needs[pos] > suffix_row_max[pos]:
+                return False
+        return True
+
+    def backtrack(row_idx: int, col_remaining: Tuple[int, int, int, int]) -> Iterator[Tuple[Tuple[int, int, int, int], ...]]:
+        if row_idx == 3:
+            row = col_remaining
+            if sum(row) != remaining_needs[row_idx]:
+                return
+            for suit_idx, value in enumerate(row):
+                lo, hi = row_bounds[row_idx][suit_idx]
+                if value < lo or value > hi:
+                    return
+            matrix[row_idx] = list(row)
+            yield tuple(tuple(row_values) for row_values in matrix)
+            return
+        if not feasible_tail(row_idx, col_remaining):
+            return
+
+        for row in _bounded_row_allocations(remaining_needs[row_idx], col_remaining, row_bounds[row_idx]):
+            next_cols = tuple(col_remaining[suit_idx] - row[suit_idx] for suit_idx in range(4))
+            if not feasible_tail(row_idx + 1, next_cols):
+                continue
+            matrix[row_idx] = list(row)
+            yield from backtrack(row_idx + 1, next_cols)
+
+    yield from backtrack(0, tuple(remaining_suits))
+
+
+def suit_combinations(
+    suit: str,
+    counts_4: Sequence[int],
+    hcps_4: Sequence[int],
+) -> int:
+    """Return exact combinations for one complete suit with no known cards removed."""
+    suit_idx = SUIT_INDEX[str(suit).strip().upper()[0]]
+    options = _suit_option_counts(
+        suit_idx,
+        tuple(int(v) for v in counts_4),
+        {"A": 1, "K": 1, "Q": 1, "J": 1, "x": 9},
+        [],
+    )
+    target_hcp = tuple(int(v) for v in hcps_4)
+    return sum(ways for (hcp, _), ways in options.items() if hcp == target_hcp)
+
+
+def _bounded_row_allocations(
+    row_sum: int,
+    col_caps: Sequence[int],
+    bounds: Sequence[Tuple[int, int]],
+) -> Iterator[Tuple[int, int, int, int]]:
+    row = [0, 0, 0, 0]
+
+    def rec(suit_idx: int, remaining: int) -> Iterator[Tuple[int, int, int, int]]:
+        if suit_idx == 4:
+            if remaining == 0:
+                yield tuple(row)
+            return
+        tail_min = sum(bounds[idx][0] for idx in range(suit_idx + 1, 4))
+        tail_max = sum(min(bounds[idx][1], col_caps[idx]) for idx in range(suit_idx + 1, 4))
+        lo = max(bounds[suit_idx][0], remaining - tail_max)
+        hi = min(bounds[suit_idx][1], col_caps[suit_idx], remaining - tail_min)
+        for value in range(lo, hi + 1):
+            row[suit_idx] = value
+            yield from rec(suit_idx + 1, remaining - value)
+
+    yield from rec(0, row_sum)
+
+
+def _suit_option_counts(
+    suit_idx: int,
+    counts_4: Sequence[int],
+    inventory: Mapping[str, int],
+    atom_specs: Sequence[dict],
+) -> Dict[Tuple[Tuple[int, int, int, int], int], int]:
+    counts = tuple(int(value) for value in counts_4)
+    if any(value < 0 for value in counts) or sum(counts) != sum(inventory.values()):
+        return {}
+
+    honors = [rank for rank in HONORS if inventory.get(rank, 0)]
+    small_count = int(inventory.get("x", 0))
+    results: Dict[Tuple[Tuple[int, int, int, int], int], int] = {}
+    hcp = [0, 0, 0, 0]
+    honor_counts = [0, 0, 0, 0]
+
+    def rec(rank_idx: int, mask: int) -> None:
+        if rank_idx == len(honors):
+            small_needs = [counts[idx] - honor_counts[idx] for idx in range(4)]
+            if any(value < 0 for value in small_needs) or sum(small_needs) != small_count:
+                return
+            ways = _multinomial_count(small_count, small_needs)
+            if ways == 0:
+                return
+            key = (tuple(hcp), mask)
+            results[key] = results.get(key, 0) + ways
+            return
+
+        rank = honors[rank_idx]
+        points = RANK_POINTS[rank]
+        for hand_idx in range(4):
+            if honor_counts[hand_idx] >= counts[hand_idx]:
+                continue
+            next_mask = mask | _mask_for_assignment(atom_specs, hand_idx, suit_idx, rank)
+            honor_counts[hand_idx] += 1
+            hcp[hand_idx] += points
+            rec(rank_idx + 1, next_mask)
+            hcp[hand_idx] -= points
+            honor_counts[hand_idx] -= 1
+
+    rec(0, 0)
+    return results
+
+
+def _multinomial_count(total: int, parts: Sequence[int]) -> int:
+    if total < 0 or any(part < 0 for part in parts) or sum(parts) != total:
+        return 0
+    ways = 1
+    remaining = total
+    for part in parts[:-1]:
+        ways *= math.comb(remaining, part)
+        remaining -= part
+    return ways
+
+
+def _project_hcp_options(
+    options: Mapping[Tuple[Tuple[int, int, int, int], int], int],
+    tracked_hcp_mask: Sequence[bool],
+) -> Dict[Tuple[Tuple[int, int, int, int], int], int]:
+    projected: Dict[Tuple[Tuple[int, int, int, int], int], int] = {}
+    for (hcp, mask), ways in options.items():
+        next_hcp = tuple(hcp[idx] if tracked_hcp_mask[idx] else 0 for idx in range(4))
+        key = (next_hcp, mask)
+        projected[key] = projected.get(key, 0) + ways
+    return projected
+
+
+def _count_shape_only(
+    constraints: Mapping[str, HandConstraint],
+    known_state: dict,
+    queries: Sequence[Query],
+    atom_specs: Sequence[dict],
+) -> dict:
+    denominator = 0
+    numerators = [0 for _ in queries]
+    suit_way_cache: Dict[Tuple[int, Tuple[int, int, int, int]], int] = {}
+
+    for matrix in generate_shape_matrices(None, constraints):
+        total_suit_counts = tuple(
+            tuple(
+                known_state["known_suit_counts"][hand_idx][suit_idx] + matrix[hand_idx][suit_idx]
+                for suit_idx in range(4)
+            )
+            for hand_idx in range(4)
+        )
+        ways = 1
+        for suit_idx in range(4):
+            counts_4 = tuple(matrix[hand_idx][suit_idx] for hand_idx in range(4))
+            key = (suit_idx, counts_4)
+            suit_ways = suit_way_cache.get(key)
+            if suit_ways is None:
+                total = sum(known_state["suit_inventory"][suit_idx].values())
+                suit_ways = _multinomial_count(total, counts_4)
+                suit_way_cache[key] = suit_ways
+            ways *= suit_ways
+
+        denominator += ways
+        for idx, query in enumerate(queries):
+            if _query_matches(query, (0, 0, 0, 0), total_suit_counts, 0, atom_specs):
+                numerators[idx] += ways
+
+    results = []
+    for idx, query in enumerate(queries):
+        numerator = numerators[idx]
+        results.append(
+            {
+                "name": query.name,
+                "numerator": str(numerator),
+                "probability": 0.0 if denominator == 0 else numerator / denominator,
+            }
+        )
+    return {"denominator": str(denominator), "results": results}
+
+
+def _can_use_hcp_only_count(
+    constraints: Mapping[str, HandConstraint],
+    known_state: dict,
+    queries: Sequence[Query],
+) -> bool:
+    if any(known_state["known_cards_by_hand"][hand_idx] for hand_idx in range(4)):
+        return False
+    for hand in HANDS:
+        constraint = constraints[hand]
+        if constraint.mode != "feature":
+            return False
+        if any(suit_range != (0, 13) for suit_range in constraint.suit_ranges):
+            return False
+    for query in queries:
+        for atom in (query.a, query.b):
+            if atom.kind not in {"hcp", "always_false"}:
+                return False
+    return True
+
+
+def _count_hcp_only(
+    constraints: Mapping[str, HandConstraint],
+    queries: Sequence[Query],
+) -> dict:
+    hcp_ranges = tuple(constraints[hand].hcp for hand in HANDS)
+    denominator = 0
+    numerators = [0 for _ in queries]
+
+    states: Dict[Tuple[Tuple[int, int, int, int], Tuple[int, int, int, int]], int] = {
+        ((0, 0, 0, 0), (0, 0, 0, 0)): 1
+    }
+    for points in (4, 3, 2, 1):
+        next_states: Dict[Tuple[Tuple[int, int, int, int], Tuple[int, int, int, int]], int] = {}
+        for (honor_counts, hcps), ways in states.items():
+            for alloc in _bounded_row_allocations(4, (4, 4, 4, 4), ((0, 4), (0, 4), (0, 4), (0, 4))):
+                next_counts = tuple(honor_counts[idx] + alloc[idx] for idx in range(4))
+                if any(count > 13 for count in next_counts):
+                    continue
+                next_hcps = tuple(hcps[idx] + points * alloc[idx] for idx in range(4))
+                if any(next_hcps[idx] > hcp_ranges[idx][1] for idx in range(4)):
+                    continue
+                key = (next_counts, next_hcps)
+                next_states[key] = next_states.get(key, 0) + ways * _multinomial_count(4, alloc)
+        states = next_states
+
+    for (honor_counts, hcps), ways in states.items():
+        small_needs = tuple(13 - count for count in honor_counts)
+        if any(value < 0 for value in small_needs) or sum(small_needs) != 36:
+            continue
+        if not _hcp_in_ranges(hcps, hcp_ranges):
+            continue
+        total_ways = ways * _multinomial_count(36, small_needs)
+        denominator += total_ways
+        for idx, query in enumerate(queries):
+            if _query_matches(query, hcps, ((0, 0, 0, 0),) * 4, 0, []):
+                numerators[idx] += total_ways
+
+    results = []
+    for idx, query in enumerate(queries):
+        numerator = numerators[idx]
+        results.append(
+            {
+                "name": query.name,
+                "numerator": str(numerator),
+                "probability": 0.0 if denominator == 0 else numerator / denominator,
+            }
+        )
+    return {"denominator": str(denominator), "results": results}
+
+
+def _needs_hcp_or_honor_detail(
+    constraints: Mapping[str, HandConstraint],
+    queries: Sequence[Query],
+) -> bool:
+    for hand in HANDS:
+        constraint = constraints[hand]
+        if constraint.mode != "hand" and constraint.hcp != (0, 37):
+            return True
+    for query in queries:
+        for atom in (query.a, query.b):
+            if atom.kind in {"hcp", "specific_card", "rank_presence"}:
+                return True
+    return False
+
+
+def _coerce_constraints(constraints: Mapping[str, object]) -> Dict[str, HandConstraint]:
+    if all(isinstance(constraints.get(hand), HandConstraint) for hand in HANDS):
+        return {hand: constraints[hand] for hand in HANDS}  # type: ignore[return-value]
+    return _normalize_constraints(constraints)  # type: ignore[arg-type]
+
+
+def _known_state_from_constraints(
+    constraints: Mapping[str, HandConstraint],
+    known_cards_override: object = None,
+) -> dict:
+    known_cards_by_hand = [set() for _ in HANDS]
+    source = _known_cards_source(constraints, known_cards_override)
+    for hand_idx, hand in enumerate(HANDS):
+        for raw_card in source[hand_idx]:
+            known_cards_by_hand[hand_idx].add(_normalize_card(raw_card))
+
+    known_owner: Dict[str, int] = {}
+    known_hcp = [0, 0, 0, 0]
+    known_suit_counts = [[0, 0, 0, 0] for _ in HANDS]
+    known_rank_presence = [{rank: False for rank in HONORS} for _ in HANDS]
+    suit_inventory = [
+        {"A": 1, "K": 1, "Q": 1, "J": 1, "x": 9}
+        for _ in SUITS
+    ]
+
+    for hand_idx in range(4):
+        for card in known_cards_by_hand[hand_idx]:
+            if card in known_owner:
+                raise ValueError(f"Duplicate known card: {card}")
+            known_owner[card] = hand_idx
+            suit_idx = SUIT_INDEX[card[0]]
+            rank = card[1]
+            known_hcp[hand_idx] += _card_hcp(rank)
+            known_suit_counts[hand_idx][suit_idx] += 1
+            if rank in HONORS:
+                known_rank_presence[hand_idx][rank] = True
+                suit_inventory[suit_idx][rank] -= 1
+            else:
+                suit_inventory[suit_idx]["x"] -= 1
+            if min(suit_inventory[suit_idx].values()) < 0:
+                raise ValueError(f"Invalid known cards for suit inventory: {card}")
+
+    remaining_needs = [13 - len(known_cards_by_hand[idx]) for idx in range(4)]
+    if any(need < 0 for need in remaining_needs):
+        raise ValueError("Each hand must have at most 13 known cards.")
+
+    remaining_suits = [sum(suit_inventory[suit_idx].values()) for suit_idx in range(4)]
+    if sum(remaining_needs) != sum(remaining_suits):
+        raise ValueError("Known cards are inconsistent with a 52-card deck.")
+
+    return {
+        "known_cards_by_hand": known_cards_by_hand,
+        "known_hcp": known_hcp,
+        "known_suit_counts": known_suit_counts,
+        "known_rank_presence": known_rank_presence,
+        "known_owner": known_owner,
+        "remaining_needs": remaining_needs,
+        "remaining_suits": remaining_suits,
+        "suit_inventory": suit_inventory,
+        "initial_query_mask": 0,
+    }
+
+
+def _known_cards_source(
+    constraints: Mapping[str, HandConstraint],
+    known_cards_override: object,
+) -> List[List[object]]:
+    if known_cards_override is None:
+        return [list(constraints[hand].known_cards) for hand in HANDS]
+    if isinstance(known_cards_override, Mapping):
+        return [
+            list(
+                known_cards_override.get(hand, [])
+                or known_cards_override.get(hand.capitalize(), [])
+                or known_cards_override.get(hand[0].upper(), [])
+            )
+            for hand in HANDS
+        ]
+    if isinstance(known_cards_override, Sequence) and not isinstance(known_cards_override, (str, bytes)):
+        values = list(known_cards_override)
+        if len(values) == 4 and all(
+            isinstance(value, Iterable) and not isinstance(value, (str, bytes))
+            for value in values
+        ):
+            return [list(value) for value in values]
+    raise ValueError("known_cards must be omitted, a hand->cards mapping, or a 4-list of card lists.")
+
+
+def _query_atom_specs(queries: Sequence[Query], known_state: dict) -> List[dict]:
+    specs: List[dict] = []
+    seen: Dict[Tuple[str, int, int, str], int] = {}
+    initial_mask = 0
+    known_cards_by_hand = known_state["known_cards_by_hand"]
+    known_rank_presence = known_state["known_rank_presence"]
+
+    for query in queries:
+        for atom in (query.a, query.b):
+            if atom.kind == "specific_card":
+                key = (atom.kind, atom.hand_idx, atom.suit_idx, atom.rank)
+                if key not in seen:
+                    seen[key] = len(specs)
+                    specs.append(
+                        {
+                            "kind": atom.kind,
+                            "hand_idx": atom.hand_idx,
+                            "suit_idx": atom.suit_idx,
+                            "rank": atom.rank,
+                        }
+                    )
+                if SUITS[atom.suit_idx] + atom.rank in known_cards_by_hand[atom.hand_idx]:
+                    initial_mask |= 1 << seen[key]
+            elif atom.kind == "rank_presence":
+                key = (atom.kind, atom.hand_idx, -1, atom.rank)
+                if key not in seen:
+                    seen[key] = len(specs)
+                    specs.append(
+                        {
+                            "kind": atom.kind,
+                            "hand_idx": atom.hand_idx,
+                            "suit_idx": -1,
+                            "rank": atom.rank,
+                        }
+                    )
+                if known_rank_presence[atom.hand_idx][atom.rank]:
+                    initial_mask |= 1 << seen[key]
+
+    for bit, spec in enumerate(specs):
+        spec["bit"] = bit
+    known_state["initial_query_mask"] = initial_mask
+    return specs
+
+
+def _mask_for_assignment(
+    atom_specs: Sequence[dict],
+    hand_idx: int,
+    suit_idx: int,
+    rank: str,
+) -> int:
+    mask = 0
+    for spec in atom_specs:
+        if spec["hand_idx"] != hand_idx or spec["rank"] != rank:
+            continue
+        if spec["kind"] == "specific_card" and spec["suit_idx"] != suit_idx:
+            continue
+        mask |= 1 << spec["bit"]
+    return mask
+
+
+def _effective_hcp_ranges(
+    constraints: Mapping[str, HandConstraint],
+    known_hcp: Sequence[int],
+) -> Tuple[Tuple[int, int], ...]:
+    ranges: List[Tuple[int, int]] = []
+    for hand_idx, hand in enumerate(HANDS):
+        constraint = constraints[hand]
+        if constraint.mode == "hand":
+            ranges.append((known_hcp[hand_idx], known_hcp[hand_idx]))
+            continue
+        min_hcp, max_hcp = constraint.hcp
+        if not (0 <= min_hcp <= max_hcp <= 37):
+            raise ValueError(f"Invalid HCP range for {hand}: {min_hcp}-{max_hcp}")
+        ranges.append((min_hcp, max_hcp))
+    return tuple(ranges)
+
+
+def _violates_partial_hcp(
+    unknown_hcp: Sequence[int],
+    suits_left: int,
+    hcp_ranges: Sequence[Tuple[int, int]],
+    known_hcp: Sequence[int],
+) -> bool:
+    max_remaining = 10 * suits_left
+    for hand_idx, current in enumerate(unknown_hcp):
+        min_total, max_total = hcp_ranges[hand_idx]
+        current_total = known_hcp[hand_idx] + current
+        if current_total > max_total:
+            return True
+        if current_total + max_remaining < min_total:
+            return True
+    return False
+
+
+def _hcp_in_ranges(
+    total_hcp: Sequence[int],
+    hcp_ranges: Sequence[Tuple[int, int]],
+) -> bool:
+    for hand_idx, value in enumerate(total_hcp):
+        min_hcp, max_hcp = hcp_ranges[hand_idx]
+        if value < min_hcp or value > max_hcp:
+            return False
+    return True
+
+
+def _query_matches(
+    query: Query,
+    total_hcp: Sequence[int],
+    total_suit_counts: Sequence[Sequence[int]],
+    mask: int,
+    atom_specs: Sequence[dict],
+) -> bool:
+    first = _atom_matches(query.a, total_hcp, total_suit_counts, mask, atom_specs)
+    if query.join == "single":
+        return first
+    second = _atom_matches(query.b, total_hcp, total_suit_counts, mask, atom_specs)
+    if query.join == "or":
+        return first or second
+    return first and second
+
+
+def _atom_matches(
+    atom: QueryAtom,
+    total_hcp: Sequence[int],
+    total_suit_counts: Sequence[Sequence[int]],
+    mask: int,
+    atom_specs: Sequence[dict],
+) -> bool:
+    if atom.kind == "always_false":
+        return False
+    if atom.kind == "hcp":
+        return atom.min_value <= total_hcp[atom.hand_idx] <= atom.max_value
+    if atom.kind == "shape":
+        counts = sorted(total_suit_counts[atom.hand_idx], reverse=True)
+        return tuple(counts) == atom.shape
+    if atom.kind == "specific_card":
+        bit = _find_atom_bit(atom_specs, atom.kind, atom.hand_idx, atom.suit_idx, atom.rank)
+        return bit >= 0 and bool(mask & (1 << bit))
+    if atom.kind == "rank_presence":
+        bit = _find_atom_bit(atom_specs, atom.kind, atom.hand_idx, -1, atom.rank)
+        return bit >= 0 and bool(mask & (1 << bit))
+    return False
+
+
+def _find_atom_bit(
+    atom_specs: Sequence[dict],
+    kind: str,
+    hand_idx: int,
+    suit_idx: int,
+    rank: str,
+) -> int:
+    for spec in atom_specs:
+        if (
+            spec["kind"] == kind
+            and spec["hand_idx"] == hand_idx
+            and spec["suit_idx"] == suit_idx
+            and spec["rank"] == rank
+        ):
+            return spec["bit"]
+    return -1
+
+
+def _is_unrestricted_problem(
+    constraints: Mapping[str, HandConstraint],
+    known_state: dict,
+) -> bool:
+    if any(known_state["known_cards_by_hand"][hand_idx] for hand_idx in range(4)):
+        return False
+    for hand in HANDS:
+        constraint = constraints[hand]
+        if constraint.mode != "feature":
+            return False
+        if constraint.hcp != (0, 37):
+            return False
+        if any(suit_range != (0, 13) for suit_range in constraint.suit_ranges):
+            return False
+    return True
 
 
 def _bucket_priority(

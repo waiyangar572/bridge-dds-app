@@ -2377,10 +2377,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </select>
             <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm">
                 <option value="hcp">HCP range</option>
-                <option value="shape">Shape</option>
-                <option value="card">Has honor/card</option>
+                <option value="card">Has specific card</option>
             </select>
-            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / 5-3-3-2 / SA" />
+            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / SA" />
         `;
     }
 
@@ -2485,7 +2484,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const denominator = String(data.denominator || "0");
-            if (status) status.textContent = `Exact deals counted: ${denominator}`;
+            const engineName = data.engine ? ` (${data.engine})` : "";
+            if (status) status.textContent = `Exact deals counted: ${denominator}${engineName}`;
             if (!result) return;
             if (denominator === "0") {
                 result.innerHTML = `<div class="text-sm text-red-600">No deals match the known conditions.</div>`;
@@ -2495,15 +2495,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const rows = Array.isArray(data.results) ? data.results : [];
             result.innerHTML = `
                 <table class="w-full result-table">
-                    <thead><tr><th class="text-left">Event</th><th>Probability</th><th>Count</th></tr></thead>
+                    <thead><tr><th class="text-left">Event</th><th>Probability</th><th>Exact fraction</th><th>Count</th></tr></thead>
                     <tbody>
                         ${rows
                             .map((entry, index) => {
                                 const probability = Number(entry?.probability);
                                 const pct = Number.isFinite(probability) ? probability * 100 : 0;
                                 const numerator = String(entry?.numerator ?? "0");
+                                const fraction = String(entry?.fraction ?? `${numerator}/${denominator}`);
                                 const name = String(entry?.name || `Query ${index + 1}`);
-                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${numerator} / ${denominator}</td></tr>`;
+                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td><td>${numerator} / ${denominator}</td></tr>`;
                             })
                             .join("")}
                     </tbody>
