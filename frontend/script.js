@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
     let vpBoardCount = 16;
 
-    const NAV_KEYS = ["double", "single", "lead", "probability"];
+    const NAV_KEYS = ["double", "single", "lead", "solver", "probability"];
     const VIEW_IDS = [
         "view-double",
         "view-single",
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "tool",
             metaKey: "probability-solver",
             tab: "probability",
-            nav: "probability",
+            nav: "solver",
             viewId: "view-probability",
             referenceTab: "conditional",
         },
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "tool",
             metaKey: "probability-solver",
             tab: "probability",
-            nav: "probability",
+            nav: "solver",
             viewId: "view-probability",
             referenceTab: "conditional",
         },
@@ -255,10 +255,12 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#nav-solver", tr("nav.solver", "Probability Solver"));
         setNodeText("#nav-probability", tr("nav.probability", "Reference"));
         setNodeText("#mob-nav-double", tr("nav.double", "Double Dummy"));
         setNodeText("#mob-nav-single", tr("nav.single", "Single Dummy"));
         setNodeText("#mob-nav-lead", tr("nav.lead", "Opening Lead"));
+        setNodeText("#mob-nav-solver", tr("nav.solver", "Probability Solver"));
         setNodeText("#mob-nav-probability", tr("nav.probability", "Reference"));
         setNodeText("#btn-run-double-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
@@ -286,7 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
             "#reference-tab-probability",
             tr("probability.tabs.probability", "Probability Table"),
         );
-        setNodeText("#reference-tab-conditional", tr("probability.tabs.conditional", "Conditional"));
         setNodeText("#reference-tab-imp", tr("probability.tabs.imp", "IMP Scale"));
         setNodeText("#reference-tab-vp", tr("probability.tabs.vp", "VP Scale"));
         setNodeText(
@@ -807,7 +808,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        const activeKey = route.type === "tool" ? route.tab : route.nav;
+        const activeKey = route.type === "tool" ? route.nav || route.tab : route.nav;
         if (!activeKey) return;
 
         const activeNav = document.getElementById(`nav-${activeKey}`);
@@ -828,6 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.type === "tool") {
             showView(route.viewId);
             switchTab(route.tab);
+            applyNavState(route);
             if (route.viewId === "view-probability") {
                 setReferenceTab(route.referenceTab || "probability");
             }
@@ -1404,6 +1406,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const conditionalTab = document.getElementById("reference-tab-conditional");
         const impTab = document.getElementById("reference-tab-imp");
         const vpTab = document.getElementById("reference-tab-vp");
+        const referenceTabs = document.getElementById("reference-tabs");
         const probabilityPanel = document.getElementById("reference-panel-probability");
         const conditionalPanel = document.getElementById("reference-panel-conditional");
         const impPanel = document.getElementById("reference-panel-imp");
@@ -1435,6 +1438,7 @@ document.addEventListener("DOMContentLoaded", () => {
             conditionalPanel.classList.toggle("hidden", referenceViewTab !== "conditional");
         if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
         if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
+        if (referenceTabs) referenceTabs.classList.toggle("hidden", referenceViewTab === "conditional");
 
         if (referenceViewTab === "conditional") {
             setNodeText(

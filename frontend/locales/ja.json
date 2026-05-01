@@ -7,6 +7,7 @@
         "double": "ダブルダミー分析",
         "single": "シングルダミー分析",
         "lead": "オープニングリード分析",
+        "solver": "確率ソルバー",
         "probability": "早見表"
     },
     "buttons": {

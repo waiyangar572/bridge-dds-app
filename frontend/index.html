@@ -981,6 +981,13 @@
                             </a>
                             <a
                                 href="#view-probability"
+                                id="nav-solver"
+                                data-route="/probability-solver"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                確率ソルバー
+                            </a>
+                            <a
+                                href="#view-probability"
                                 id="nav-probability"
                                 data-route="/reference/probability"
                                 class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
@@ -1040,6 +1047,13 @@
                         data-route="/opening-lead"
                         class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
                         オープニングリード分析
+                    </a>
+                    <a
+                        href="#view-probability"
+                        id="mob-nav-solver"
+                        data-route="/probability-solver"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        確率ソルバー
                     </a>
                     <a
                         href="#view-probability"
@@ -2258,6 +2272,7 @@
                 </p>
 
                 <div
+                    id="reference-tabs"
                     class="flex items-center gap-2 mb-6"
                     role="tablist"
                     aria-label="Reference tabs">
@@ -2280,16 +2295,6 @@
                         aria-controls="reference-panel-imp"
                         aria-selected="false">
                         IMP Scale
-                    </button>
-                    <button
-                        id="reference-tab-conditional"
-                        type="button"
-                        class="reference-tab-btn"
-                        data-reference-tab="conditional"
-                        role="tab"
-                        aria-controls="reference-panel-conditional"
-                        aria-selected="false">
-                        Conditional
                     </button>
                     <button
                         id="reference-tab-vp"
