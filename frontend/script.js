@@ -2439,12 +2439,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <select data-cond-field="${prefix}-hand" class="p-2 border rounded text-sm">
                 ${HANDS.map((hand) => `<option value="${hand}">${tr(`terms.${hand}`, hand)}</option>`).join("")}
             </select>
-            <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm">
+            <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm cond-query-type-selector">
                 <option value="hcp">${tr("probability.conditional.typeHcp", "HCP range")}</option>
                 <option value="shape">${tr("probability.conditional.typeShape", "Shape")}</option>
                 <option value="card">${tr("probability.conditional.typeCard", "Has specific card")}</option>
             </select>
-            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / 4-3-3-2 / S5 / S5H4 / SA" />
+            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm cond-query-input" placeholder="10-12" />
         `;
     }
 
@@ -2475,15 +2475,13 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         });
         row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
-        if (container.children.length === 1) {
-            row.querySelector('[data-cond-field="name"]').value = tr(
-                "probability.conditional.defaultQueryName",
-                "North 10-12 HCP",
+        row.querySelector(".cond-query-type-selector").addEventListener("change", (event) => {
+            const placeholder = event.target.value == "hcp" ? "10-12": event.target.value == "shape" ? "4-4-3-2 / S5H4" : "SA";
+            row.querySelector(".cond-query-input").setAttribute(
+                "placeholder",
+                placeholder,
             );
-            row.querySelector('[data-cond-field="a-hand"]').value = "north";
-            row.querySelector('[data-cond-field="a-type"]').value = "hcp";
-            row.querySelector('[data-cond-field="a-value"]').value = "10-12";
-        }
+        })
     }
 
     function readConditionalBase() {
