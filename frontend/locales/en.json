@@ -256,7 +256,7 @@
             "counting": "Counting exact deals...",
             "counted": "Exact deals counted: {denominator}{engine}",
             "noDeals": "No deals match the known conditions.",
-            "event": "Event",
+            "event": "Hand",
             "probability": "Probability",
             "exactFraction": "Exact fraction",
             "count": "Count",
