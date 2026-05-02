@@ -59,6 +59,8 @@ def calculate_conditional_probability(
     """
 
     state, constraint_event = _build_constraint_context(constraints)
+    if not queries:
+        raise ValueError("at least one query is required")
     results = []
     for index, query in enumerate(queries):
         target = _query_to_event(query)
@@ -121,17 +123,27 @@ def _build_constraint_context(
 
 
 def _query_to_event(query: dict[str, Any]) -> BaseEvent:
-    if "event" in query:
-        return _event_from_payload(query["event"])
-    if "conditions" in query:
-        return _event_from_payload(query)
+    if query.get("event") is not None:
+        event = _event_from_payload(query["event"])
+        if event is None:
+            raise ValueError("query has no complete conditions")
+        return event
+    if query.get("conditions") is not None:
+        event = _event_from_payload(query)
+        if event is None:
+            raise ValueError("query has no complete conditions")
+        return event
 
     join = (query.get("join") or "single").lower()
     first = _atom_to_event(query.get("a") or {})
+    if first is None:
+        raise ValueError("query has no complete conditions")
     if join == "single":
         return first
 
     second = _atom_to_event(query.get("b") or {})
+    if second is None:
+        return first
     if join == "and":
         return first & second
     if join == "or":
@@ -139,14 +151,18 @@ def _query_to_event(query: dict[str, Any]) -> BaseEvent:
     raise ValueError(f"unsupported query join: {join!r}")
 
 
-def _event_from_payload(payload: dict[str, Any]) -> BaseEvent:
+def _event_from_payload(payload: dict[str, Any]) -> BaseEvent | None:
     operator = (payload.get("op") or payload.get("join") or "").lower()
     conditions = payload.get("conditions")
 
     if conditions is not None:
-        children = [_event_from_payload(condition) for condition in conditions]
+        children = [
+            child
+            for condition in conditions
+            if (child := _event_from_payload(condition)) is not None
+        ]
         if not children:
-            raise ValueError("compound event requires at least one child condition")
+            return None
         if len(children) == 1:
             return children[0]
         if operator in ("", "and", "all"):
@@ -159,19 +175,22 @@ def _event_from_payload(payload: dict[str, Any]) -> BaseEvent:
         child = payload.get("condition") or payload.get("event")
         if child is None:
             raise ValueError("NOT event requires a child condition")
-        return NotEvent(_event_from_payload(child))
+        child_event = _event_from_payload(child)
+        if child_event is None:
+            return None
+        return NotEvent(child_event)
 
     return _atom_to_event(payload)
 
 
-def _atom_to_event(atom: dict[str, Any]) -> BaseEvent:
-    if not atom.get("hand") or not atom.get("type") or not str(atom.get("value") or "").strip():
-        raise ValueError("incomplete query condition: hand, type, and value are required")
-    player = _parse_player(atom.get("hand"))
-    event_type = (atom.get("type") or "").lower()
+def _atom_to_event(atom: dict[str, Any]) -> BaseEvent | None:
     value = str(atom.get("value") or "").strip()
     if not value:
-        raise ValueError("query value is required")
+        return None
+    if not atom.get("hand") or not atom.get("type"):
+        raise ValueError("incomplete query condition: hand and type are required when value is set")
+    player = _parse_player(atom.get("hand"))
+    event_type = (atom.get("type") or "").lower()
 
     if event_type == "card":
         return CardHoldingEvent(player, _normalize_card(value))

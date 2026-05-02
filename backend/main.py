@@ -9,7 +9,7 @@ import threading
 import time
 from contextlib import asynccontextmanager
 from ctypes import byref, c_int
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Support both execution styles:
 # - uvicorn main:app (cwd=backend)
@@ -123,6 +123,9 @@ class ConditionalQueryRequest(BaseModel):
     join: str = "single"
     a: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
     b: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
+    event: Optional[Dict[str, Any]] = None
+    conditions: Optional[List[Dict[str, Any]]] = None
+    op: Optional[str] = None
 
 
 class ConditionalProbabilityRequest(BaseModel):
@@ -281,7 +284,7 @@ def conditional_probability(request: ConditionalProbabilityRequest):
     try:
         if calculate_conditional_probability is None:
             raise RuntimeError("conditional probability engine is not available")
-        payload = request.dict()
+        payload = request.dict(exclude_none=True)
         logger.info(
             "conditional_probability_post constraints=%s queries=%s payload=%s",
             list(payload.get("constraints", {}).keys()),

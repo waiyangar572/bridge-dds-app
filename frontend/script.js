@@ -2388,6 +2388,13 @@ document.addEventListener("DOMContentLoaded", () => {
         renderConditionalHandPanels();
         const queryContainer = document.getElementById("cond-queries");
         if (resetQueries && queryContainer) queryContainer.innerHTML = "";
+        if (
+            queryContainer &&
+            queryContainer.querySelector("[data-cond-query]") &&
+            !queryContainer.querySelector("[data-cond-root]")
+        ) {
+            queryContainer.innerHTML = "";
+        }
         if (document.querySelectorAll("[data-cond-query]").length === 0) addConditionalQuery();
     }
 
@@ -2455,7 +2462,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 ?.querySelector(".cond-query-input");
             if (!input) return;
             const placeholder =
-                select.value === "hcp" ? "10-12" : select.value === "shape" ? "4-4-3-2 / S5H4" : "SA";
+                select.value === "hcp"
+                    ? "10-12"
+                    : select.value === "shape"
+                      ? "4-4-3-2 / S5H4"
+                      : "SA";
             input.setAttribute("placeholder", placeholder);
         });
     }
@@ -2509,7 +2520,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateConditionalQueryControls(row) {
         row.querySelectorAll("[data-cond-group]").forEach((group) => {
-            const childCount = group.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
+            const childCount =
+                group.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
             const opSelect = group.querySelector(":scope > div > [data-cond-group-op]");
             if (opSelect) opSelect.disabled = childCount <= 1;
         });
@@ -2523,6 +2535,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.dataset.condQuery = "true";
         row.dataset.condConditionCount = "0";
         row.innerHTML = `
+        <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-2 items-center">
                 <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
                 <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
@@ -2533,6 +2546,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <summary class="cursor-pointer font-semibold text-slate-500">${tr("probability.conditional.advancedEvent", "Advanced nested event")}</summary>
                     <textarea data-cond-field="event-json" class="mt-2 w-full min-w-[280px] p-2 border rounded text-xs font-mono" rows="5" placeholder='{"op":"and","conditions":[{"hand":"north","type":"shape","value":"4-4-3-2"},{"op":"or","conditions":[{"hand":"north","type":"hcp","value":"10-12"},{"hand":"north","type":"card","value":"SA"}]}]}'></textarea>
                 </details>
+            </div>
             </div>
         `;
         container.appendChild(row);
@@ -2565,7 +2579,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (removeConditionButton) {
                 const condition = removeConditionButton.closest("[data-cond-condition]");
                 const group = removeConditionButton.closest("[data-cond-group]");
-                const siblingCount = group?.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
+                const siblingCount =
+                    group?.querySelector(":scope > [data-cond-group-children]")?.children.length ||
+                    0;
                 if (condition && siblingCount > 1) {
                     condition.remove();
                 }
@@ -2645,7 +2661,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function readConditionalQueries() {
-        return Array.from(document.querySelectorAll("[data-cond-query]")).map((row, index) => {
+        const queries = Array.from(document.querySelectorAll("[data-cond-query]")).map((row, index) => {
             const get = (name) => row.querySelector(`[data-cond-field="${name}"]`)?.value || "";
             const advancedEventJson = get("event-json").trim();
             if (advancedEventJson) {
@@ -2654,7 +2670,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     event = JSON.parse(advancedEventJson);
                 } catch (error) {
                     throw new Error(
-                        tr("probability.conditional.invalidEventJson", "Invalid advanced event JSON."),
+                        tr(
+                            "probability.conditional.invalidEventJson",
+                            "Invalid advanced event JSON.",
+                        ),
                     );
                 }
                 return {
@@ -2667,7 +2686,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
             }
             const rootGroup = row.querySelector("[data-cond-root] > [data-cond-group]");
-            const event = readConditionalEventGroup(rootGroup);
+            const event = rootGroup
+                ? readConditionalEventGroup(rootGroup)
+                : readLegacyConditionalEvent(row);
             return {
                 name:
                     get("name") ||
@@ -2677,6 +2698,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 event,
             };
         });
+        return queries;
+    }
+
+    function readLegacyConditionalEvent(row) {
+        const get = (name) => row.querySelector(`[data-cond-field="${name}"]`)?.value || "";
+        const first = {
+            hand: get("a-hand"),
+            type: get("a-type"),
+            value: get("a-value").trim(),
+        };
+        const second = {
+            hand: get("b-hand"),
+            type: get("b-type"),
+            value: get("b-value").trim(),
+        };
+        const conditions = [first, second].filter((condition) => condition.value);
+        if (conditions.length === 0) {
+            throw new Error(tr("probability.conditional.emptyQuery", "Query has no conditions."));
+        }
+        if (conditions.length === 1) return conditions[0];
+        return {
+            op: get("join") === "or" ? "or" : "and",
+            conditions,
+        };
     }
 
     function readConditionalEventGroup(group) {
@@ -2708,9 +2753,13 @@ document.addEventListener("DOMContentLoaded", () => {
             type: field("type"),
             value: field("value").trim(),
         };
-        if (!atom.hand || !atom.type || !atom.value) {
+        if (!atom.value) return null;
+        if (!atom.hand || !atom.type) {
             throw new Error(
-                tr("probability.conditional.incompleteCondition", "Please complete every condition."),
+                tr(
+                    "probability.conditional.incompleteCondition",
+                    "Please complete every condition.",
+                ),
             );
         }
         return atom;
@@ -2723,17 +2772,22 @@ document.addEventListener("DOMContentLoaded", () => {
             status.textContent = tr("probability.conditional.counting", "Counting exact deals...");
         if (result) result.innerHTML = "";
         try {
+            const constraints = readConditionalBase();
+            const queries = readConditionalQueries();
+            if (queries.length === 0) {
+                throw new Error(tr("probability.conditional.emptyQuery", "Query has no conditions."));
+            }
             console.log({
-                constraints: readConditionalBase(),
-                queries: readConditionalQueries(),
+                constraints,
+                queries,
             });
 
             const response = await fetch(`${API_BASE}/conditional_probability`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    constraints: readConditionalBase(),
-                    queries: readConditionalQueries(),
+                    constraints,
+                    queries,
                 }),
             });
             const data = await response.json();
@@ -2759,6 +2813,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const rows = Array.isArray(data.results) ? data.results : [];
+            if (rows.length === 0) {
+                result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noResults", "No query results were returned.")}</div>`;
+                return;
+            }
             result.innerHTML = `
                 <table class="w-full result-table">
                     <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th></tr></thead>
