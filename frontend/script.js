@@ -2397,7 +2397,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = HANDS.map((hand) => {
             const label = tr(`terms.${hand}`, hand);
             return `
-                <div class="space-y-3 border-b border-slate-200 pb-4">
+                <div class="space-y-3 border-slate-200 pb-4">
                 <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h4 class="font-bold text-slate-900">${label}</h4>
@@ -2452,7 +2452,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById("cond-queries");
         if (!container) return;
         const row = document.createElement("div");
-        row.className = "space-y-2 border-b border-slate-200 pb-3";
+        row.className = "space-y-2 border-slate-200 pb-3";
         row.dataset.condQuery = "true";
         row.innerHTML = `
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
