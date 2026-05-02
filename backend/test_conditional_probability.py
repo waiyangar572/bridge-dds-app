@@ -206,6 +206,52 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
 
         self.assertGreater(response["results"][0]["probability"], 0.0)
 
+    def test_south_spade_three_plus_under_north_five_spade_constraint(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_constraints["north"]["suitRanges"][0] = {"min": 5, "max": 5}
+        payload_queries = [
+            {
+                "name": "South 3+ spades",
+                "event": {"hand": "south", "type": "shape", "value": "S3-13"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        expected = sum(comb(8, k) * comb(31, 13 - k) for k in range(3, 9)) / comb(39, 13)
+        self.assertAlmostEqual(response["results"][0]["probability"], expected)
+
+    def test_hcp_query_under_suit_length_range_constraint_does_not_require_exact_length(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_constraints["north"]["suitRanges"][0] = {"min": 5, "max": 6}
+        payload_queries = [
+            {
+                "name": "North 10-12 HCP",
+                "event": {"hand": "north", "type": "hcp", "value": "10-12"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertGreaterEqual(response["results"][0]["probability"], 0.0)
+        self.assertLessEqual(response["results"][0]["probability"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

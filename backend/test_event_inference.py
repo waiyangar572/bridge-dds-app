@@ -104,6 +104,24 @@ class EventInferenceTest(unittest.TestCase):
         expected = (13 / 52) + (13 / 52) - ((13 / 52) * (12 / 51))
         self.assertAlmostEqual(prob, expected)
 
+    def test_hcp_under_suit_length_range_expands_to_exact_lengths(self) -> None:
+        state = EvaluationState()
+        target = HcpEvent("N", 10, 12)
+        constraint = SuitLengthEvent("N", "S", 5, 6)
+
+        prob = calculate_conditional_prob(target, constraint, state)
+
+        denominator = calculate_conditional_prob(constraint, None, state)
+        numerator = sum(
+            calculate_conditional_prob(
+                HcpEvent("N", 10, 12) & SuitLengthEvent("N", "S", length, length),
+                None,
+                state,
+            )
+            for length in (5, 6)
+        )
+        self.assertAlmostEqual(prob, numerator / denominator)
+
 
 if __name__ == "__main__":
     unittest.main()

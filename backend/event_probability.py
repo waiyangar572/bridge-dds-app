@@ -253,9 +253,8 @@ def calc_suit_length_prob(target: SuitLengthEvent, state: EvaluationState) -> fl
     max_unknown_needed = target.max_length - known_in_target_suit
 
     draws = state.free_spaces_excluding_known_suits(target.player, exclude_suit=target.suit)
-    candidate_suits = _candidate_suits_for_player_draw(target.player, target.suit, state)
     successes = state.remaining_suit_count(target.suit)
-    population = sum(state.remaining_suit_count(suit) for suit in candidate_suits)
+    population = _population_for_suit_length_draw(target.player, target.suit, state)
     failures = population - successes
 
     denominator = _comb(population, draws)
@@ -422,6 +421,34 @@ def _candidate_suits_for_player_draw(
         if suit == target_suit or state.known_suit_length(player, suit) is None:
             candidate_suits.append(suit)
     return tuple(candidate_suits)
+
+
+def _population_for_suit_length_draw(
+    player: Player,
+    target_suit: Suit,
+    state: EvaluationState,
+) -> int:
+    candidate_suits = _candidate_suits_for_player_draw(player, target_suit, state)
+    population = sum(state.remaining_suit_count(suit) for suit in candidate_suits)
+
+    for other_player in PLAYERS:
+        if other_player == player:
+            continue
+        if state.known_suit_length(other_player, target_suit) is None:
+            continue
+        # If another player's target-suit length is fixed, that player's whole
+        # hand is outside the target player's draw pool. The fixed target-suit
+        # slots are already removed from successes by remaining_suit_count().
+        # Any still-unreserved off-suit slots must also be removed from the
+        # failure population. Example: after N has exactly 5 spades, South draws
+        # from the E/S/W 39-card pool, not from the 47 cards that include N's
+        # remaining eight non-spades.
+        unreserved_slots = (
+            state.vacant_spaces[other_player]
+            - state.unknown_suit_allocation_count(player=other_player)
+        )
+        population -= unreserved_slots
+    return population
 
 
 def _clone_state(state: EvaluationState) -> EvaluationState:

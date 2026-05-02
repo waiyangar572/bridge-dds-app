@@ -75,6 +75,15 @@ class EventProbabilityTest(unittest.TestCase):
         fixed = comb(13, 4) * comb(13, 4) * comb(13, 3) * comb(13, 2) / comb(52, 13)
         self.assertAlmostEqual(prob, 12 * fixed)
 
+    def test_south_spade_length_after_north_has_five_spades_uses_39_card_pool(self) -> None:
+        state = EvaluationState()
+        state.set_suit_length(SuitLengthEvent("N", "S", 5, 5))
+
+        prob = calc_suit_length_prob(SuitLengthEvent("S", "S", 3, 13), state)
+
+        expected = sum(comb(8, k) * comb(31, 13 - k) for k in range(3, 9)) / comb(39, 13)
+        self.assertAlmostEqual(prob, expected)
+
     def test_single_suit_weights_sum_to_multinomial_count(self) -> None:
         state = EvaluationState()
         state.set_suit_length(SuitLengthEvent("N", "S", 4, 4))

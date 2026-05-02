@@ -214,6 +214,22 @@ def _calculate_and_target_prob(
             total += calculate_conditional_prob(expanded_target, constraint, state)
         return total
 
+    if _is_non_exact_suit_length(first):
+        # Suit-length range expansion:
+        # P((L=m or L=m+1 or ... or L=n) & R | A)
+        #   = sum_k P((L=k) & R | A)
+        # because exact suit lengths for one player/suit are mutually exclusive.
+        total = 0.0
+        for exact_length in _suit_length_exact_events(first):
+            expanded_children = [exact_length, *rest]
+            expanded_target = (
+                expanded_children[0]
+                if len(expanded_children) == 1
+                else AndEvent.of(*expanded_children)
+            )
+            total += calculate_conditional_prob(expanded_target, constraint, state)
+        return total
+
     if isinstance(first, OrEvent):
         total = 0.0
         for subset_size in range(1, len(first.children) + 1):
@@ -285,6 +301,20 @@ def _contains_shape_pattern(event: BaseEvent | None) -> bool:
     return False
 
 
+def _contains_non_exact_suit_length(event: BaseEvent | None) -> bool:
+    if event is None:
+        return False
+    if _is_non_exact_suit_length(event):
+        return True
+    if isinstance(event, AndEvent):
+        return any(_contains_non_exact_suit_length(child) for child in event.children)
+    if isinstance(event, OrEvent):
+        return any(_contains_non_exact_suit_length(child) for child in event.children)
+    if isinstance(event, NotEvent):
+        return _contains_non_exact_suit_length(event.child)
+    return False
+
+
 def _contains_or_event(event: BaseEvent | None) -> bool:
     if event is None:
         return False
@@ -298,7 +328,11 @@ def _contains_or_event(event: BaseEvent | None) -> bool:
 
 
 def _requires_ratio_constraint(event: BaseEvent | None) -> bool:
-    return _contains_shape_pattern(event) or _contains_or_event(event)
+    return (
+        _contains_shape_pattern(event)
+        or _contains_or_event(event)
+        or _contains_non_exact_suit_length(event)
+    )
 
 
 def _shape_pattern_exact_events(event: ShapePatternEvent) -> list[AndEvent]:
@@ -313,3 +347,17 @@ def _shape_pattern_exact_events(event: ShapePatternEvent) -> list[AndEvent]:
             )
         )
     return exact_events
+
+
+def _is_non_exact_suit_length(event: BaseEvent | None) -> bool:
+    return (
+        isinstance(event, SuitLengthEvent)
+        and event.min_length != event.max_length
+    )
+
+
+def _suit_length_exact_events(event: SuitLengthEvent) -> list[SuitLengthEvent]:
+    return [
+        SuitLengthEvent(event.player, event.suit, length, length)
+        for length in range(event.min_length, event.max_length + 1)
+    ]
