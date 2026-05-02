@@ -165,7 +165,6 @@
         "calculate": "Calculate",
         "tabs": {
             "probability": "Probability Table",
-            "conditional": "Probability Solver",
             "imp": "IMP Scale",
             "vp": "VP Scale"
         },
@@ -244,9 +243,14 @@
             "typeHcp": "HCP range",
             "typeShape": "Shape",
             "typeCard": "Has specific card",
+            "joinSingle": "Single",
+            "joinAnd": "AND",
+            "joinOr": "OR",
             "labelPlaceholder": "Label",
             "remove": "Remove",
             "defaultQueryName": "North 10-12 HCP",
+            "queryFallback": "Query {number}",
+            "duplicateCard": "Duplicate known card: {card}",
             "fullHandNeeds13": "{hand} full hand needs 13 cards.",
             "moreThan13": "{hand} has more than 13 known cards.",
             "counting": "Counting exact deals...",

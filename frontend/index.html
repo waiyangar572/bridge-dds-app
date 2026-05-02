@@ -2331,57 +2331,81 @@
                                     Estimate split probabilities for missing cards in one suit.
                                 </p>
                                 <div id="prob-suit-result" class="text-sm text-slate-700">
-                                <div class="text-xs text-slate-500 mb-2">
-                                    Static fallback summary for common fit lengths. JavaScript
-                                    expands this into the full table set.
-                                </div>
-                                <div class="mb-4">
-                                    <div class="result-meta-label mb-1">8-card fit</div>
-                                    <table class="w-full result-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-left">Opponent split</th>
-                                                <th>Probability</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr><td class="text-left font-semibold">3-2</td><td>67.8%</td></tr>
-                                            <tr><td class="text-left font-semibold">4-1</td><td>28.3%</td></tr>
-                                            <tr><td class="text-left font-semibold">5-0</td><td>3.9%</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="result-meta-label mb-1">9-card fit</div>
-                                    <table class="w-full result-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-left">Opponent split</th>
-                                                <th>Probability</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr><td class="text-left font-semibold">2-2</td><td>40.7%</td></tr>
-                                            <tr><td class="text-left font-semibold">3-1</td><td>49.7%</td></tr>
-                                            <tr><td class="text-left font-semibold">4-0</td><td>9.6%</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div>
-                                    <div class="result-meta-label mb-1">10-card fit</div>
-                                    <table class="w-full result-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-left">Opponent split</th>
-                                                <th>Probability</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr><td class="text-left font-semibold">2-1</td><td>78.3%</td></tr>
-                                            <tr><td class="text-left font-semibold">3-0</td><td>21.7%</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                    <div class="text-xs text-slate-500 mb-2">
+                                        Static fallback summary for common fit lengths. JavaScript
+                                        expands this into the full table set.
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="result-meta-label mb-1">8-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-2</td>
+                                                    <td>67.8%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">4-1</td>
+                                                    <td>28.3%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">5-0</td>
+                                                    <td>3.9%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="result-meta-label mb-1">9-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">2-2</td>
+                                                    <td>40.7%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-1</td>
+                                                    <td>49.7%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">4-0</td>
+                                                    <td>9.6%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <div class="result-meta-label mb-1">10-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">2-1</td>
+                                                    <td>78.3%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-0</td>
+                                                    <td>21.7%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -2410,48 +2434,49 @@
                                     Click a fit cell to toggle comparison for that holding.
                                 </p>
                                 <div id="prob-finesse-result" class="text-sm text-slate-700">
-                                <div class="text-xs text-slate-500 mb-2">
-                                    Static fallback summary of representative best lines when one
-                                    queen is missing.
-                                </div>
-                                <table class="w-full result-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">Fit</th>
-                                            <th class="text-left">Recommended line</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-left font-semibold">4-4</td>
-                                            <td class="text-left">Cash A, then finesse.</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-left font-semibold">5-3</td>
-                                            <td class="text-left">Cash A, then finesse.</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-left font-semibold">6-2</td>
-                                            <td class="text-left">Take two finesses.</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-left font-semibold">5-4 / 6-3</td>
-                                            <td class="text-left">
-                                                Cash A and switch line depending on the count.
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-left font-semibold">7-2</td>
-                                            <td class="text-left">Cash AK.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    <div class="text-xs text-slate-500 mb-2">
+                                        Static fallback summary of representative best lines when
+                                        one queen is missing.
+                                    </div>
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Fit</th>
+                                                <th class="text-left">Recommended line</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4</td>
+                                                <td class="text-left">Cash A, then finesse.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-3</td>
+                                                <td class="text-left">Cash A, then finesse.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">6-2</td>
+                                                <td class="text-left">Take two finesses.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-4 / 6-3</td>
+                                                <td class="text-left">
+                                                    Cash A and switch line depending on the count.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">7-2</td>
+                                                <td class="text-left">Cash AK.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </section>
                     </div>
 
-                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
+                    <section
+                        class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
                         <button
                             type="button"
                             class="prob-section-toggle mb-3"
@@ -2470,29 +2495,50 @@
                                 Probability for each HCP total in a random 13-card hand.
                             </p>
                             <div id="prob-hcp-result" class="text-sm text-slate-700">
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
-                                <table class="w-full result-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">HCP</th>
-                                            <th>Probability</th>
-                                            <th>At least</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td class="text-left font-semibold">8</td><td>8.892%</td><td>71.42%</td></tr>
-                                        <tr><td class="text-left font-semibold">9</td><td>9.356%</td><td>62.52%</td></tr>
-                                        <tr><td class="text-left font-semibold">10</td><td>9.405%</td><td>53.17%</td></tr>
-                                        <tr><td class="text-left font-semibold">11</td><td>8.945%</td><td>43.76%</td></tr>
-                                        <tr><td class="text-left font-semibold">12</td><td>8.027%</td><td>34.82%</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">HCP</th>
+                                                <th>Probability</th>
+                                                <th>At least</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">8</td>
+                                                <td>8.892%</td>
+                                                <td>71.42%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">9</td>
+                                                <td>9.356%</td>
+                                                <td>62.52%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">10</td>
+                                                <td>9.405%</td>
+                                                <td>53.17%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">11</td>
+                                                <td>8.945%</td>
+                                                <td>43.76%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">12</td>
+                                                <td>8.027%</td>
+                                                <td>34.82%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </section>
 
-                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
+                    <section
+                        class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
                         <button
                             type="button"
                             class="prob-section-toggle mb-3"
@@ -2508,45 +2554,56 @@
                         </button>
                         <div id="prob-shape-content">
                             <p id="prob-shape-help" class="text-sm text-slate-600 mb-4">
-                                Suit-order-independent probabilities for random 13-card hand shapes.
+                                Suit-order-independent probabilities for random 13-card hand
+                                shapes.
                             </p>
                             <div id="prob-shape-result" class="text-sm text-slate-700">
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
-                                <table class="w-full result-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">Shape</th>
-                                            <th>Probability</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr><td class="text-left font-semibold">4-3-3-3</td><td>10.536%</td></tr>
-                                        <tr><td class="text-left font-semibold">4-4-3-2</td><td>21.551%</td></tr>
-                                        <tr><td class="text-left font-semibold">4-4-4-1</td><td>2.993%</td></tr>
-                                        <tr><td class="text-left font-semibold">5-3-3-2</td><td>15.517%</td></tr>
-                                        <tr><td class="text-left font-semibold">5-4-2-2</td><td>10.580%</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Shape</th>
+                                                <th>Probability</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-3-3-3</td>
+                                                <td>10.536%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4-3-2</td>
+                                                <td>21.551%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4-4-1</td>
+                                                <td>2.993%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-3-3-2</td>
+                                                <td>15.517%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-4-2-2</td>
+                                                <td>10.580%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </section>
                 </div>
 
-                <div id="reference-panel-conditional" role="tabpanel" class="hidden">
-                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">
-                            Conditional probability
-                        </h3>
-                        <p class="text-sm text-slate-600 mb-5">
-                            Exact enumeration for known cards and hand-feature conditions. If the
-                            condition space is too broad, narrow known cards, HCP, or shape ranges.
-                        </p>
+                <div id="probability-solver-content" class="hidden">
+                    <section>
                         <div id="cond-hands" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                            <div class="text-sm text-slate-500">Loading...</div>
+                            <div class="text-sm text-slate-500">読み込み中...</div>
                         </div>
                         <div class="flex items-center justify-between gap-3 mb-3">
-                            <h4 class="text-base font-bold text-slate-900">Compare events</h4>
+                            <h4 id="cond-compare-title" class="text-base font-bold text-slate-900">
+                                Compare events
+                            </h4>
                             <button id="cond-add-query" type="button" class="reference-tab-btn">
                                 Add
                             </button>
@@ -2581,14 +2638,38 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td class="text-left font-semibold">0-10</td><td>0</td></tr>
-                                        <tr><td class="text-left font-semibold">20-40</td><td>1</td></tr>
-                                        <tr><td class="text-left font-semibold">50-80</td><td>2</td></tr>
-                                        <tr><td class="text-left font-semibold">90-120</td><td>3</td></tr>
-                                        <tr><td class="text-left font-semibold">130-160</td><td>4</td></tr>
-                                        <tr><td class="text-left font-semibold">170-210</td><td>5</td></tr>
-                                        <tr><td class="text-left font-semibold">220-260</td><td>6</td></tr>
-                                        <tr><td class="text-left font-semibold">270-310</td><td>7</td></tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">0-10</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">20-40</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">50-80</td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">90-120</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">130-160</td>
+                                            <td>4</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">170-210</td>
+                                            <td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">220-260</td>
+                                            <td>6</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">270-310</td>
+                                            <td>7</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                                 <table class="w-full result-table">
@@ -2599,14 +2680,38 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td class="text-left font-semibold">320-360</td><td>8</td></tr>
-                                        <tr><td class="text-left font-semibold">370-420</td><td>9</td></tr>
-                                        <tr><td class="text-left font-semibold">430-490</td><td>10</td></tr>
-                                        <tr><td class="text-left font-semibold">500-590</td><td>11</td></tr>
-                                        <tr><td class="text-left font-semibold">600-740</td><td>12</td></tr>
-                                        <tr><td class="text-left font-semibold">750-890</td><td>13</td></tr>
-                                        <tr><td class="text-left font-semibold">900-1090</td><td>14</td></tr>
-                                        <tr><td class="text-left font-semibold">1100-1290</td><td>15</td></tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">320-360</td>
+                                            <td>8</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">370-420</td>
+                                            <td>9</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">430-490</td>
+                                            <td>10</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">500-590</td>
+                                            <td>11</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">600-740</td>
+                                            <td>12</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">750-890</td>
+                                            <td>13</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">900-1090</td>
+                                            <td>14</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1100-1290</td>
+                                            <td>15</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                                 <table class="w-full result-table">
@@ -2617,21 +2722,47 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td class="text-left font-semibold">1300-1490</td><td>16</td></tr>
-                                        <tr><td class="text-left font-semibold">1500-1740</td><td>17</td></tr>
-                                        <tr><td class="text-left font-semibold">1750-1990</td><td>18</td></tr>
-                                        <tr><td class="text-left font-semibold">2000-2240</td><td>19</td></tr>
-                                        <tr><td class="text-left font-semibold">2250-2490</td><td>20</td></tr>
-                                        <tr><td class="text-left font-semibold">2500-2990</td><td>21</td></tr>
-                                        <tr><td class="text-left font-semibold">3000-3490</td><td>22</td></tr>
-                                        <tr><td class="text-left font-semibold">3500-3990</td><td>23</td></tr>
-                                        <tr><td class="text-left font-semibold">4000+</td><td>24</td></tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1300-1490</td>
+                                            <td>16</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1500-1740</td>
+                                            <td>17</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1750-1990</td>
+                                            <td>18</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2000-2240</td>
+                                            <td>19</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2250-2490</td>
+                                            <td>20</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2500-2990</td>
+                                            <td>21</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">3000-3490</td>
+                                            <td>22</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">3500-3990</td>
+                                            <td>23</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">4000+</td>
+                                            <td>24</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div class="text-xs text-slate-500 mt-2">
-                                Use absolute score difference, then apply sign by result
-                                direction.
+                                Use absolute score difference, then apply sign by result direction.
                             </div>
                         </div>
                     </section>
@@ -2695,17 +2826,50 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td class="text-left font-semibold">0</td><td>10.00-10.00</td></tr>
-                                    <tr><td class="text-left font-semibold">1</td><td>10.31-9.69</td></tr>
-                                    <tr><td class="text-left font-semibold">5</td><td>11.48-8.52</td></tr>
-                                    <tr><td class="text-left font-semibold">10</td><td>12.80-7.20</td></tr>
-                                    <tr><td class="text-left font-semibold">15</td><td>13.97-6.03</td></tr>
-                                    <tr><td class="text-left font-semibold">20</td><td>15.00-5.00</td></tr>
-                                    <tr><td class="text-left font-semibold">25</td><td>15.92-4.08</td></tr>
-                                    <tr><td class="text-left font-semibold">30</td><td>16.73-3.27</td></tr>
-                                    <tr><td class="text-left font-semibold">40</td><td>18.09-1.91</td></tr>
-                                    <tr><td class="text-left font-semibold">50</td><td>19.16-0.84</td></tr>
-                                    <tr><td class="text-left font-semibold">60+</td><td>20.00-0.00</td></tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">0</td>
+                                        <td>10.00-10.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">1</td>
+                                        <td>10.31-9.69</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">5</td>
+                                        <td>11.48-8.52</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">10</td>
+                                        <td>12.80-7.20</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">15</td>
+                                        <td>13.97-6.03</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">20</td>
+                                        <td>15.00-5.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">25</td>
+                                        <td>15.92-4.08</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">30</td>
+                                        <td>16.73-3.27</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">40</td>
+                                        <td>18.09-1.91</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">50</td>
+                                        <td>19.16-0.84</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">60+</td>
+                                        <td>20.00-0.00</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tab: "probability",
             nav: "solver",
             viewId: "view-probability",
-            referenceTab: "conditional",
+            probabilityMode: "solver",
         },
         "/reference/vp": {
             type: "tool",
@@ -340,21 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tr("probability.vp.help", "Check VP pair values by individual IMP difference."),
         );
         setNodeText("#vp-boards-label", tr("probability.vp.boardsLabel", "Boards"));
-        setNodeText(
-            "#reference-panel-conditional h3",
-            tr("probability.conditional.title", "Conditional probability"),
-        );
-        setNodeText(
-            "#reference-panel-conditional > section > p",
-            tr(
-                "probability.conditional.description",
-                "Exact enumeration for known cards and hand-feature conditions. If the condition space is too broad, narrow known cards, HCP, or shape ranges.",
-            ),
-        );
-        setNodeText(
-            "#reference-panel-conditional h4",
-            tr("probability.conditional.compareEvents", "Compare events"),
-        );
+        setNodeText("#cond-compare-title", tr("probability.conditional.compareEvents", "Compare events"));
         setNodeText("#cond-add-query", tr("probability.conditional.add", "Add"));
         setNodeText(
             "#cond-run",
@@ -769,7 +755,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getReferenceTabRoute(tabName) {
-        if (tabName === "conditional") return "/probability-solver";
         if (tabName === "imp") return "/reference/imp";
         if (tabName === "vp") return "/reference/vp";
         return "/reference/probability";
@@ -822,7 +807,8 @@ document.addEventListener("DOMContentLoaded", () => {
             switchTab(route.tab);
             applyNavState(route);
             if (route.viewId === "view-probability") {
-                setReferenceTab(route.referenceTab || "probability");
+                if (route.probabilityMode === "solver") showProbabilitySolver();
+                else setReferenceTab(route.referenceTab || "probability");
             }
         } else {
             applyNavState(route);
@@ -1403,24 +1389,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateReferenceTabUI() {
         const probabilityTab = document.getElementById("reference-tab-probability");
-        const conditionalTab = document.getElementById("reference-tab-conditional");
         const impTab = document.getElementById("reference-tab-imp");
         const vpTab = document.getElementById("reference-tab-vp");
         const referenceTabs = document.getElementById("reference-tabs");
         const probabilityPanel = document.getElementById("reference-panel-probability");
-        const conditionalPanel = document.getElementById("reference-panel-conditional");
         const impPanel = document.getElementById("reference-panel-imp");
         const vpPanel = document.getElementById("reference-panel-vp");
+        const solverContent = document.getElementById("probability-solver-content");
 
+        if (referenceTabs) referenceTabs.classList.remove("hidden");
+        if (solverContent) solverContent.classList.add("hidden");
         if (probabilityTab) {
             const isActive = referenceViewTab === "probability";
             probabilityTab.classList.toggle("is-active", isActive);
             probabilityTab.setAttribute("aria-selected", isActive ? "true" : "false");
-        }
-        if (conditionalTab) {
-            const isActive = referenceViewTab === "conditional";
-            conditionalTab.classList.toggle("is-active", isActive);
-            conditionalTab.setAttribute("aria-selected", isActive ? "true" : "false");
         }
         if (impTab) {
             const isActive = referenceViewTab === "imp";
@@ -1434,42 +1416,48 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (probabilityPanel)
             probabilityPanel.classList.toggle("hidden", referenceViewTab !== "probability");
-        if (conditionalPanel)
-            conditionalPanel.classList.toggle("hidden", referenceViewTab !== "conditional");
         if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
         if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
-        if (referenceTabs)
-            referenceTabs.classList.toggle("hidden", referenceViewTab === "conditional");
 
-        if (referenceViewTab === "conditional") {
-            setNodeText(
-                "#probability-title",
-                tr("probability.conditional.title", "Conditional probability"),
-            );
-            setNodeText(
-                "#probability-lead",
-                tr(
-                    "probability.conditional.help",
-                    "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
-                ),
-            );
-        } else {
-            setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
-            setNodeText(
-                "#probability-lead",
-                tr(
-                    "probability.lead",
-                    "Switch between probability, IMP, and VP quick references.",
-                ),
-            );
-        }
+        setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
+        setNodeText(
+            "#probability-lead",
+            tr(
+                "probability.lead",
+                "Switch between probability, IMP, and VP quick references.",
+            ),
+        );
     }
 
     function setReferenceTab(tabName) {
-        referenceViewTab = ["probability", "conditional", "imp", "vp"].includes(tabName)
+        referenceViewTab = ["probability", "imp", "vp"].includes(tabName)
             ? tabName
             : "probability";
         updateReferenceTabUI();
+    }
+
+    function showProbabilitySolver() {
+        const referenceTabs = document.getElementById("reference-tabs");
+        const probabilityPanel = document.getElementById("reference-panel-probability");
+        const impPanel = document.getElementById("reference-panel-imp");
+        const vpPanel = document.getElementById("reference-panel-vp");
+        const solverContent = document.getElementById("probability-solver-content");
+
+        if (referenceTabs) referenceTabs.classList.add("hidden");
+        if (probabilityPanel) probabilityPanel.classList.add("hidden");
+        if (impPanel) impPanel.classList.add("hidden");
+        if (vpPanel) vpPanel.classList.add("hidden");
+        if (solverContent) solverContent.classList.remove("hidden");
+
+        initConditionalProbabilityUI({ resetQueries: true });
+        setNodeText("#probability-title", tr("probability.conditional.title", "Probability Solver"));
+        setNodeText(
+            "#probability-lead",
+            tr(
+                "probability.conditional.help",
+                "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
+            ),
+        );
     }
 
     function updateImpScaleResult() {
@@ -2393,8 +2381,10 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    function initConditionalProbabilityUI() {
+    function initConditionalProbabilityUI({ resetQueries = false } = {}) {
         renderConditionalHandPanels();
+        const queryContainer = document.getElementById("cond-queries");
+        if (resetQueries && queryContainer) queryContainer.innerHTML = "";
         if (document.querySelectorAll("[data-cond-query]").length === 0) addConditionalQuery();
     }
 
@@ -2404,7 +2394,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = HANDS.map((hand) => {
             const label = tr(`terms.${hand}`, hand);
             return `
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                <div class="space-y-3 border-b border-slate-200 pb-4">
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h4 class="font-bold text-slate-900">${label}</h4>
                         <select id="cond-${hand}-mode" class="p-2 border rounded text-xs font-bold">
@@ -2412,27 +2402,31 @@ document.addEventListener("DOMContentLoaded", () => {
                             <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
+                    <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
+                                <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
+                            </label>
+                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMax", "HCP max")}
+                                <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
+                            </label>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
+                            <div class="grid grid-cols-4 gap-2 mt-1">
+                                ${SUITS.map(
+                                    (suit) => `
+                                    <div>
+                                        <div class="${suit.color} text-center font-bold">${suit.label}</div>
+                                        <input id="cond-${hand}-${suit.id}-min" type="number" min="0" max="13" value="0" class="w-full p-1 border rounded text-xs text-center mb-1" />
+                                        <input id="cond-${hand}-${suit.id}-max" type="number" min="0" max="13" value="13" class="w-full p-1 border rounded text-xs text-center" />
+                                    </div>`,
+                                ).join("")}
+                            </div>
+                        </div>
+                    </div>
                     <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
-                    <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm mb-3" placeholder="SA HK DQ C2" />
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
-                            <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
-                        </label>
-                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMax", "HCP max")}
-                            <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
-                        </label>
-                    </div>
-                    <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
-                    <div class="grid grid-cols-4 gap-2 mt-1">
-                        ${SUITS.map(
-                            (suit) => `
-                            <div>
-                                <div class="${suit.color} text-center font-bold">${suit.label}</div>
-                                <input id="cond-${hand}-${suit.id}-min" type="number" min="0" max="13" value="0" class="w-full p-1 border rounded text-xs text-center mb-1" />
-                                <input id="cond-${hand}-${suit.id}-max" type="number" min="0" max="13" value="13" class="w-full p-1 border rounded text-xs text-center" />
-                            </div>`,
-                        ).join("")}
-                    </div>
+                    <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK DQ C2" />
                 </div>`;
         }).join("");
     }
@@ -2455,15 +2449,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById("cond-queries");
         if (!container) return;
         const row = document.createElement("div");
-        row.className = "border border-slate-200 rounded-lg p-3 bg-white";
+        row.className = "space-y-2 border-b border-slate-200 pb-3";
         row.dataset.condQuery = "true";
         row.innerHTML = `
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
                 <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
                 <select data-cond-field="join" class="p-2 border rounded text-sm">
-                    <option value="single">single</option>
-                    <option value="and">AND</option>
-                    <option value="or">OR</option>
+                    <option value="single">${tr("probability.conditional.joinSingle", "Single")}</option>
+                    <option value="and">${tr("probability.conditional.joinAnd", "AND")}</option>
+                    <option value="or">${tr("probability.conditional.joinOr", "OR")}</option>
                 </select>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">${conditionInputHtml("a")}</div>
                 <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
@@ -2495,7 +2489,12 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const hand of HANDS) {
             const cards = parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
             for (const card of cards) {
-                if (seen.has(card)) throw new Error(`Duplicate known card: ${card.toUpperCase()}`);
+                if (seen.has(card))
+                    throw new Error(
+                        tr("probability.conditional.duplicateCard", "Duplicate known card: {card}", {
+                            card: card.toUpperCase(),
+                        }),
+                    );
                 seen.add(card);
             }
             constraints[hand] = {
@@ -2541,7 +2540,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return Array.from(document.querySelectorAll("[data-cond-query]")).map((row, index) => {
             const get = (name) => row.querySelector(`[data-cond-field="${name}"]`)?.value || "";
             return {
-                name: get("name") || `Query ${index + 1}`,
+                name:
+                    get("name") ||
+                    tr("probability.conditional.queryFallback", "Query {number}", {
+                        number: index + 1,
+                    }),
                 join: get("join"),
                 a: { hand: get("a-hand"), type: get("a-type"), value: get("a-value") },
                 b: { hand: get("b-hand"), type: get("b-type"), value: get("b-value") },
@@ -2604,7 +2607,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const fraction = String(
                                     entry?.fraction ?? `${numerator}/${denominator}`,
                                 );
-                                const name = String(entry?.name || `Query ${index + 1}`);
+                                const name = String(
+                                    entry?.name ||
+                                        tr("probability.conditional.queryFallback", "Query {number}", {
+                                            number: index + 1,
+                                        }),
+                                );
                                 return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td></tr>`;
                             })
                             .join("")}

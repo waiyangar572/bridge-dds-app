@@ -163,7 +163,6 @@
         "calculate": "計算",
         "tabs": {
             "probability": "確率表",
-            "conditional": "確率ソルバー",
             "imp": "IMP表",
             "vp": "VP表"
         },
@@ -231,8 +230,8 @@
         "conditional": {
             "title": "確率ソルバー",
             "help": "既知カード、HCP、スート枚数レンジを条件にして、厳密な組合せ確率を計算します。",
-            "modeFeature": "特徴指定",
-            "modeHand": "13枚指定",
+            "modeFeature": "feature",
+            "modeHand": "hand",
             "knownCards": "既知カード",
             "hcpMin": "HCP 下限",
             "hcpMax": "HCP 上限",
@@ -242,9 +241,14 @@
             "typeHcp": "HCPレンジ",
             "typeShape": "シェイプ",
             "typeCard": "特定カードあり",
+            "joinSingle": "単独",
+            "joinAnd": "AND",
+            "joinOr": "OR",
             "labelPlaceholder": "ラベル",
             "remove": "削除",
-            "defaultQueryName": "North HCP 10-12",
+            "defaultQueryName": "N HCP 10-12",
+            "queryFallback": "クエリ {number}",
+            "duplicateCard": "既知カードが重複しています: {card}",
             "fullHandNeeds13": "{hand} の13枚指定にはカードが13枚必要です。",
             "moreThan13": "{hand} の既知カードが13枚を超えています。",
             "counting": "厳密な組合せ数を計算中...",
@@ -252,7 +256,7 @@
             "noDeals": "指定条件を満たすディールがありません。",
             "event": "事象",
             "probability": "確率",
-            "exactFraction": "厳密分数",
+            "exactFraction": "厳密な確率",
             "count": "組合せ数",
             "calculateExact": "厳密確率を計算",
             "description": "既知カードとハンド特徴条件に対する厳密列挙です。条件空間が広すぎる場合は、既知カード、HCP、スート枚数レンジを絞ってください。"
