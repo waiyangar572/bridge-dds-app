@@ -16,6 +16,7 @@ __all__ = [
     "HcpEvent",
     "NotEvent",
     "Player",
+    "ShapePatternEvent",
     "Suit",
     "SuitLengthEvent",
 ]
@@ -91,6 +92,24 @@ class CardHoldingEvent(BaseEvent):
     def __post_init__(self) -> None:
         _validate_player(self.player)
         _validate_card(self.card)
+
+
+@dataclass(frozen=True, slots=True)
+class ShapePatternEvent(BaseEvent):
+    """The player's four suit lengths match this unordered shape pattern."""
+
+    player: Player
+    lengths: tuple[int, int, int, int]
+
+    def __post_init__(self) -> None:
+        _validate_player(self.player)
+        if len(self.lengths) != 4:
+            raise ValueError("shape pattern must contain four suit lengths")
+        for length in self.lengths:
+            if not isinstance(length, int) or length < 0 or length > 13:
+                raise ValueError(f"invalid shape length: {length!r}")
+        if sum(self.lengths) != 13:
+            raise ValueError("shape pattern lengths must sum to 13")
 
 
 @dataclass(frozen=True, slots=True)

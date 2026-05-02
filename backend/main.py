@@ -22,9 +22,12 @@ except ImportError:
 try:
     from conditional_probability import calculate_conditional_probability
 except ImportError:
-    from backend.conditional_probability import (
-        calculate_conditional_probability,
-    )
+    try:
+        from backend.conditional_probability import (
+            calculate_conditional_probability,
+        )
+    except ImportError:
+        calculate_conditional_probability = None
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -276,6 +279,8 @@ def analyse_deal(deal_pbn: DealPBN):
 @app.post("/api/conditional_probability")
 def conditional_probability(request: ConditionalProbabilityRequest):
     try:
+        if calculate_conditional_probability is None:
+            raise RuntimeError("conditional probability engine is not available")
         payload = request.dict()
         logger.info(
             "conditional_probability_post constraints=%s queries=%s payload=%s",

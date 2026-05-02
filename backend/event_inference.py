@@ -7,6 +7,7 @@ try:
         EvaluationState,
         calc_card_holding_prob,
         calc_hcp_prob,
+        calc_shape_pattern_prob,
         calc_suit_length_prob,
     )
     from .events import (
@@ -15,6 +16,7 @@ try:
         CardHoldingEvent,
         HcpEvent,
         NotEvent,
+        ShapePatternEvent,
         SuitLengthEvent,
     )
 except ImportError:
@@ -22,6 +24,7 @@ except ImportError:
         EvaluationState,
         calc_card_holding_prob,
         calc_hcp_prob,
+        calc_shape_pattern_prob,
         calc_suit_length_prob,
     )
     from events import (
@@ -30,6 +33,7 @@ except ImportError:
         CardHoldingEvent,
         HcpEvent,
         NotEvent,
+        ShapePatternEvent,
         SuitLengthEvent,
     )
 
@@ -50,6 +54,8 @@ def event_level(event: BaseEvent | None) -> int:
     if isinstance(event, CardHoldingEvent):
         return 1
     if isinstance(event, SuitLengthEvent):
+        return 2
+    if isinstance(event, ShapePatternEvent):
         return 2
     if isinstance(event, HcpEvent):
         return 3
@@ -130,6 +136,9 @@ def apply_event(state: EvaluationState, event: BaseEvent | None) -> EvaluationSt
         next_state.set_suit_length(event)
         return next_state
 
+    if isinstance(event, ShapePatternEvent):
+        raise NotImplementedError("ambiguous shape patterns cannot be materialized into EvaluationState")
+
     if isinstance(event, HcpEvent):
         # HCP constraints are level-3 facts. The phase-2 EvaluationState does not
         # yet store HCP intervals; calc_hcp_prob is currently a placeholder.
@@ -171,6 +180,8 @@ def _calculate_atomic_prob(target: BaseEvent, state: EvaluationState) -> float:
         return calc_card_holding_prob(target, state)
     if isinstance(target, SuitLengthEvent):
         return calc_suit_length_prob(target, state)
+    if isinstance(target, ShapePatternEvent):
+        return calc_shape_pattern_prob(target, state)
     if isinstance(target, HcpEvent):
         return calc_hcp_prob(target, state)
     raise TypeError(f"expected an atomic event: {target!r}")
@@ -188,4 +199,4 @@ def _clone_state(state: EvaluationState) -> EvaluationState:
 
 
 def _is_atomic(event: BaseEvent) -> bool:
-    return isinstance(event, (CardHoldingEvent, SuitLengthEvent, HcpEvent))
+    return isinstance(event, (CardHoldingEvent, SuitLengthEvent, ShapePatternEvent, HcpEvent))
