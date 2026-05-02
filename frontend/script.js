@@ -340,7 +340,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tr("probability.vp.help", "Check VP pair values by individual IMP difference."),
         );
         setNodeText("#vp-boards-label", tr("probability.vp.boardsLabel", "Boards"));
-        setNodeText("#cond-compare-title", tr("probability.conditional.compareEvents", "Compare events"));
+        setNodeText(
+            "#cond-compare-title",
+            tr("probability.conditional.compareEvents", "Compare events"),
+        );
         setNodeText("#cond-add-query", tr("probability.conditional.add", "Add"));
         setNodeText(
             "#cond-run",
@@ -1422,10 +1425,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
         setNodeText(
             "#probability-lead",
-            tr(
-                "probability.lead",
-                "Switch between probability, IMP, and VP quick references.",
-            ),
+            tr("probability.lead", "Switch between probability, IMP, and VP quick references."),
         );
     }
 
@@ -1450,7 +1450,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (solverContent) solverContent.classList.remove("hidden");
 
         initConditionalProbabilityUI({ resetQueries: true });
-        setNodeText("#probability-title", tr("probability.conditional.title", "Probability Solver"));
+        setNodeText(
+            "#probability-title",
+            tr("probability.conditional.title", "Probability Solver"),
+        );
         setNodeText(
             "#probability-lead",
             tr(
@@ -2395,6 +2398,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const label = tr(`terms.${hand}`, hand);
             return `
                 <div class="space-y-3 border-b border-slate-200 pb-4">
+                <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h4 class="font-bold text-slate-900">${label}</h4>
                         <select id="cond-${hand}-mode" class="p-2 border rounded text-xs font-bold">
@@ -2402,7 +2406,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
-                    <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
                         <div class="grid grid-cols-2 gap-2">
                             <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
                                 <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
@@ -2424,9 +2427,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ).join("")}
                             </div>
                         </div>
-                    </div>
-                    <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
-                    <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK DQ C2" />
+                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
+                        <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK DQ C2" />
+                        </div>
                 </div>`;
         }).join("");
     }
@@ -2491,9 +2494,13 @@ document.addEventListener("DOMContentLoaded", () => {
             for (const card of cards) {
                 if (seen.has(card))
                     throw new Error(
-                        tr("probability.conditional.duplicateCard", "Duplicate known card: {card}", {
-                            card: card.toUpperCase(),
-                        }),
+                        tr(
+                            "probability.conditional.duplicateCard",
+                            "Duplicate known card: {card}",
+                            {
+                                card: card.toUpperCase(),
+                            },
+                        ),
                     );
                 seen.add(card);
             }
@@ -2609,9 +2616,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 );
                                 const name = String(
                                     entry?.name ||
-                                        tr("probability.conditional.queryFallback", "Query {number}", {
-                                            number: index + 1,
-                                        }),
+                                        tr(
+                                            "probability.conditional.queryFallback",
+                                            "Query {number}",
+                                            {
+                                                number: index + 1,
+                                            },
+                                        ),
                                 );
                                 return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td></tr>`;
                             })
