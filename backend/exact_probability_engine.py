@@ -180,6 +180,7 @@ class ProbabilityEngine:
     """Exact probability engine based on memoized top-down state transitions."""
 
     def __init__(self, conditions: Mapping[str, HandCondition] | None = None) -> None:
+        print("Initializing ProbabilityEngine with conditions:", conditions)
         base = {hand: HandCondition.any() for hand in HANDS}
         if conditions:
             for hand, condition in conditions.items():

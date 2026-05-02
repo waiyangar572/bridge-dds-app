@@ -66,7 +66,6 @@ COPY --from=dealBuilder /tmp/deal319/input/ ./input/
 COPY requirements.txt .
 COPY main.py .
 COPY conditional_probability.py .
-COPY conditional_probability_api.py .
 COPY exact_probability_engine.py .
 COPY dds.py .
 COPY leadsolver.cpp .

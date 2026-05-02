@@ -242,6 +242,7 @@
             "compareEvents": "Compare events",
             "add": "Add",
             "typeHcp": "HCP range",
+            "typeShape": "Shape",
             "typeCard": "Has specific card",
             "labelPlaceholder": "Label",
             "remove": "Remove",

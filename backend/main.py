@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import os
 import random
@@ -19,9 +20,11 @@ except ImportError:
     import dds
 
 try:
-    from .conditional_probability_api import calculate_conditional_probability
+    from conditional_probability import calculate_conditional_probability
 except ImportError:
-    from conditional_probability_api import calculate_conditional_probability
+    from backend.conditional_probability import (
+        calculate_conditional_probability,
+    )
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +33,9 @@ from pydantic import BaseModel, Field, constr
 
 dds_lock = threading.Lock()
 app = FastAPI()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("bridge_solver")
+logger.setLevel(logging.INFO)
 
 origins = [
     "https://bridge-analyzer.web.app",
@@ -123,10 +129,23 @@ class ConditionalProbabilityRequest(BaseModel):
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
+    started_at = time.perf_counter()
     try:
         response = await call_next(request)
+        logger.info(
+            "request method=%s path=%s status=%s elapsed_ms=%.1f",
+            request.method,
+            request.url.path,
+            response.status_code,
+            (time.perf_counter() - started_at) * 1000,
+        )
         return response
     except Exception as e:
+        logger.exception(
+            "unhandled_request_error method=%s path=%s",
+            request.method,
+            request.url.path,
+        )
         # Return a JSON response with CORS headers when an unhandled error occurs
         return JSONResponse(
             status_code=500,
@@ -258,6 +277,12 @@ def analyse_deal(deal_pbn: DealPBN):
 def conditional_probability(request: ConditionalProbabilityRequest):
     try:
         payload = request.dict()
+        logger.info(
+            "conditional_probability_post constraints=%s queries=%s payload=%s",
+            list(payload.get("constraints", {}).keys()),
+            len(payload.get("queries", [])),
+            json.dumps(payload, ensure_ascii=False),
+        )
         return calculate_conditional_probability(
             payload.get("constraints", {}),
             payload.get("queries", []),

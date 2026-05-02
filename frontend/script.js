@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.__PRERENDER_READY__ = false;
 
     // --- Constants ---
-    const API_BASE = "https://bridge-analyzer-backend-668564208605.asia-northeast1.run.app/api";
+    const API_BASE = "https://bridge-analyzer-backend-338315263430.asia-northeast1.run.app/api";
 
     const SITE_ORIGIN = "https://bridge-solver.waiyangar.com";
     const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/favicon-96x96.png`;
@@ -1234,7 +1234,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         const nextCards = cards + take;
                         const nextHcp = hcp + points * take;
                         const nextWays = ways * combination(count, take);
-                        next[nextCards].set(nextHcp, (next[nextCards].get(nextHcp) || 0) + nextWays);
+                        next[nextCards].set(
+                            nextHcp,
+                            (next[nextCards].get(nextHcp) || 0) + nextWays,
+                        );
                     }
                 });
             }
@@ -1305,7 +1308,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function getUniquePermutationCount(values) {
         const counts = new Map();
         values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
-        return factorial(values.length) / Array.from(counts.values()).reduce((acc, count) => acc * factorial(count), 1);
+        return (
+            factorial(values.length) /
+            Array.from(counts.values()).reduce((acc, count) => acc * factorial(count), 1)
+        );
     }
 
     function factorial(n) {
@@ -1324,7 +1330,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     const d = 13 - a - b - c;
                     if (d < 0 || d > c) continue;
                     const lengths = [a, b, c, d];
-                    const suitChoices = lengths.reduce((acc, length) => acc * combination(13, length), 1);
+                    const suitChoices = lengths.reduce(
+                        (acc, length) => acc * combination(13, length),
+                        1,
+                    );
                     const permutations = getUniquePermutationCount(lengths);
                     shapes.push({
                         shape: lengths.join("-"),
@@ -1438,7 +1447,8 @@ document.addEventListener("DOMContentLoaded", () => {
             conditionalPanel.classList.toggle("hidden", referenceViewTab !== "conditional");
         if (impPanel) impPanel.classList.toggle("hidden", referenceViewTab !== "imp");
         if (vpPanel) vpPanel.classList.toggle("hidden", referenceViewTab !== "vp");
-        if (referenceTabs) referenceTabs.classList.toggle("hidden", referenceViewTab === "conditional");
+        if (referenceTabs)
+            referenceTabs.classList.toggle("hidden", referenceViewTab === "conditional");
 
         if (referenceViewTab === "conditional") {
             setNodeText(
@@ -1456,7 +1466,10 @@ document.addEventListener("DOMContentLoaded", () => {
             setNodeText("#probability-title", tr("probability.title", "Bridge Reference"));
             setNodeText(
                 "#probability-lead",
-                tr("probability.lead", "Switch between probability, IMP, and VP quick references."),
+                tr(
+                    "probability.lead",
+                    "Switch between probability, IMP, and VP quick references.",
+                ),
             );
         }
     }
@@ -2363,7 +2376,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cardIdFromText(value) {
-        const text = String(value || "").trim().toUpperCase();
+        const text = String(value || "")
+            .trim()
+            .toUpperCase();
         if (!text) return "";
         const suitMap = { S: "s", H: "h", D: "d", C: "c", "♠": "s", "♥": "h", "♦": "d", "♣": "c" };
         const suit = suitMap[text[0]];
@@ -2438,9 +2453,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </select>
             <select data-cond-field="${prefix}-type" class="p-2 border rounded text-sm">
                 <option value="hcp">${tr("probability.conditional.typeHcp", "HCP range")}</option>
+                <option value="shape">${tr("probability.conditional.typeShape", "Shape")}</option>
                 <option value="card">${tr("probability.conditional.typeCard", "Has specific card")}</option>
             </select>
-            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / SA" />
+            <input data-cond-field="${prefix}-value" class="p-2 border rounded text-sm" placeholder="10-12 / 4-3-3-2 / S5 / S5H4 / SA" />
         `;
     }
 
@@ -2472,7 +2488,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
         if (container.children.length === 1) {
-            row.querySelector('[data-cond-field="name"]').value = tr("probability.conditional.defaultQueryName", "North 10-12 HCP");
+            row.querySelector('[data-cond-field="name"]').value = tr(
+                "probability.conditional.defaultQueryName",
+                "North 10-12 HCP",
+            );
             row.querySelector('[data-cond-field="a-hand"]').value = "north";
             row.querySelector('[data-cond-field="a-type"]').value = "hcp";
             row.querySelector('[data-cond-field="a-value"]').value = "10-12";
@@ -2495,9 +2514,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 suitRanges: SUITS.map((suit) => rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13)),
             };
             if (constraints[hand].mode === "hand" && cards.length !== 13) {
-                throw new Error(tr("probability.conditional.fullHandNeeds13", "{hand} full hand needs 13 cards.", { hand: tr(`terms.${hand}`, hand) }));
+                throw new Error(
+                    tr(
+                        "probability.conditional.fullHandNeeds13",
+                        "{hand} full hand needs 13 cards.",
+                        { hand: tr(`terms.${hand}`, hand) },
+                    ),
+                );
             }
-            if (cards.length > 13) throw new Error(tr("probability.conditional.moreThan13", "{hand} has more than 13 known cards.", { hand: tr(`terms.${hand}`, hand) }));
+            if (cards.length > 13)
+                throw new Error(
+                    tr(
+                        "probability.conditional.moreThan13",
+                        "{hand} has more than 13 known cards.",
+                        { hand: tr(`terms.${hand}`, hand) },
+                    ),
+                );
         }
         return constraints;
     }
@@ -2509,7 +2541,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const counts = handSuitCounts(cards);
         return counts.every(
             (count, index) =>
-                count >= constraint.suitRanges[index].min && count <= constraint.suitRanges[index].max,
+                count >= constraint.suitRanges[index].min &&
+                count <= constraint.suitRanges[index].max,
         );
     }
 
@@ -2528,9 +2561,15 @@ document.addEventListener("DOMContentLoaded", () => {
     async function runConditionalExact() {
         const status = document.getElementById("cond-status");
         const result = document.getElementById("cond-result");
-        if (status) status.textContent = tr("probability.conditional.counting", "Counting exact deals...");
+        if (status)
+            status.textContent = tr("probability.conditional.counting", "Counting exact deals...");
         if (result) result.innerHTML = "";
         try {
+            console.log({
+                constraints: readConditionalBase(),
+                queries: readConditionalQueries(),
+            });
+
             const response = await fetch(`${API_BASE}/conditional_probability`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -2546,10 +2585,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const denominator = String(data.denominator || "0");
             const engineName = data.engine ? ` (${data.engine})` : "";
-            if (status) status.textContent = tr("probability.conditional.counted", "Exact deals counted: {denominator}{engine}", {
-                denominator,
-                engine: engineName,
-            });
+            if (status)
+                status.textContent = tr(
+                    "probability.conditional.counted",
+                    "Exact deals counted: {denominator}{engine}",
+                    {
+                        denominator,
+                        engine: engineName,
+                    },
+                );
             if (!result) return;
             if (denominator === "0") {
                 result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noDeals", "No deals match the known conditions.")}</div>`;
@@ -2566,7 +2610,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const probability = Number(entry?.probability);
                                 const pct = Number.isFinite(probability) ? probability * 100 : 0;
                                 const numerator = String(entry?.numerator ?? "0");
-                                const fraction = String(entry?.fraction ?? `${numerator}/${denominator}`);
+                                const fraction = String(
+                                    entry?.fraction ?? `${numerator}/${denominator}`,
+                                );
                                 const name = String(entry?.name || `Query ${index + 1}`);
                                 return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td><td>${numerator} / ${denominator}</td></tr>`;
                             })

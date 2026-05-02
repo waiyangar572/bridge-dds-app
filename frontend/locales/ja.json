@@ -240,6 +240,7 @@
             "compareEvents": "事象を比較",
             "add": "追加",
             "typeHcp": "HCPレンジ",
+            "typeShape": "シェイプ",
             "typeCard": "特定カードあり",
             "labelPlaceholder": "ラベル",
             "remove": "削除",
