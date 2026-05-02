@@ -144,6 +144,41 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         joint_prob = response["results"][2]["probability"]
         self.assertNotAlmostEqual(joint_prob, shape_prob * hcp_prob)
 
+    def test_nested_compound_query_supports_more_than_two_conditions(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "Complex nested",
+                "event": {
+                    "op": "and",
+                    "conditions": [
+                        {"hand": "north", "type": "shape", "value": "4-4-3-2"},
+                        {
+                            "op": "or",
+                            "conditions": [
+                                {"hand": "north", "type": "hcp", "value": "10-12"},
+                                {"hand": "north", "type": "card", "value": "SA"},
+                                {"hand": "north", "type": "card", "value": "SK"},
+                            ],
+                        },
+                    ],
+                },
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertGreaterEqual(response["results"][0]["probability"], 0.0)
+        self.assertLessEqual(response["results"][0]["probability"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

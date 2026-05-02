@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from itertools import permutations
+from itertools import combinations, permutations
 
 try:
     from .event_probability import (
@@ -17,6 +17,7 @@ try:
         CardHoldingEvent,
         HcpEvent,
         NotEvent,
+        OrEvent,
         ShapePatternEvent,
         SuitLengthEvent,
     )
@@ -34,6 +35,7 @@ except ImportError:
         CardHoldingEvent,
         HcpEvent,
         NotEvent,
+        OrEvent,
         ShapePatternEvent,
         SuitLengthEvent,
     )
@@ -62,6 +64,8 @@ def event_level(event: BaseEvent | None) -> int:
         return 3
     if isinstance(event, AndEvent):
         return max(event_level(child) for child in event.children)
+    if isinstance(event, OrEvent):
+        return max(event_level(child) for child in event.children)
     if isinstance(event, NotEvent):
         return event_level(event.child)
     raise TypeError(f"unknown event type: {event!r}")
@@ -82,8 +86,9 @@ def calculate_conditional_prob(
 
     current_state = state if state is not None else EvaluationState()
 
-    if _contains_shape_pattern(constraint):
-        # Law of conditional probability for an ambiguous shape constraint:
+    if _requires_ratio_constraint(constraint):
+        # Law of conditional probability for constraints that cannot be
+        # materialized as a single EvaluationState:
         # P(B | A) = P(B & A) / P(A)
         denominator = calculate_conditional_prob(constraint, None, current_state)
         if denominator == 0:
@@ -98,6 +103,9 @@ def calculate_conditional_prob(
 
     if isinstance(target, AndEvent):
         return _calculate_and_target_prob(target, constraint, current_state)
+
+    if isinstance(target, OrEvent):
+        return _calculate_or_target_prob(target, constraint, current_state)
 
     if _is_atomic(target):
         target_lvl = event_level(target)
@@ -149,6 +157,9 @@ def apply_event(state: EvaluationState, event: BaseEvent | None) -> EvaluationSt
     if isinstance(event, ShapePatternEvent):
         raise NotImplementedError("ambiguous shape patterns cannot be materialized into EvaluationState")
 
+    if isinstance(event, OrEvent):
+        raise NotImplementedError("OR events cannot be materialized into a single EvaluationState")
+
     if isinstance(event, HcpEvent):
         # HCP constraints are level-3 facts. The phase-2 EvaluationState does not
         # yet store HCP intervals; calc_hcp_prob is currently a placeholder.
@@ -158,6 +169,24 @@ def apply_event(state: EvaluationState, event: BaseEvent | None) -> EvaluationSt
         raise NotImplementedError("negated constraints cannot be materialized into EvaluationState yet")
 
     raise TypeError(f"unsupported event: {event!r}")
+
+
+def _calculate_or_target_prob(
+    target: OrEvent,
+    constraint: BaseEvent | None,
+    state: EvaluationState,
+) -> float:
+    children = list(target.children)
+    total = 0.0
+    # Inclusion-exclusion:
+    # P(E1 or ... or En | A)
+    #   = sum P(Ei | A) - sum P(Ei&Ej | A) + sum P(Ei&Ej&Ek | A) - ...
+    for subset_size in range(1, len(children) + 1):
+        sign = 1 if subset_size % 2 == 1 else -1
+        for subset in combinations(children, subset_size):
+            subset_event = subset[0] if len(subset) == 1 else AndEvent.of(*subset)
+            total += sign * calculate_conditional_prob(subset_event, constraint, state)
+    return max(0.0, min(1.0, total))
 
 
 def _calculate_and_target_prob(
@@ -184,6 +213,20 @@ def _calculate_and_target_prob(
             )
             total += calculate_conditional_prob(expanded_target, constraint, state)
         return total
+
+    if isinstance(first, OrEvent):
+        total = 0.0
+        for subset_size in range(1, len(first.children) + 1):
+            sign = 1 if subset_size % 2 == 1 else -1
+            for subset in combinations(first.children, subset_size):
+                expanded_children = [*subset, *rest]
+                expanded_target = (
+                    expanded_children[0]
+                    if len(expanded_children) == 1
+                    else AndEvent.of(*expanded_children)
+                )
+                total += sign * calculate_conditional_prob(expanded_target, constraint, state)
+        return max(0.0, min(1.0, total))
 
     # Chain rule:
     # P(b1 & b2 & ... & bn | A)
@@ -235,9 +278,27 @@ def _contains_shape_pattern(event: BaseEvent | None) -> bool:
         return True
     if isinstance(event, AndEvent):
         return any(_contains_shape_pattern(child) for child in event.children)
+    if isinstance(event, OrEvent):
+        return any(_contains_shape_pattern(child) for child in event.children)
     if isinstance(event, NotEvent):
         return _contains_shape_pattern(event.child)
     return False
+
+
+def _contains_or_event(event: BaseEvent | None) -> bool:
+    if event is None:
+        return False
+    if isinstance(event, OrEvent):
+        return True
+    if isinstance(event, AndEvent):
+        return any(_contains_or_event(child) for child in event.children)
+    if isinstance(event, NotEvent):
+        return _contains_or_event(event.child)
+    return False
+
+
+def _requires_ratio_constraint(event: BaseEvent | None) -> bool:
+    return _contains_shape_pattern(event) or _contains_or_event(event)
 
 
 def _shape_pattern_exact_events(event: ShapePatternEvent) -> list[AndEvent]:

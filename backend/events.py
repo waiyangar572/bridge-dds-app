@@ -15,6 +15,7 @@ __all__ = [
     "CardHoldingEvent",
     "HcpEvent",
     "NotEvent",
+    "OrEvent",
     "Player",
     "ShapePatternEvent",
     "Suit",
@@ -43,15 +44,15 @@ class BaseEvent(ABC):
     def __invert__(self) -> NotEvent:
         return NotEvent(self)
 
-    def __or__(self, other: BaseEvent) -> NotEvent:
+    def __or__(self, other: BaseEvent) -> OrEvent:
         if not isinstance(other, BaseEvent):
             return NotImplemented
-        return ~(~self & ~other)
+        return OrEvent.of(self, other)
 
-    def __ror__(self, other: BaseEvent) -> NotEvent:
+    def __ror__(self, other: BaseEvent) -> OrEvent:
         if not isinstance(other, BaseEvent):
             return NotImplemented
-        return ~(~other & ~self)
+        return OrEvent.of(other, self)
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,6 +137,32 @@ class AndEvent(BaseEvent):
         for child in self.children:
             if not isinstance(child, BaseEvent):
                 raise TypeError(f"AndEvent child must be a BaseEvent instance: {child!r}")
+
+
+@dataclass(frozen=True, slots=True)
+class OrEvent(BaseEvent):
+    """Logical disjunction of child events."""
+
+    children: tuple[BaseEvent, ...]
+
+    @classmethod
+    def of(cls, *events: BaseEvent) -> OrEvent:
+        flattened: list[BaseEvent] = []
+        for event in events:
+            if not isinstance(event, BaseEvent):
+                raise TypeError(f"OrEvent children must be BaseEvent instances: {event!r}")
+            if isinstance(event, OrEvent):
+                flattened.extend(event.children)
+            else:
+                flattened.append(event)
+        return cls(tuple(flattened))
+
+    def __post_init__(self) -> None:
+        if len(self.children) < 2:
+            raise ValueError("OrEvent requires at least two child events")
+        for child in self.children:
+            if not isinstance(child, BaseEvent):
+                raise TypeError(f"OrEvent child must be a BaseEvent instance: {child!r}")
 
 
 @dataclass(frozen=True, slots=True)

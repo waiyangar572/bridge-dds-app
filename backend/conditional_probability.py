@@ -7,11 +7,29 @@ from typing import Any
 try:
     from .event_inference import apply_event, calculate_conditional_prob
     from .event_probability import EvaluationState
-    from .events import AndEvent, BaseEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
+    from .events import (
+        AndEvent,
+        BaseEvent,
+        CardHoldingEvent,
+        HcpEvent,
+        NotEvent,
+        OrEvent,
+        ShapePatternEvent,
+        SuitLengthEvent,
+    )
 except ImportError:
     from event_inference import apply_event, calculate_conditional_prob
     from event_probability import EvaluationState
-    from events import AndEvent, BaseEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
+    from events import (
+        AndEvent,
+        BaseEvent,
+        CardHoldingEvent,
+        HcpEvent,
+        NotEvent,
+        OrEvent,
+        ShapePatternEvent,
+        SuitLengthEvent,
+    )
 
 
 HAND_TO_PLAYER = {
@@ -103,6 +121,11 @@ def _build_constraint_context(
 
 
 def _query_to_event(query: dict[str, Any]) -> BaseEvent:
+    if "event" in query:
+        return _event_from_payload(query["event"])
+    if "conditions" in query:
+        return _event_from_payload(query)
+
     join = (query.get("join") or "single").lower()
     first = _atom_to_event(query.get("a") or {})
     if join == "single":
@@ -112,11 +135,38 @@ def _query_to_event(query: dict[str, Any]) -> BaseEvent:
     if join == "and":
         return first & second
     if join == "or":
-        return first | second
+        return OrEvent.of(first, second)
     raise ValueError(f"unsupported query join: {join!r}")
 
 
+def _event_from_payload(payload: dict[str, Any]) -> BaseEvent:
+    operator = (payload.get("op") or payload.get("join") or "").lower()
+    conditions = payload.get("conditions")
+
+    if conditions is not None:
+        children = [_event_from_payload(condition) for condition in conditions]
+        if not children:
+            raise ValueError("compound event requires at least one child condition")
+        if len(children) == 1:
+            return children[0]
+        if operator in ("", "and", "all"):
+            return AndEvent.of(*children)
+        if operator in ("or", "any"):
+            return OrEvent.of(*children)
+        raise ValueError(f"unsupported compound operator: {operator!r}")
+
+    if operator == "not":
+        child = payload.get("condition") or payload.get("event")
+        if child is None:
+            raise ValueError("NOT event requires a child condition")
+        return NotEvent(_event_from_payload(child))
+
+    return _atom_to_event(payload)
+
+
 def _atom_to_event(atom: dict[str, Any]) -> BaseEvent:
+    if not atom.get("hand") or not atom.get("type") or not str(atom.get("value") or "").strip():
+        raise ValueError("incomplete query condition: hand, type, and value are required")
     player = _parse_player(atom.get("hand"))
     event_type = (atom.get("type") or "").lower()
     value = str(atom.get("value") or "").strip()

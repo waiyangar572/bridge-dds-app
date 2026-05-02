@@ -8,7 +8,7 @@ try:
         sort_events_by_level,
     )
     from .event_probability import EvaluationState, calc_suit_length_prob
-    from .events import AndEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
+    from .events import AndEvent, CardHoldingEvent, HcpEvent, OrEvent, ShapePatternEvent, SuitLengthEvent
 except ImportError:
     from event_inference import (
         apply_event,
@@ -17,7 +17,7 @@ except ImportError:
         sort_events_by_level,
     )
     from event_probability import EvaluationState, calc_suit_length_prob
-    from events import AndEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
+    from events import AndEvent, CardHoldingEvent, HcpEvent, OrEvent, ShapePatternEvent, SuitLengthEvent
 
 
 class EventInferenceTest(unittest.TestCase):
@@ -30,6 +30,7 @@ class EventInferenceTest(unittest.TestCase):
         self.assertEqual(event_level(suit), 2)
         self.assertEqual(event_level(hcp), 3)
         self.assertEqual(event_level(AndEvent.of(hcp, card, suit)), 3)
+        self.assertEqual(event_level(OrEvent.of(card, suit)), 2)
         self.assertEqual(sort_events_by_level([hcp, suit, card]), [card, suit, hcp])
 
     def test_apply_event_returns_new_state(self) -> None:
@@ -92,6 +93,16 @@ class EventInferenceTest(unittest.TestCase):
         )
 
         self.assertNotAlmostEqual(joint, independent_product)
+
+    def test_or_event_uses_inclusion_exclusion(self) -> None:
+        north_sa = CardHoldingEvent("N", "SA")
+        north_sk = CardHoldingEvent("N", "SK")
+        state = EvaluationState()
+
+        prob = calculate_conditional_prob(OrEvent.of(north_sa, north_sk), None, state)
+
+        expected = (13 / 52) + (13 / 52) - ((13 / 52) * (12 / 51))
+        self.assertAlmostEqual(prob, expected)
 
 
 if __name__ == "__main__":

@@ -2448,40 +2448,143 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    function updateConditionalConditionPlaceholders(root = document) {
+        root.querySelectorAll(".cond-query-type-selector").forEach((select) => {
+            const input = select
+                .closest("[data-cond-condition]")
+                ?.querySelector(".cond-query-input");
+            if (!input) return;
+            const placeholder =
+                select.value === "hcp" ? "10-12" : select.value === "shape" ? "4-4-3-2 / S5H4" : "SA";
+            input.setAttribute("placeholder", placeholder);
+        });
+    }
+
+    function conditionalConditionRowHtml(index) {
+        return `
+            <div data-cond-condition class="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
+                ${conditionInputHtml(`condition-${index}`)}
+                <button type="button" class="cond-remove-condition text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
+            </div>
+        `;
+    }
+
+    function conditionalGroupHtml(isRoot = false) {
+        return `
+            <div data-cond-group class="${isRoot ? "space-y-2" : "space-y-2 border-l-2 border-slate-200 pl-3 py-2"}">
+                <div class="flex flex-wrap items-center gap-2">
+                    <select data-cond-group-op class="p-2 border rounded text-sm">
+                        <option value="and">${tr("probability.conditional.joinAnd", "AND")}</option>
+                        <option value="or">${tr("probability.conditional.joinOr", "OR")}</option>
+                    </select>
+                    <button type="button" data-cond-add-condition class="text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.addCondition", "Add condition")}</button>
+                    <button type="button" data-cond-add-group class="text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.addGroup", "Add group")}</button>
+                    ${isRoot ? "" : `<button type="button" data-cond-remove-group class="text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>`}
+                </div>
+                <div data-cond-group-children class="space-y-2"></div>
+            </div>
+        `;
+    }
+
+    function addConditionalCondition(row, group) {
+        const list = group.querySelector(":scope > [data-cond-group-children]");
+        if (!list) return null;
+        const index = Number.parseInt(row.dataset.condConditionCount || "0", 10);
+        row.dataset.condConditionCount = String(index + 1);
+        list.insertAdjacentHTML("beforeend", conditionalConditionRowHtml(index));
+        updateConditionalConditionPlaceholders(list);
+        updateConditionalQueryControls(row);
+        return list.lastElementChild;
+    }
+
+    function addConditionalGroup(row, parentGroup) {
+        const list = parentGroup.querySelector(":scope > [data-cond-group-children]");
+        if (!list) return null;
+        list.insertAdjacentHTML("beforeend", conditionalGroupHtml(false));
+        const group = list.lastElementChild;
+        addConditionalCondition(row, group);
+        updateConditionalQueryControls(row);
+        return group;
+    }
+
+    function updateConditionalQueryControls(row) {
+        row.querySelectorAll("[data-cond-group]").forEach((group) => {
+            const childCount = group.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
+            const opSelect = group.querySelector(":scope > div > [data-cond-group-op]");
+            if (opSelect) opSelect.disabled = childCount <= 1;
+        });
+    }
+
     function addConditionalQuery() {
         const container = document.getElementById("cond-queries");
         if (!container) return;
         const row = document.createElement("div");
         row.className = "space-y-2 border-slate-200 pb-3";
         row.dataset.condQuery = "true";
+        row.dataset.condConditionCount = "0";
         row.innerHTML = `
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
+            <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-2 items-center">
                 <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
-                <select data-cond-field="join" class="p-2 border rounded text-sm">
-                    <option value="single">${tr("probability.conditional.joinSingle", "Single")}</option>
-                    <option value="and">${tr("probability.conditional.joinAnd", "AND")}</option>
-                    <option value="or">${tr("probability.conditional.joinOr", "OR")}</option>
-                </select>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">${conditionInputHtml("a")}</div>
                 <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
             </div>
-            <div class="cond-second-condition grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 hidden">${conditionInputHtml("b")}</div>
+            <div data-cond-root>${conditionalGroupHtml(true)}</div>
+            <div class="flex flex-wrap items-center gap-3">
+                <details class="text-sm text-slate-600">
+                    <summary class="cursor-pointer font-semibold text-slate-500">${tr("probability.conditional.advancedEvent", "Advanced nested event")}</summary>
+                    <textarea data-cond-field="event-json" class="mt-2 w-full min-w-[280px] p-2 border rounded text-xs font-mono" rows="5" placeholder='{"op":"and","conditions":[{"hand":"north","type":"shape","value":"4-4-3-2"},{"op":"or","conditions":[{"hand":"north","type":"hcp","value":"10-12"},{"hand":"north","type":"card","value":"SA"}]}]}'></textarea>
+                </details>
+            </div>
         `;
         container.appendChild(row);
-        row.querySelector('[data-cond-field="join"]').addEventListener("change", (event) => {
-            row.querySelector(".cond-second-condition").classList.toggle(
-                "hidden",
-                event.target.value === "single",
-            );
-        });
+        const rootGroup = row.querySelector("[data-cond-group]");
+        addConditionalCondition(row, rootGroup);
         row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
-        row.querySelector(".cond-query-type-selector").addEventListener("change", (event) => {
-            const placeholder = event.target.value == "hcp" ? "10-12": event.target.value == "shape" ? "4-4-3-2 / S5H4" : "SA";
-            row.querySelector(".cond-query-input").setAttribute(
-                "placeholder",
-                placeholder,
+        row.addEventListener("click", (event) => {
+            const addConditionButton = event.target.closest("[data-cond-add-condition]");
+            if (addConditionButton) {
+                const group = addConditionButton.closest("[data-cond-group]");
+                if (group) addConditionalCondition(row, group);
+                return;
+            }
+            const addGroupButton = event.target.closest("[data-cond-add-group]");
+            if (addGroupButton) {
+                const group = addGroupButton.closest("[data-cond-group]");
+                if (group) addConditionalGroup(row, group);
+                return;
+            }
+            const removeGroupButton = event.target.closest("[data-cond-remove-group]");
+            if (removeGroupButton) {
+                const group = removeGroupButton.closest("[data-cond-group]");
+                if (group && !group.closest("[data-cond-root]")?.isSameNode(group.parentElement)) {
+                    group.remove();
+                    updateConditionalQueryControls(row);
+                }
+                return;
+            }
+            const removeConditionButton = event.target.closest(".cond-remove-condition");
+            if (removeConditionButton) {
+                const condition = removeConditionButton.closest("[data-cond-condition]");
+                const group = removeConditionButton.closest("[data-cond-group]");
+                const siblingCount = group?.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
+                if (condition && siblingCount > 1) {
+                    condition.remove();
+                }
+                updateConditionalQueryControls(row);
+            }
+        });
+        row.addEventListener("change", (event) => {
+            if (!event.target.classList.contains("cond-query-type-selector")) return;
+            updateConditionalConditionPlaceholders(row);
+        });
+        if (container.children.length === 1) {
+            row.querySelector('[data-cond-field="name"]').value = tr(
+                "probability.conditional.defaultQueryName",
+                "North 10-12 HCP",
             );
-        })
+            row.querySelector('[data-cond-field="condition-0-hand"]').value = "north";
+            row.querySelector('[data-cond-field="condition-0-type"]').value = "hcp";
+            row.querySelector('[data-cond-field="condition-0-value"]').value = "10-12";
+        }
     }
 
     function readConditionalBase() {
@@ -2544,17 +2647,73 @@ document.addEventListener("DOMContentLoaded", () => {
     function readConditionalQueries() {
         return Array.from(document.querySelectorAll("[data-cond-query]")).map((row, index) => {
             const get = (name) => row.querySelector(`[data-cond-field="${name}"]`)?.value || "";
+            const advancedEventJson = get("event-json").trim();
+            if (advancedEventJson) {
+                let event;
+                try {
+                    event = JSON.parse(advancedEventJson);
+                } catch (error) {
+                    throw new Error(
+                        tr("probability.conditional.invalidEventJson", "Invalid advanced event JSON."),
+                    );
+                }
+                return {
+                    name:
+                        get("name") ||
+                        tr("probability.conditional.queryFallback", "Query {number}", {
+                            number: index + 1,
+                        }),
+                    event,
+                };
+            }
+            const rootGroup = row.querySelector("[data-cond-root] > [data-cond-group]");
+            const event = readConditionalEventGroup(rootGroup);
             return {
                 name:
                     get("name") ||
                     tr("probability.conditional.queryFallback", "Query {number}", {
                         number: index + 1,
                     }),
-                join: get("join"),
-                a: { hand: get("a-hand"), type: get("a-type"), value: get("a-value") },
-                b: { hand: get("b-hand"), type: get("b-type"), value: get("b-value") },
+                event,
             };
         });
+    }
+
+    function readConditionalEventGroup(group) {
+        if (!group) {
+            throw new Error(tr("probability.conditional.emptyQuery", "Query has no conditions."));
+        }
+        const children = Array.from(
+            group.querySelector(":scope > [data-cond-group-children]")?.children || [],
+        )
+            .map((child) => {
+                if (child.matches("[data-cond-condition]")) return readConditionalCondition(child);
+                if (child.matches("[data-cond-group]")) return readConditionalEventGroup(child);
+                return null;
+            })
+            .filter(Boolean);
+        if (children.length === 0) {
+            throw new Error(tr("probability.conditional.emptyQuery", "Query has no conditions."));
+        }
+        if (children.length === 1) return children[0];
+        const op = group.querySelector(":scope > div > [data-cond-group-op]")?.value || "and";
+        return { op, conditions: children };
+    }
+
+    function readConditionalCondition(condition) {
+        const field = (suffix) =>
+            condition.querySelector(`[data-cond-field$="-${suffix}"]`)?.value || "";
+        const atom = {
+            hand: field("hand"),
+            type: field("type"),
+            value: field("value").trim(),
+        };
+        if (!atom.hand || !atom.type || !atom.value) {
+            throw new Error(
+                tr("probability.conditional.incompleteCondition", "Please complete every condition."),
+            );
+        }
+        return atom;
     }
 
     async function runConditionalExact() {

@@ -1,9 +1,9 @@
 import unittest
 
 try:
-    from .events import AndEvent, CardHoldingEvent, HcpEvent, NotEvent, SuitLengthEvent
+    from .events import AndEvent, CardHoldingEvent, HcpEvent, NotEvent, OrEvent, SuitLengthEvent
 except ImportError:
-    from events import AndEvent, CardHoldingEvent, HcpEvent, NotEvent, SuitLengthEvent
+    from events import AndEvent, CardHoldingEvent, HcpEvent, NotEvent, OrEvent, SuitLengthEvent
 
 
 class EventAstTest(unittest.TestCase):
@@ -23,11 +23,11 @@ class EventAstTest(unittest.TestCase):
         self.assertEqual(event_y, AndEvent((event_y1, event_y2)))
         self.assertEqual(target_z, AndEvent((event_a, event_b, event_c, NotEvent(event_y))))
 
-    def test_or_is_expressed_by_de_morgan(self) -> None:
+    def test_or_builds_or_event(self) -> None:
         north_15_17 = HcpEvent(player="N", min_hcp=15, max_hcp=17)
         north_18_19 = HcpEvent(player="N", min_hcp=18, max_hcp=19)
 
-        self.assertEqual(north_15_17 | north_18_19, ~(~north_15_17 & ~north_18_19))
+        self.assertEqual(north_15_17 | north_18_19, OrEvent((north_15_17, north_18_19)))
 
     def test_validates_atomic_events(self) -> None:
         with self.assertRaises(ValueError):
