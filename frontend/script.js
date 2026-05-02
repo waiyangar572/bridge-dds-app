@@ -113,15 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
             viewId: "view-probability",
             referenceTab: "imp",
         },
-        "/reference/conditional": {
-            path: "/probability-solver",
-            type: "tool",
-            metaKey: "probability-solver",
-            tab: "probability",
-            nav: "solver",
-            viewId: "view-probability",
-            referenceTab: "conditional",
-        },
         "/probability-solver": {
             type: "tool",
             metaKey: "probability-solver",
@@ -2603,7 +2594,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const rows = Array.isArray(data.results) ? data.results : [];
             result.innerHTML = `
                 <table class="w-full result-table">
-                    <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th><th>${tr("probability.conditional.count", "Count")}</th></tr></thead>
+                    <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th></tr></thead>
                     <tbody>
                         ${rows
                             .map((entry, index) => {
@@ -2614,7 +2605,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     entry?.fraction ?? `${numerator}/${denominator}`,
                                 );
                                 const name = String(entry?.name || `Query ${index + 1}`);
-                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td><td>${numerator} / ${denominator}</td></tr>`;
+                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td></tr>`;
                             })
                             .join("")}
                     </tbody>
