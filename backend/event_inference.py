@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from itertools import permutations
 
 try:
     from .event_probability import (
@@ -81,6 +82,15 @@ def calculate_conditional_prob(
 
     current_state = state if state is not None else EvaluationState()
 
+    if _contains_shape_pattern(constraint):
+        # Law of conditional probability for an ambiguous shape constraint:
+        # P(B | A) = P(B & A) / P(A)
+        denominator = calculate_conditional_prob(constraint, None, current_state)
+        if denominator == 0:
+            raise ZeroDivisionError("constraint has probability 0; conditional probability is undefined")
+        numerator = calculate_conditional_prob(AndEvent.of(target, constraint), None, current_state)
+        return numerator / denominator
+
     if isinstance(target, NotEvent):
         # Complement rule:
         # P(~B | A) = 1 - P(B | A)
@@ -159,6 +169,22 @@ def _calculate_and_target_prob(
     first = ordered_children[0]
     rest = ordered_children[1:]
 
+    if isinstance(first, ShapePatternEvent):
+        # Ambiguous shape expansion:
+        # P((E1 or E2 or ... or En) & R | A)
+        #   = sum_i P(Ei & R | A)
+        # The exact suit assignments Ei are mutually exclusive.
+        total = 0.0
+        for exact_shape in _shape_pattern_exact_events(first):
+            expanded_children = [exact_shape, *rest]
+            expanded_target = (
+                expanded_children[0]
+                if len(expanded_children) == 1
+                else AndEvent.of(*expanded_children)
+            )
+            total += calculate_conditional_prob(expanded_target, constraint, state)
+        return total
+
     # Chain rule:
     # P(b1 & b2 & ... & bn | A)
     #   = P(b1 | A) * P(b2 & ... & bn | A & b1)
@@ -200,3 +226,29 @@ def _clone_state(state: EvaluationState) -> EvaluationState:
 
 def _is_atomic(event: BaseEvent) -> bool:
     return isinstance(event, (CardHoldingEvent, SuitLengthEvent, ShapePatternEvent, HcpEvent))
+
+
+def _contains_shape_pattern(event: BaseEvent | None) -> bool:
+    if event is None:
+        return False
+    if isinstance(event, ShapePatternEvent):
+        return True
+    if isinstance(event, AndEvent):
+        return any(_contains_shape_pattern(child) for child in event.children)
+    if isinstance(event, NotEvent):
+        return _contains_shape_pattern(event.child)
+    return False
+
+
+def _shape_pattern_exact_events(event: ShapePatternEvent) -> list[AndEvent]:
+    exact_events = []
+    for lengths in sorted(set(permutations(event.lengths))):
+        exact_events.append(
+            AndEvent.of(
+                SuitLengthEvent(event.player, "S", lengths[0], lengths[0]),
+                SuitLengthEvent(event.player, "H", lengths[1], lengths[1]),
+                SuitLengthEvent(event.player, "D", lengths[2], lengths[2]),
+                SuitLengthEvent(event.player, "C", lengths[3], lengths[3]),
+            )
+        )
+    return exact_events

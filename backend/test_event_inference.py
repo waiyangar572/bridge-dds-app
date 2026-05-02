@@ -8,7 +8,7 @@ try:
         sort_events_by_level,
     )
     from .event_probability import EvaluationState, calc_suit_length_prob
-    from .events import AndEvent, CardHoldingEvent, HcpEvent, SuitLengthEvent
+    from .events import AndEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
 except ImportError:
     from event_inference import (
         apply_event,
@@ -17,7 +17,7 @@ except ImportError:
         sort_events_by_level,
     )
     from event_probability import EvaluationState, calc_suit_length_prob
-    from events import AndEvent, CardHoldingEvent, HcpEvent, SuitLengthEvent
+    from events import AndEvent, CardHoldingEvent, HcpEvent, ShapePatternEvent, SuitLengthEvent
 
 
 class EventInferenceTest(unittest.TestCase):
@@ -62,6 +62,36 @@ class EventInferenceTest(unittest.TestCase):
         expected = prob_constraint_given_target * prob_target / prob_constraint
 
         self.assertAlmostEqual(prob, expected)
+
+    def test_shape_pattern_and_hcp_does_not_materialize_ambiguous_shape(self) -> None:
+        target = ShapePatternEvent("N", (4, 4, 3, 2)) & HcpEvent("N", 10, 12)
+
+        prob = calculate_conditional_prob(target, None, EvaluationState())
+
+        self.assertGreaterEqual(prob, 0.0)
+        self.assertLessEqual(prob, 1.0)
+
+    def test_hcp_under_shape_pattern_constraint_uses_ratio(self) -> None:
+        target = HcpEvent("N", 10, 12)
+        constraint = ShapePatternEvent("N", (4, 4, 3, 2))
+
+        prob = calculate_conditional_prob(target, constraint, EvaluationState())
+
+        self.assertGreaterEqual(prob, 0.0)
+        self.assertLessEqual(prob, 1.0)
+
+    def test_shape_and_hcp_is_not_computed_as_independent_product(self) -> None:
+        shape = ShapePatternEvent("N", (4, 4, 3, 2))
+        hcp = HcpEvent("N", 10, 12)
+        state = EvaluationState()
+
+        joint = calculate_conditional_prob(shape & hcp, None, state)
+        independent_product = (
+            calculate_conditional_prob(shape, None, state)
+            * calculate_conditional_prob(hcp, None, state)
+        )
+
+        self.assertNotAlmostEqual(joint, independent_product)
 
 
 if __name__ == "__main__":

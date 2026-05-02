@@ -370,6 +370,9 @@ def evaluate_single_suit(suit: Suit, state: EvaluationState) -> list[dict[str, A
 def calc_hcp_prob(target: HcpEvent, state: EvaluationState) -> float:
     """Calculate HCP probability by suit-by-suit convolution DP."""
 
+    if _has_complete_player_shape(target.player, state):
+        return _calc_hcp_prob_for_player_shape(target, state)
+
     if not _has_complete_exact_suit_lengths(state):
         return _calc_hcp_prob_without_shape(target, state)
 
@@ -461,6 +464,87 @@ def _has_complete_exact_suit_lengths(state: EvaluationState) -> bool:
         if sum(length for length in lengths if length is not None) != 13:
             return False
     return True
+
+
+def _has_complete_player_shape(player: Player, state: EvaluationState) -> bool:
+    lengths = [state.known_suit_length(player, suit) for suit in SUITS]
+    return all(length is not None for length in lengths) and sum(
+        length for length in lengths if length is not None
+    ) == 13
+
+
+def _calc_hcp_prob_for_player_shape(target: HcpEvent, state: EvaluationState) -> float:
+    """Exact HCP DP when the target player's four suit lengths are known.
+
+    This is the important non-independence fix for queries such as:
+
+        P(N has 10-12 HCP and N is 4-4-3-2)
+
+    Once N's exact suit lengths are known, the HCP distribution must be
+    conditioned on those lengths. For each suit, choose exactly the number of
+    still-unknown cards needed by the player from that suit's remaining cards,
+    build a per-suit HCP distribution, then convolve the four suits.
+    """
+
+    dp: dict[int, int] = {0: 1}
+    for suit in SUITS:
+        suit_distribution = _target_player_suit_hcp_distribution(target.player, suit, state)
+        next_dp: dict[int, int] = {}
+        for current_hcp, current_weight in dp.items():
+            for suit_hcp, suit_weight in suit_distribution.items():
+                next_hcp = current_hcp + suit_hcp
+                next_dp[next_hcp] = next_dp.get(next_hcp, 0) + current_weight * suit_weight
+        dp = next_dp
+
+    denominator = sum(dp.values())
+    if denominator == 0:
+        return 0.0
+    numerator = sum(
+        weight
+        for hcp, weight in dp.items()
+        if target.min_hcp <= hcp <= target.max_hcp
+    )
+    return numerator / denominator
+
+
+def _target_player_suit_hcp_distribution(
+    player: Player,
+    suit: Suit,
+    state: EvaluationState,
+) -> dict[int, int]:
+    exact_length = state.known_suit_length(player, suit)
+    if exact_length is None:
+        raise ValueError("target player shape must be complete")
+
+    known_target_cards = [card for card in state.known_cards[player] if card[0] == suit]
+    known_target_hcp = sum(HCP_VALUES.get(card[1], 0) for card in known_target_cards)
+    cards_to_choose = exact_length - len(known_target_cards)
+    if cards_to_choose < 0:
+        return {}
+
+    assigned_cards = {card for cards in state.known_cards.values() for card in cards}
+    remaining_suit_cards = [
+        f"{suit}{rank}"
+        for rank in RANKS
+        if f"{suit}{rank}" not in assigned_cards
+    ]
+
+    # dp[count][hcp] = ways to choose count cards from this suit that add hcp.
+    dp: list[dict[int, int]] = [{0: 1}] + [dict() for _ in range(cards_to_choose)]
+    for card in remaining_suit_cards:
+        points = HCP_VALUES.get(card[1], 0)
+        for count in range(cards_to_choose - 1, -1, -1):
+            for hcp, ways in list(dp[count].items()):
+                next_count = count + 1
+                if next_count > cards_to_choose:
+                    continue
+                next_hcp = hcp + points
+                dp[next_count][next_hcp] = dp[next_count].get(next_hcp, 0) + ways
+
+    return {
+        known_target_hcp + hcp: ways
+        for hcp, ways in dp[cards_to_choose].items()
+    }
 
 
 def _calc_hcp_prob_without_shape(target: HcpEvent, state: EvaluationState) -> float:
