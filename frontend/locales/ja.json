@@ -246,6 +246,7 @@
             "joinSingle": "単独",
             "joinAnd": "AND",
             "joinOr": "OR",
+            "duplicate": "複製",
             "labelPlaceholder": "ラベル",
             "remove": "削除",
             "defaultQueryName": "N HCP 10-12",

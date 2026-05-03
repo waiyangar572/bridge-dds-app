@@ -2578,11 +2578,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </details>
             </div>
             <div class="border-t border-slate-100 pt-2 space-y-2">
-                <div class="flex justify-center">
-                    <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600 border border-slate-300 rounded px-3 py-1.5">${tr("probability.conditional.remove", "Remove")}</button>
-                </div>
                 <div class="flex justify-end">
                     <button type="button" class="cond-duplicate-query text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.duplicate", "Duplicate")}</button>
+                </div>
+                <div class="flex justify-center">
+                    <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600 border border-slate-300 rounded px-3 py-1.5">${tr("probability.conditional.remove", "Remove")}</button>
                 </div>
             </div>
             </div>

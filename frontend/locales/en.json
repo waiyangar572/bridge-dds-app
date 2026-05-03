@@ -248,6 +248,7 @@
             "joinSingle": "Single",
             "joinAnd": "AND",
             "joinOr": "OR",
+            "duplicate": "Duplicate",
             "labelPlaceholder": "Label",
             "remove": "Remove",
             "defaultQueryName": "North 10-12 HCP",
