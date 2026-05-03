@@ -2523,22 +2523,49 @@ document.addEventListener("DOMContentLoaded", () => {
             const childCount =
                 group.querySelector(":scope > [data-cond-group-children]")?.children.length || 0;
             const opSelect = group.querySelector(":scope > div > [data-cond-group-op]");
-            if (opSelect) opSelect.disabled = childCount <= 1;
+            if (opSelect) opSelect.classList.toggle("hidden", childCount <= 1);
         });
+    }
+
+    function copyConditionalControlValues(source, target) {
+        const sourceControls = source.querySelectorAll("input, select, textarea");
+        const targetControls = target.querySelectorAll("input, select, textarea");
+        sourceControls.forEach((sourceControl, index) => {
+            const targetControl = targetControls[index];
+            if (!targetControl) return;
+            targetControl.value = sourceControl.value;
+            if (sourceControl instanceof HTMLDetailsElement && targetControl instanceof HTMLDetailsElement) {
+                targetControl.open = sourceControl.open;
+            }
+        });
+    }
+
+    function duplicateConditionalQuery(sourceRow) {
+        const targetRow = addConditionalQuery();
+        if (!targetRow) return;
+        const sourceRoot = sourceRow.querySelector("[data-cond-root]");
+        const targetRoot = targetRow.querySelector("[data-cond-root]");
+        if (sourceRoot && targetRoot) {
+            targetRoot.innerHTML = sourceRoot.innerHTML;
+        }
+        copyConditionalControlValues(sourceRow, targetRow);
+        const conditionCount = targetRow.querySelectorAll("[data-cond-condition]").length;
+        targetRow.dataset.condConditionCount = String(conditionCount);
+        updateConditionalConditionPlaceholders(targetRow);
+        updateConditionalQueryControls(targetRow);
     }
 
     function addConditionalQuery() {
         const container = document.getElementById("cond-queries");
-        if (!container) return;
+        if (!container) return null;
         const row = document.createElement("div");
         row.className = "space-y-2 border-slate-200 pb-3";
         row.dataset.condQuery = "true";
         row.dataset.condConditionCount = "0";
         row.innerHTML = `
         <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-2 items-center">
+            <div>
                 <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
-                <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
             </div>
             <div data-cond-root>${conditionalGroupHtml(true)}</div>
             <div class="flex flex-wrap items-center gap-3">
@@ -2547,13 +2574,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     <textarea data-cond-field="event-json" class="mt-2 w-full min-w-[280px] p-2 border rounded text-xs font-mono" rows="5" placeholder='{"op":"and","conditions":[{"hand":"north","type":"shape","value":"4-4-3-2"},{"op":"or","conditions":[{"hand":"north","type":"hcp","value":"10-12"},{"hand":"north","type":"card","value":"SA"}]}]}'></textarea>
                 </details>
             </div>
+            <div class="border-t border-slate-100 pt-2 space-y-2">
+                <div class="flex justify-center">
+                    <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="cond-duplicate-query text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.duplicate", "Duplicate")}</button>
+                </div>
+            </div>
             </div>
         `;
         container.appendChild(row);
         const rootGroup = row.querySelector("[data-cond-group]");
         addConditionalCondition(row, rootGroup);
-        row.querySelector(".cond-remove-query").addEventListener("click", () => row.remove());
         row.addEventListener("click", (event) => {
+            const duplicateQueryButton = event.target.closest(".cond-duplicate-query");
+            if (duplicateQueryButton) {
+                duplicateConditionalQuery(row);
+                return;
+            }
+            const removeQueryButton = event.target.closest(".cond-remove-query");
+            if (removeQueryButton) {
+                row.remove();
+                return;
+            }
             const addConditionButton = event.target.closest("[data-cond-add-condition]");
             if (addConditionButton) {
                 const group = addConditionButton.closest("[data-cond-group]");
@@ -2601,6 +2645,8 @@ document.addEventListener("DOMContentLoaded", () => {
             row.querySelector('[data-cond-field="condition-0-type"]').value = "hcp";
             row.querySelector('[data-cond-field="condition-0-value"]').value = "10-12";
         }
+        updateConditionalQueryControls(row);
+        return row;
     }
 
     function readConditionalBase() {
