@@ -243,6 +243,8 @@
             "typeHcp": "HCP range",
             "typeShape": "Shape",
             "typeCard": "Has specific card",
+            "cardHas": "Has",
+            "cardNotHas": "Does not have",
             "joinSingle": "Single",
             "joinAnd": "AND",
             "joinOr": "OR",

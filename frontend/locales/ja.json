@@ -241,6 +241,8 @@
             "typeHcp": "HCPレンジ",
             "typeShape": "シェイプ",
             "typeCard": "特定のカード",
+            "cardHas": "持っている",
+            "cardNotHas": "持っていない",
             "joinSingle": "単独",
             "joinAnd": "AND",
             "joinOr": "OR",

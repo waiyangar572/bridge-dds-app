@@ -2362,10 +2362,13 @@ document.addEventListener("DOMContentLoaded", () => {
             .trim()
             .toUpperCase();
         if (!text) return "";
+        const negated = text.startsWith("-");
+        const cardText = negated ? text.slice(1) : text;
         const suitMap = { S: "s", H: "h", D: "d", C: "c", "♠": "s", "♥": "h", "♦": "d", "♣": "c" };
-        const suit = suitMap[text[0]];
-        const rank = text.slice(1).replace("10", "T");
-        return suit && RANKS.includes(rank) ? suit + rank : "";
+        const suit = suitMap[cardText[0]];
+        const rank = cardText.slice(1).replace("10", "T");
+        const card = suit && RANKS.includes(rank) ? suit + rank : "";
+        return card ? `${negated ? "-" : ""}${card}` : "";
     }
 
     function parseCardsText(value) {
@@ -2435,7 +2438,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </div>
                         </div>
                         <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
-                        <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK DQ C2" />
+                        <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK -DQ C2" />
                         </div>
                 </div>`;
         }).join("");
@@ -2466,7 +2469,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? "10-12"
                     : select.value === "shape"
                       ? "4-4-3-2 / S5H4"
-                      : "SA";
+                      : "-SA SK SQ -SJ";
             input.setAttribute("placeholder", placeholder);
         });
     }
@@ -2576,7 +2579,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="border-t border-slate-100 pt-2 space-y-2">
                 <div class="flex justify-center">
-                    <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600">${tr("probability.conditional.remove", "Remove")}</button>
+                    <button type="button" class="cond-remove-query text-sm text-slate-500 hover:text-red-600 border border-slate-300 rounded px-3 py-1.5">${tr("probability.conditional.remove", "Remove")}</button>
                 </div>
                 <div class="flex justify-end">
                     <button type="button" class="cond-duplicate-query text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.duplicate", "Duplicate")}</button>
@@ -2655,6 +2658,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const hand of HANDS) {
             const cards = parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
             for (const card of cards) {
+                if (card.startsWith("-")) continue;
                 if (seen.has(card))
                     throw new Error(
                         tr(
@@ -2667,13 +2671,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                 seen.add(card);
             }
+            const positiveCards = cards.filter((card) => !card.startsWith("-"));
             constraints[hand] = {
                 mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
                 knownCards: cards,
                 hcp: rangeFromInputs(`cond-${hand}-hcp`, 0, 37),
                 suitRanges: SUITS.map((suit) => rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13)),
             };
-            if (constraints[hand].mode === "hand" && cards.length !== 13) {
+            if (constraints[hand].mode === "hand" && positiveCards.length !== 13) {
                 throw new Error(
                     tr(
                         "probability.conditional.fullHandNeeds13",
@@ -2682,7 +2687,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ),
                 );
             }
-            if (cards.length > 13)
+            if (positiveCards.length > 13)
                 throw new Error(
                     tr(
                         "probability.conditional.moreThan13",

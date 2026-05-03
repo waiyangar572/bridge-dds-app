@@ -94,7 +94,11 @@ def _build_constraint_context(
         constraint = raw_constraint or {}
 
         for card in constraint.get("knownCards", []) or []:
-            state = apply_event(state, CardHoldingEvent(player, _normalize_card(card)))
+            event = _signed_card_token_to_event(player, card)
+            if isinstance(event, CardHoldingEvent):
+                state = apply_event(state, event)
+            else:
+                event_constraints.append(event)
 
         exact_suit_events = []
         for suit, range_data in zip(SUIT_ORDER, constraint.get("suitRanges", []) or []):
@@ -193,13 +197,44 @@ def _atom_to_event(atom: dict[str, Any]) -> BaseEvent | None:
     event_type = (atom.get("type") or "").lower()
 
     if event_type == "card":
-        return CardHoldingEvent(player, _normalize_card(value))
+        return _card_value_to_event(player, value, bool(atom.get("negated")))
     if event_type == "hcp":
         min_hcp, max_hcp = _parse_range_text(value, 0, 37)
         return HcpEvent(player, min_hcp, max_hcp)
     if event_type == "shape":
         return _shape_value_to_event(player, value)
     raise ValueError(f"unsupported query type: {event_type!r}")
+
+
+def _card_value_to_event(player: str, value: str, negated: bool = False) -> BaseEvent:
+    tokens = [token for token in re.split(r"[\s,]+", value.strip()) if token.strip()]
+    if not tokens:
+        raise ValueError("card condition requires at least one card")
+    normalized_cards = [_normalize_card(token.lstrip("-")) for token in tokens]
+    if len(set(normalized_cards)) != len(normalized_cards):
+        raise ValueError("card condition contains duplicate cards")
+
+    events: list[BaseEvent] = []
+    for token in tokens:
+        token_negated = token.strip().startswith("-")
+        card = _normalize_card(token.strip().lstrip("-"))
+        event: BaseEvent = CardHoldingEvent(player, card)
+        if token_negated ^ negated:
+            event = NotEvent(event)
+        events.append(event)
+    if len(events) == 1:
+        return events[0]
+    return AndEvent.of(*events)
+
+
+def _signed_card_token_to_event(player: str, token: Any) -> BaseEvent:
+    text = str(token or "").strip()
+    if not text:
+        raise ValueError("card token cannot be blank")
+    negated = text.startswith("-")
+    card = _normalize_card(text.lstrip("-"))
+    event: BaseEvent = CardHoldingEvent(player, card)
+    return NotEvent(event) if negated else event
 
 
 def _shape_value_to_event(player: str, value: str) -> BaseEvent:

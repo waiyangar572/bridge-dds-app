@@ -252,6 +252,127 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         self.assertGreaterEqual(response["results"][0]["probability"], 0.0)
         self.assertLessEqual(response["results"][0]["probability"], 1.0)
 
+    def test_space_separated_cards_are_treated_as_joint_holdings(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "North has SA and SK",
+                "event": {"hand": "north", "type": "card", "value": "SA SK"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        expected = (13 / 52) * (12 / 51)
+        self.assertAlmostEqual(response["results"][0]["probability"], expected)
+
+    def test_negated_card_query_is_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "North does not have SA",
+                "event": {
+                    "hand": "north",
+                    "type": "card",
+                    "value": "-SA",
+                },
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertAlmostEqual(response["results"][0]["probability"], 39 / 52)
+
+    def test_negated_card_constraint_is_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "South has SA when North does not",
+                "event": {
+                    "op": "and",
+                    "conditions": [
+                        {
+                            "hand": "north",
+                            "type": "card",
+                            "value": "-SA",
+                        },
+                        {"hand": "south", "type": "card", "value": "SA"},
+                    ],
+                },
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertAlmostEqual(response["results"][0]["probability"], 13 / 52)
+
+    def test_mixed_signed_card_tokens_are_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "North has SK SQ but not SA SJ",
+                "event": {"hand": "north", "type": "card", "value": "-SA SK SQ -SJ"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        expected = (13 / 52) * (12 / 51) * (39 / 50) * (38 / 49)
+        self.assertAlmostEqual(response["results"][0]["probability"], expected)
+
+    def test_signed_known_card_constraints_are_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": ["-SA"] if hand == "north" else [],
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "South has SA given North does not",
+                "event": {"hand": "south", "type": "card", "value": "SA"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertAlmostEqual(response["results"][0]["probability"], 1 / 3)
+
 
 if __name__ == "__main__":
     unittest.main()

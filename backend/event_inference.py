@@ -244,6 +244,17 @@ def _calculate_and_target_prob(
                 total += sign * calculate_conditional_prob(expanded_target, constraint, state)
         return max(0.0, min(1.0, total))
 
+    if isinstance(first, NotEvent):
+        # Complement inside a product:
+        # P(~b1 & R | A) = P(R | A) - P(b1 & R | A)
+        if not rest:
+            return calculate_conditional_prob(first, constraint, state)
+        rest_target = rest[0] if len(rest) == 1 else AndEvent.of(*rest)
+        positive_target = AndEvent.of(first.child, *rest)
+        total_without_negated = calculate_conditional_prob(rest_target, constraint, state)
+        excluded_by_positive = calculate_conditional_prob(positive_target, constraint, state)
+        return max(0.0, min(1.0, total_without_negated - excluded_by_positive))
+
     # Chain rule:
     # P(b1 & b2 & ... & bn | A)
     #   = P(b1 | A) * P(b2 & ... & bn | A & b1)
@@ -332,6 +343,7 @@ def _requires_ratio_constraint(event: BaseEvent | None) -> bool:
         _contains_shape_pattern(event)
         or _contains_or_event(event)
         or _contains_non_exact_suit_length(event)
+        or _contains_not_event(event)
     )
 
 
@@ -361,3 +373,15 @@ def _suit_length_exact_events(event: SuitLengthEvent) -> list[SuitLengthEvent]:
         SuitLengthEvent(event.player, event.suit, length, length)
         for length in range(event.min_length, event.max_length + 1)
     ]
+
+
+def _contains_not_event(event: BaseEvent | None) -> bool:
+    if event is None:
+        return False
+    if isinstance(event, NotEvent):
+        return True
+    if isinstance(event, AndEvent):
+        return any(_contains_not_event(child) for child in event.children)
+    if isinstance(event, OrEvent):
+        return any(_contains_not_event(child) for child in event.children)
+    return False
