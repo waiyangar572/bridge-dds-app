@@ -908,7 +908,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initShapePresetMajorToggles() {
         const presetSelects = document.querySelectorAll(
-            'select[id^="sd-"][id$="-preset"], select[id^="lead-"][id$="-preset"]',
+            'select[id^="sd-"][id$="-preset"], select[id^="lead-"][id$="-preset"], select[id^="cond-"][id$="-preset"]',
         );
 
         presetSelects.forEach((select) => {
@@ -2426,6 +2426,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
+                            <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm mt-1 mb-2">
+                                <option value="any">${tr("select.any", "Any")}</option>
+                                <option value="balanced">${tr("select.balanced", "Balanced")}</option>
+                                <option value="semiBalanced">${tr("select.semiBalanced", "Semi-balanced")}</option>
+                                <option value="unbalanced">${tr("select.unbalanced", "Unbalanced")}</option>
+                            </select>
                             <div class="grid grid-cols-4 gap-2 mt-1">
                                 ${SUITS.map(
                                     (suit) => `
@@ -2442,6 +2448,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                 </div>`;
         }).join("");
+        initShapePresetMajorToggles();
     }
 
     function conditionInputHtml(prefix) {
@@ -2675,6 +2682,7 @@ document.addEventListener("DOMContentLoaded", () => {
             constraints[hand] = {
                 mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
                 knownCards: cards,
+                shapePreset: getShapePresetValue(`cond-${hand}-preset`),
                 hcp: rangeFromInputs(`cond-${hand}-hcp`, 0, 37),
                 suitRanges: SUITS.map((suit) => rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13)),
             };

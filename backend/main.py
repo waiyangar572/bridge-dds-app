@@ -99,6 +99,7 @@ class RangeRequest(BaseModel):
 class ConditionalHandConstraintRequest(BaseModel):
     mode: str = "feature"
     knownCards: List[str] = Field(default_factory=list)
+    shapePreset: str = "any"
     hcp: RangeRequest = Field(
         default_factory=lambda: RangeRequest(min=0, max=37)
     )

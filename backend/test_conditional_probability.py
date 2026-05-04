@@ -373,6 +373,66 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
 
         self.assertAlmostEqual(response["results"][0]["probability"], 1 / 3)
 
+    def test_balanced_shape_preset_constraint_is_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "shapePreset": "balanced" if hand == "north" else "any",
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "North 4-4-3-2 given balanced",
+                "event": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        def shape_probability(lengths: tuple[int, int, int, int]) -> float:
+            from itertools import permutations
+
+            total = 0
+            for exact in set(permutations(lengths)):
+                ways = 1
+                for length in exact:
+                    ways *= comb(13, length)
+                total += ways
+            return total / comb(52, 13)
+
+        p4333 = shape_probability((4, 3, 3, 3))
+        p4432 = shape_probability((4, 4, 3, 2))
+        p5332 = shape_probability((5, 3, 3, 2))
+        expected = p4432 / (p4333 + p4432 + p5332)
+        self.assertAlmostEqual(response["results"][0]["probability"], expected)
+
+    def test_semibalanced_shape_preset_constraint_is_supported(self) -> None:
+        payload_constraints = {
+            hand: {
+                "mode": "feature",
+                "knownCards": [],
+                "shapePreset": "semiBalanced" if hand == "north" else "any",
+                "hcp": {"min": 0, "max": 37},
+                "suitRanges": [{"min": 0, "max": 13} for _ in range(4)],
+            }
+            for hand in ("north", "east", "south", "west")
+        }
+        payload_queries = [
+            {
+                "name": "North 10-12 HCP given semibalanced",
+                "event": {"hand": "north", "type": "hcp", "value": "10-12"},
+            }
+        ]
+
+        response = calculate_conditional_probability(payload_constraints, payload_queries)
+
+        self.assertGreaterEqual(response["results"][0]["probability"], 0.0)
+        self.assertLessEqual(response["results"][0]["probability"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

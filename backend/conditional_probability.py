@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+from itertools import permutations
 import re
 from typing import Any
 
@@ -113,6 +114,10 @@ def _build_constraint_context(
 
         for event in exact_suit_events:
             state = apply_event(state, event)
+
+        shape_preset_event = _shape_preset_to_event(player, constraint.get("shapePreset"))
+        if shape_preset_event is not None:
+            event_constraints.append(shape_preset_event)
 
         hcp_min, hcp_max = _range_from_payload(constraint.get("hcp"), 0, 37)
         if hcp_min != 0 or hcp_max != 37:
@@ -256,6 +261,58 @@ def _shape_value_to_event(player: str, value: str) -> BaseEvent:
     if len(events) == 1:
         return events[0]
     return AndEvent.of(*events)
+
+
+def _shape_preset_to_event(player: str, preset: Any) -> BaseEvent | None:
+    normalized = str(preset or "any").strip().lower()
+    if normalized in ("", "any", "feature"):
+        return None
+
+    balanced = _balanced_shape_event(player, allow_five_card_major=True)
+    if normalized == "balanced":
+        return balanced
+    if normalized == "balanced-without-major":
+        return _balanced_shape_event(player, allow_five_card_major=False)
+    if normalized in ("semibalanced", "semi-balanced", "semi_balanced"):
+        # Deal's semibalanced class: no void/singleton, majors up to 5,
+        # minors up to 6. Expressed as independent suit-length ranges.
+        return AndEvent.of(
+            SuitLengthEvent(player, "S", 2, 5),
+            SuitLengthEvent(player, "H", 2, 5),
+            SuitLengthEvent(player, "D", 2, 6),
+            SuitLengthEvent(player, "C", 2, 6),
+        )
+    if normalized == "unbalanced":
+        return NotEvent(balanced)
+    raise ValueError(f"unsupported shape preset: {preset!r}")
+
+
+def _balanced_shape_event(player: str, *, allow_five_card_major: bool) -> BaseEvent:
+    events: list[BaseEvent] = [
+        ShapePatternEvent(player, (4, 3, 3, 3)),
+        ShapePatternEvent(player, (4, 4, 3, 2)),
+    ]
+
+    if allow_five_card_major:
+        events.append(ShapePatternEvent(player, (5, 3, 3, 2)))
+    else:
+        exact_5332_minor_only = []
+        for lengths in sorted(set(permutations((5, 3, 3, 2)))):
+            if lengths[0] == 5 or lengths[1] == 5:
+                continue
+            exact_5332_minor_only.append(_exact_shape_event(player, lengths))
+        events.extend(exact_5332_minor_only)
+
+    return OrEvent.of(*events)
+
+
+def _exact_shape_event(player: str, lengths: tuple[int, int, int, int]) -> AndEvent:
+    return AndEvent.of(
+        SuitLengthEvent(player, "S", lengths[0], lengths[0]),
+        SuitLengthEvent(player, "H", lengths[1], lengths[1]),
+        SuitLengthEvent(player, "D", lengths[2], lengths[2]),
+        SuitLengthEvent(player, "C", lengths[3], lengths[3]),
+    )
 
 
 def _parse_player(hand: Any) -> str:
