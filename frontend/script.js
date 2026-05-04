@@ -35,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let leadSortMode = "tricks";
     let latestLeadResults = [];
     let latestLeadCount = 0;
+    let latestDDTricks = null;
+    let latestSDDistribution = null;
+    let latestSDCount = 0;
+    let latestConditionalResult = null;
     let referenceViewTab = "probability";
     const IMP_SCALE_ROWS = [
         { min: 0, max: 10, imp: 0 },
@@ -257,6 +261,16 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#btn-run-single-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#btn-run-lead-text", tr("buttons.analyze", "Analyze"));
         setNodeText("#mobile-analyze-text", tr("buttons.mobileAnalyze", "Analyze"));
+        setNodeTexts(
+            "[data-share-label]",
+            Array.from(document.querySelectorAll("[data-share-label]")).map(() =>
+                tr("buttons.share", "Share"),
+            ),
+        );
+        document.querySelectorAll("[data-share-result]").forEach((btn) => {
+            btn.setAttribute("aria-label", tr("buttons.share", "Share"));
+            btn.setAttribute("title", tr("buttons.share", "Share"));
+        });
         setNodeText("#loading-label", currentLanguage === "ja" ? "解析中..." : "Analyzing...");
         setNodeText("#result-double h3", tr("result.doubleTitle", "Double Dummy Result"));
         setNodeText("#result-single h3", tr("result.singleTitle", "Expected Tricks (N/S)"));
@@ -436,6 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
+        updateXShareLinks();
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -842,7 +857,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const expectedPath = buildLocalizedPath(preferredLang, routePath);
         if (normalizePath(window.location.pathname) !== normalizePath(expectedPath)) {
-            history.replaceState({}, "", expectedPath);
+            history.replaceState({}, "", `${expectedPath}${window.location.search}`);
         }
         navigateTo(routePath, false);
         markPrerenderReady();
@@ -2371,6 +2386,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return card ? `${negated ? "-" : ""}${card}` : "";
     }
 
+    function cardTextFromId(cardId) {
+        const text = String(cardId || "");
+        const negated = text.startsWith("-");
+        const card = negated ? text.slice(1) : text;
+        const suit = SUITS.find((item) => item.id === card[0]);
+        const rank = card.slice(1);
+        return `${negated ? "-" : ""}${suit?.name[0] || card[0] || ""}${rank}`.toUpperCase();
+    }
+
     function parseCardsText(value) {
         return String(value || "")
             .split(/[\s,]+/)
@@ -2824,6 +2848,189 @@ document.addEventListener("DOMContentLoaded", () => {
         return atom;
     }
 
+    function serializeConditionalEventGroup(group) {
+        if (!group) return null;
+        const children = Array.from(
+            group.querySelector(":scope > [data-cond-group-children]")?.children || [],
+        )
+            .map((child) => {
+                if (child.matches("[data-cond-condition]")) {
+                    const hand = child.querySelector('[data-cond-field$="-hand"]')?.value || "";
+                    const type = child.querySelector('[data-cond-field$="-type"]')?.value || "";
+                    const value = child.querySelector('[data-cond-field$="-value"]')?.value || "";
+                    return { kind: "condition", hand, type, value };
+                }
+                if (child.matches("[data-cond-group]")) {
+                    return serializeConditionalEventGroup(child);
+                }
+                return null;
+            })
+            .filter(Boolean);
+        return {
+            kind: "group",
+            op: group.querySelector(":scope > div > [data-cond-group-op]")?.value || "and",
+            children,
+        };
+    }
+
+    function serializeConditionalState() {
+        const hands = HANDS.reduce((acc, hand) => {
+            acc[hand] = {
+                mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
+                cards: document.getElementById(`cond-${hand}-cards`)?.value || "",
+                hcpMin: numericInputValue(`cond-${hand}-hcp-min`, "0"),
+                hcpMax: numericInputValue(`cond-${hand}-hcp-max`, "37"),
+                preset: getShapePresetValue(`cond-${hand}-preset`),
+                suits: SUITS.reduce((suitAcc, suit) => {
+                    suitAcc[suit.id] = {
+                        min: numericInputValue(`cond-${hand}-${suit.id}-min`, "0"),
+                        max: numericInputValue(`cond-${hand}-${suit.id}-max`, "13"),
+                    };
+                    return suitAcc;
+                }, {}),
+            };
+            return acc;
+        }, {});
+
+        const queries = Array.from(document.querySelectorAll("[data-cond-query]")).map((row) => ({
+            name: row.querySelector('[data-cond-field="name"]')?.value || "",
+            advancedEventJson: row.querySelector('[data-cond-field="event-json"]')?.value || "",
+            builder: serializeConditionalEventGroup(
+                row.querySelector("[data-cond-root] > [data-cond-group]"),
+            ),
+        }));
+
+        return { hands, queries };
+    }
+
+    function createConditionalGroupFromSnapshot(row, snapshot, isRoot = false) {
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = conditionalGroupHtml(isRoot).trim();
+        const group = wrapper.firstElementChild;
+        const opSelect = group.querySelector(":scope > div > [data-cond-group-op]");
+        if (opSelect) opSelect.value = snapshot?.op || "and";
+        const list = group.querySelector(":scope > [data-cond-group-children]");
+        (snapshot?.children || []).forEach((child) => {
+            if (child.kind === "group") {
+                list.appendChild(createConditionalGroupFromSnapshot(row, child, false));
+                return;
+            }
+            const condition = addConditionalCondition(row, group);
+            if (!condition) return;
+            condition.querySelector('[data-cond-field$="-hand"]').value = child.hand || "north";
+            condition.querySelector('[data-cond-field$="-type"]').value = child.type || "hcp";
+            condition.querySelector('[data-cond-field$="-value"]').value = child.value || "";
+        });
+        if (!list.children.length) addConditionalCondition(row, group);
+        return group;
+    }
+
+    function applyConditionalState(state = {}) {
+        if (state.hands) {
+            HANDS.forEach((hand) => {
+                const config = state.hands[hand] || {};
+                setInputValue(`cond-${hand}-mode`, config.mode || "feature");
+                setInputValue(`cond-${hand}-cards`, config.cards || "");
+                setInputValue(`cond-${hand}-hcp-min`, config.hcpMin ?? "0");
+                setInputValue(`cond-${hand}-hcp-max`, config.hcpMax ?? "37");
+                setInputValue(`cond-${hand}-preset`, config.preset || "any");
+                SUITS.forEach((suit) => {
+                    setInputValue(
+                        `cond-${hand}-${suit.id}-min`,
+                        config.suits?.[suit.id]?.min ?? "0",
+                    );
+                    setInputValue(
+                        `cond-${hand}-${suit.id}-max`,
+                        config.suits?.[suit.id]?.max ?? "13",
+                    );
+                });
+            });
+        }
+
+        const container = document.getElementById("cond-queries");
+        if (container && Array.isArray(state.queries)) {
+            container.innerHTML = "";
+            state.queries.forEach((query) => {
+                const row = addConditionalQuery();
+                if (!row) return;
+                row.querySelector('[data-cond-field="name"]').value = query.name || "";
+                row.querySelector('[data-cond-field="event-json"]').value =
+                    query.advancedEventJson || "";
+                const root = row.querySelector("[data-cond-root]");
+                if (root && query.builder) {
+                    root.innerHTML = "";
+                    root.appendChild(createConditionalGroupFromSnapshot(row, query.builder, true));
+                }
+                const conditionCount = row.querySelectorAll("[data-cond-condition]").length;
+                row.dataset.condConditionCount = String(conditionCount);
+                updateConditionalConditionPlaceholders(row);
+                updateConditionalQueryControls(row);
+            });
+        }
+    }
+
+    function summarizeConditionalResult(result) {
+        const rows = Array.isArray(result?.rows) ? result.rows : [];
+        return rows
+            .slice(0, 3)
+            .map((entry, index) => {
+                const probability = Number(entry?.probability);
+                const pct = Number.isFinite(probability) ? probability * 100 : 0;
+                const name =
+                    entry?.name ||
+                    tr("probability.conditional.queryFallback", "Query {number}", {
+                        number: index + 1,
+                    });
+                return `${name}: ${pct.toFixed(4)}%`;
+            })
+            .join(" / ");
+    }
+
+    function renderConditionalResult(data) {
+        const status = document.getElementById("cond-status");
+        const result = document.getElementById("cond-result");
+        const denominator = String(data?.denominator || "0");
+        const engineName = data?.engine ? ` (${data.engine})` : "";
+        if (status) {
+            status.textContent = tr(
+                "probability.conditional.counted",
+                "Exact deals counted: {denominator}{engine}",
+                { denominator, engine: engineName },
+            );
+        }
+        if (!result) return;
+        if (denominator === "0") {
+            result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noDeals", "No deals match the known conditions.")}</div>`;
+            return;
+        }
+        const rows = Array.isArray(data?.rows) ? data.rows : [];
+        if (rows.length === 0) {
+            result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noResults", "No query results were returned.")}</div>`;
+            return;
+        }
+        result.innerHTML = `
+            <table class="w-full result-table">
+                <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th></tr></thead>
+                <tbody>
+                    ${rows
+                        .map((entry, index) => {
+                            const probability = Number(entry?.probability);
+                            const pct = Number.isFinite(probability) ? probability * 100 : 0;
+                            const numerator = String(entry?.numerator ?? "0");
+                            const fraction = String(entry?.fraction ?? `${numerator}/${denominator}`);
+                            const name = String(
+                                entry?.name ||
+                                    tr("probability.conditional.queryFallback", "Query {number}", {
+                                        number: index + 1,
+                                    }),
+                            );
+                            return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td></tr>`;
+                        })
+                        .join("")}
+                </tbody>
+            </table>`;
+    }
+
     async function runConditionalExact() {
         const status = document.getElementById("cond-status");
         const result = document.getElementById("cond-result");
@@ -2854,55 +3061,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(data.error || `Request failed: ${response.status}`);
             }
 
-            const denominator = String(data.denominator || "0");
-            const engineName = data.engine ? ` (${data.engine})` : "";
-            if (status)
-                status.textContent = tr(
-                    "probability.conditional.counted",
-                    "Exact deals counted: {denominator}{engine}",
-                    {
-                        denominator,
-                        engine: engineName,
-                    },
-                );
-            if (!result) return;
-            if (denominator === "0") {
-                result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noDeals", "No deals match the known conditions.")}</div>`;
-                return;
-            }
-
             const rows = Array.isArray(data.results) ? data.results : [];
-            if (rows.length === 0) {
-                result.innerHTML = `<div class="text-sm text-red-600">${tr("probability.conditional.noResults", "No query results were returned.")}</div>`;
-                return;
-            }
-            result.innerHTML = `
-                <table class="w-full result-table">
-                    <thead><tr><th class="text-left">${tr("probability.conditional.event", "Event")}</th><th>${tr("probability.conditional.probability", "Probability")}</th><th>${tr("probability.conditional.exactFraction", "Exact fraction")}</th></tr></thead>
-                    <tbody>
-                        ${rows
-                            .map((entry, index) => {
-                                const probability = Number(entry?.probability);
-                                const pct = Number.isFinite(probability) ? probability * 100 : 0;
-                                const numerator = String(entry?.numerator ?? "0");
-                                const fraction = String(
-                                    entry?.fraction ?? `${numerator}/${denominator}`,
-                                );
-                                const name = String(
-                                    entry?.name ||
-                                        tr(
-                                            "probability.conditional.queryFallback",
-                                            "Query {number}",
-                                            {
-                                                number: index + 1,
-                                            },
-                                        ),
-                                );
-                                return `<tr><td class="text-left font-semibold">${name}</td><td>${pct.toFixed(4)}%</td><td>${fraction}</td></tr>`;
-                            })
-                            .join("")}
-                    </tbody>
-                </table>`;
+            latestConditionalResult = {
+                denominator: data.denominator,
+                engine: data.engine || "",
+                rows,
+            };
+            renderConditionalResult(latestConditionalResult);
+            updateXShareLinks();
         } catch (error) {
             if (status) status.textContent = "";
             const message = error instanceof Error ? error.message : String(error);
@@ -3304,8 +3470,422 @@ document.addEventListener("DOMContentLoaded", () => {
         return tableHtml;
     }
 
+    function getShareUrl(routePath = currentRoutePath) {
+        return `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, routePath)}`;
+    }
+
+    function numericInputValue(id, fallback = "") {
+        const value = document.getElementById(id)?.value;
+        return value === undefined || value === "" ? fallback : value;
+    }
+
+    function setInputValue(id, value) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.value = value ?? "";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function serializeCardState(state) {
+        return HANDS.reduce((acc, hand) => {
+            acc[hand] = [...(state?.[hand] || [])];
+            return acc;
+        }, {});
+    }
+
+    function serializeFeatureInputs(prefix) {
+        return HANDS.reduce((acc, hand) => {
+            acc[hand] = {
+                hcpMin: numericInputValue(`${prefix}-${hand}-hcp-min`, "0"),
+                hcpMax: numericInputValue(`${prefix}-${hand}-hcp-max`, "37"),
+                preset: getShapePresetValue(`${prefix}-${hand}-preset`),
+                suits: SUITS.reduce((suitAcc, suit) => {
+                    suitAcc[suit.id] = {
+                        min: numericInputValue(`${prefix}-${hand}-${suit.id}`, "0"),
+                        max: numericInputValue(`${prefix}-${hand}-${suit.id}`, "13"),
+                    };
+                    return suitAcc;
+                }, {}),
+            };
+            return acc;
+        }, {});
+    }
+
+    function applyFeatureInputs(prefix, values = {}) {
+        HANDS.forEach((hand) => {
+            const config = values[hand] || {};
+            setInputValue(`${prefix}-${hand}-hcp-min`, config.hcpMin ?? "0");
+            setInputValue(`${prefix}-${hand}-hcp-max`, config.hcpMax ?? "37");
+            setInputValue(`${prefix}-${hand}-preset`, config.preset || "any");
+            SUITS.forEach((suit) => {
+                setInputValue(`${prefix}-${hand}-${suit.id}-min`, config.suits?.[suit.id]?.min ?? "0");
+                setInputValue(`${prefix}-${hand}-${suit.id}-max`, config.suits?.[suit.id]?.max ?? "13");
+            });
+        });
+    }
+
+    function getSharedRoute(type) {
+        const routeByType = {
+            double: "/double-dummy",
+            single: "/single-dummy",
+            lead: "/opening-lead",
+            solver: "/probability-solver",
+        };
+        return routeByType[type] || currentRoutePath;
+    }
+
+    function formatHandCards(cards) {
+        if (!Array.isArray(cards) || cards.length === 0) return "-";
+        const PBNs = convertPBNHand(cards).split(".");
+        const suits = []
+        if (PBNs[0] !== "") suits.push(`S${PBNs[0]}`);
+        if (PBNs[1] !== "") suits.push(`H${PBNs[1]}`);
+        if (PBNs[2] !== "") suits.push(`D${PBNs[2]}`);
+        if (PBNs[3] !== "") suits.push(`C${PBNs[3]}`);
+        return suits.join(" ");
+    }
+
+    function formatHandInputs(state, hands = HANDS) {
+        return hands
+            .filter((hand) => Array.isArray(state?.[hand]) && state[hand].length > 0)
+            .map((hand) => `${tr(`terms.${hand}`, hand)}: ${formatHandCards(state?.[hand])}`)
+            .join("\n");
+    }
+
+    function isDefaultRange(min, max, defaultMin, defaultMax) {
+        return String(min ?? defaultMin) === String(defaultMin) && String(max ?? defaultMax) === String(defaultMax);
+    }
+
+    function formatSuitConstraints(suits = {}) {
+        return SUITS.map((suit) => {
+            const range = suits?.[suit.id] || {};
+            if (isDefaultRange(range.min, range.max, "0", "13")) return "";
+            return `${suit.label}${range.min ?? "0"}-${range.max ?? "13"}`;
+        })
+            .filter(Boolean)
+            .join(" ");
+    }
+
+    function formatFeatureRange(config) {
+        if (!config) return "";
+        const parts = [];
+        if (!isDefaultRange(config.hcpMin, config.hcpMax, "0", "37")) {
+            parts.push(`HCP ${config.hcpMin ?? "0"}-${config.hcpMax ?? "37"}`);
+        }
+        const suits = formatSuitConstraints(config.suits);
+        if (suits) parts.push(suits);
+        if (config.preset && config.preset !== "any") parts.push(`preset ${config.preset}`);
+        return parts.join(", ");
+    }
+
+    function formatFeatureInputs(features, hands = HANDS) {
+        return hands
+            .map((hand) => {
+                const line = formatFeatureRange(features?.[hand]);
+                return line ? `${tr(`terms.${hand}`, hand)}: ${line}` : "";
+            })
+            .filter(Boolean)
+            .join("\n");
+    }
+
+    function formatDDResult(tricks) {
+        if (!tricks) return "";
+        return ["North", "South", "East", "West"]
+            .map(
+                (player) =>
+                    `${player}: NT ${tricks["No-Trump"]?.[player] ?? "-"}, S ${
+                        tricks.Spades?.[player] ?? "-"
+                    }, H ${tricks.Hearts?.[player] ?? "-"}, D ${
+                        tricks.Diamonds?.[player] ?? "-"
+                    }, C ${tricks.Clubs?.[player] ?? "-"}`,
+            )
+            .join("\n");
+    }
+
+    function formatSingleResult(distribution) {
+        const lines = [];
+        Object.entries(distribution || {}).forEach(([suit, byPlayer]) => {
+            ["North", "South"].forEach((player) => {
+                const dist = byPlayer?.[player];
+                if (!Array.isArray(dist)) return;
+                const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
+                const gameTricks =
+                    suit === "No-Trump" ? 9 : suit === "Spades" || suit === "Hearts" ? 10 : 11;
+                const gameProb = dist.reduce((sum, pct, i) => (i >= gameTricks ? sum + pct : sum), 0);
+                lines.push(
+                    `${player} ${suit === "No-Trump" ? "NT" : suit}: ${tr(
+                        "ui.avg",
+                        "Avg",
+                    )} ${exp.toFixed(2)}, ${tr("ui.game", "Game")} ${Math.round(gameProb)}%`,
+                );
+            });
+        });
+        return lines.join("\n");
+    }
+
+    function formatLeadResult(leads) {
+        return [...(leads || [])]
+            .sort((a, b) =>
+                leadSortMode === "setprob" ? b.per_of_set - a.per_of_set : b.tricks - a.tricks,
+            )
+            .map(
+                (lead) =>
+                    `${formatLeadCard(lead.card)}: ${tr("ui.expTricks", "Exp Tricks")} ${Number(
+                        lead.tricks,
+                    ).toFixed(2)}, ${tr("ui.setProb", "Set Prob")} ${Number(
+                        lead.per_of_set,
+                    ).toFixed(1)}%`,
+            )
+            .join("\n");
+    }
+
+    function formatConditionalBuilder(node) {
+        if (!node) return "";
+        if (node.kind === "condition") {
+            return `${tr(`terms.${node.hand}`, node.hand)} ${node.type}: ${node.value}`;
+        }
+        const op = String(node.op || "and").toUpperCase();
+        return (node.children || [])
+            .map(formatConditionalBuilder)
+            .filter(Boolean)
+            .join(` ${op} `);
+    }
+
+    function formatConditionalInputs(state) {
+        const handLines = HANDS.map((hand) => {
+            const config = state.hands?.[hand] || {};
+            const parts = [];
+            if (config.mode === "hand") parts.push("hand");
+            if (config.cards) parts.push(`cards ${config.cards}`);
+            if (!isDefaultRange(config.hcpMin, config.hcpMax, "0", "37")) {
+                parts.push(`HCP ${config.hcpMin ?? "0"}-${config.hcpMax ?? "37"}`);
+            }
+            const suits = formatSuitConstraints(config.suits);
+            if (suits) parts.push(suits);
+            if (config.preset && config.preset !== "any") parts.push(`preset ${config.preset}`);
+            return parts.length ? `${tr(`terms.${hand}`, hand)}: ${parts.join(", ")}` : "";
+        }).filter(Boolean);
+        const queryLines = (state.queries || []).map((query, index) => {
+            const name =
+                query.name ||
+                tr("probability.conditional.queryFallback", "Query {number}", {
+                    number: index + 1,
+                });
+            const detail = query.advancedEventJson || formatConditionalBuilder(query.builder);
+            return `${name}: ${detail}`;
+        });
+        return [...handLines, ...queryLines].filter(Boolean).join("\n");
+    }
+
+    function formatConditionalResult(result) {
+        const denominator = result?.denominator || "-";
+        const rows = Array.isArray(result?.rows) ? result.rows : [];
+        return rows
+            .map((entry, index) => {
+                const probability = Number(entry?.probability);
+                const pct = Number.isFinite(probability) ? probability * 100 : 0;
+                const name =
+                    entry?.name ||
+                    tr("probability.conditional.queryFallback", "Query {number}", {
+                        number: index + 1,
+                    });
+                return `${name}: ${pct.toFixed(4)}%`;
+            })
+            .join("\n");
+    }
+
+    function buildShareDetails(type) {
+        if (type === "double") {
+            return [
+                tr("share.inputHeading", "Input"),
+                formatHandInputs(ddState),
+                tr("share.resultHeading", "Result"),
+                formatDDResult(latestDDTricks),
+            ];
+        }
+        if (type === "single") {
+            return [
+                tr("share.inputHeading", "Input"),
+                formatHandInputs(sdState, ["north", "south"]),
+                formatFeatureInputs(serializeFeatureInputs("sd")),
+                `${tr("ui.simulations", "Simulations")}: ${numericInputValue("sd-simulations", "1000")}`,
+                tr("share.resultHeading", "Result"),
+                formatSingleResult(latestSDDistribution),
+            ];
+        }
+        if (type === "lead") {
+            return [
+                tr("share.inputHeading", "Input"),
+                `${tr("ui.leadLeader", "Opening Leader")}: ${
+                    document.getElementById("lead-leader")?.value || "North"
+                }`,
+                `${tr("ui.contract", "Contract")}: ${
+                    document.getElementById("lead-contract")?.value || "-"
+                }`,
+                formatHandInputs(leadState),
+                formatFeatureInputs(serializeFeatureInputs("lead")),
+                `${tr("ui.simulations", "Simulations")}: ${numericInputValue("lead-simulations", "100")}`,
+                tr("share.resultHeading", "Result"),
+                formatLeadResult(latestLeadResults),
+            ];
+        }
+        if (type === "solver") {
+            const state = serializeConditionalState();
+            return [
+                tr("share.inputHeading", "Input"),
+                formatConditionalInputs(state),
+                tr("share.resultHeading", "Result"),
+                formatConditionalResult(latestConditionalResult),
+            ];
+        }
+        return [];
+    }
+
+    function getTopDDContracts(tricks) {
+        const entries = [];
+        Object.entries(tricks || {}).forEach(([strain, players]) => {
+            Object.entries(players || {}).forEach(([player, value]) => {
+                const tricksValue = Number(value);
+                if (!Number.isFinite(tricksValue)) return;
+                entries.push({
+                    label: `${player} ${strain === "No-Trump" ? "NT" : strain}`,
+                    tricks: tricksValue,
+                });
+            });
+        });
+        return entries
+            .sort((a, b) => b.tricks - a.tricks)
+            .slice(0, 3)
+            .map((entry) => `${entry.label}: ${entry.tricks}`)
+            .join(" / ");
+    }
+
+    function summarizeSingleDummy(distribution) {
+        const rows = [];
+        Object.entries(distribution || {}).forEach(([suit, byPlayer]) => {
+            ["North", "South"].forEach((player) => {
+                const dist = byPlayer?.[player];
+                if (!Array.isArray(dist)) return;
+                const exp = dist.reduce((sum, pct, i) => sum + i * pct, 0) / 100;
+                rows.push({
+                    label: `${player} ${suit === "No-Trump" ? "NT" : suit}`,
+                    exp,
+                });
+            });
+        });
+        return rows
+            .sort((a, b) => b.exp - a.exp)
+            .slice(0, 3)
+            .map((entry) => `${entry.label}: ${entry.exp.toFixed(2)}`)
+            .join(" / ");
+    }
+
+    function formatLeadCard(card) {
+        const suitInfo = SUITS.find((suit) => suit.name[0] === card?.[0]);
+        return `${suitInfo?.label || card?.[0] || ""}${card?.[1] || ""}`;
+    }
+
+    function summarizeLeadResults(leads) {
+        return [...(leads || [])]
+            .sort((a, b) => b.tricks - a.tricks)
+            .slice(0, 3)
+            .map(
+                (lead) =>
+                    `${formatLeadCard(lead.card)}: ${Number(lead.tricks).toFixed(2)} ${tr(
+                        "ui.expTricks",
+                        "Exp Tricks",
+                    )}, ${Number(lead.per_of_set).toFixed(1)}% ${tr("ui.setProb", "Set Prob")}`,
+            )
+            .join(" / ");
+    }
+
+    function buildSharePayload(type) {
+        const titleByType = {
+            double: tr("result.doubleTitle", "Double Dummy Result"),
+            single: tr("result.singleTitle", "Expected Tricks (N/S)"),
+            lead: tr("result.leadTitle", "Trick Distribution by Lead"),
+            solver: tr("probability.conditional.title", "Probability Solver"),
+        };
+        const summaryByType = {
+            double: getTopDDContracts(latestDDTricks),
+            single: summarizeSingleDummy(latestSDDistribution),
+            lead: summarizeLeadResults(latestLeadResults),
+            solver: summarizeConditionalResult(latestConditionalResult),
+        };
+        const summary = summaryByType[type] || "";
+        const text = summary
+            ? tr("share.textWithSummary", "{title}: {summary} | Bridge Solver", {
+                  title: titleByType[type],
+                  summary,
+              })
+            : tr("share.text", "{title} | Bridge Solver", { title: titleByType[type] });
+        const details = buildShareDetails(type).filter(Boolean).join("\n");
+        return {
+            title: titleByType[type],
+            text: details ? `${text}\n\n${details}` : text,
+            url: getShareUrl(getSharedRoute(type)),
+        };
+    }
+
+    function getShareTextWithUrl(payload) {
+        return `${payload.text}\n${payload.url}`;
+    }
+
+    async function copyShareText(payload) {
+        const text = getShareTextWithUrl(payload);
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+    }
+
+    async function shareResult(type) {
+        const payload = buildSharePayload(type);
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: payload.title,
+                    text: getShareTextWithUrl(payload),
+                });
+                showToast(tr("share.shared", "Share sheet opened."));
+            } else {
+                await copyShareText(payload);
+                showToast(tr("share.copied", "Share text copied."));
+            }
+        } catch (error) {
+            if (error?.name !== "AbortError") {
+                showToast(tr("toasts.errorPrefix", "Error: ") + error.message);
+            }
+        }
+    }
+
+    function updateXShareLinks() {
+        document.querySelectorAll("[data-share-x]").forEach((link) => {
+            const payload = buildSharePayload(link.dataset.shareX);
+            const intent = new URL("https://twitter.com/intent/tweet");
+            intent.searchParams.set("text", payload.text);
+            intent.searchParams.set("url", payload.url);
+            link.href = intent.toString();
+            link.setAttribute(
+                "aria-label",
+                tr("share.xLabel", "Share this result on X"),
+            );
+            link.setAttribute("title", tr("share.xLabel", "Share this result on X"));
+        });
+    }
+
     // --- Rendering Results ---
     function renderDDResults(tricks) {
+        latestDDTricks = tricks;
         const tbody = document.getElementById("result-body-double");
         tbody.innerHTML = "";
         ["North", "South", "East", "West"].forEach((player) => {
@@ -3321,10 +3901,13 @@ document.addEventListener("DOMContentLoaded", () => {
             tbody.appendChild(tr);
         });
         document.getElementById("result-double").classList.remove("hidden");
+        updateXShareLinks();
         document.getElementById("result-double").scrollIntoView({ behavior: "smooth" });
     }
 
     function renderSDResults(distribution, count) {
+        latestSDDistribution = distribution;
+        latestSDCount = count;
         const container = document.getElementById("result-single-content");
         document.getElementById("sd-sim-count").innerText =
             `${tr("ui.samples", "Samples")}: ${count}`;
@@ -3394,6 +3977,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.getElementById("result-single").classList.remove("hidden");
+        updateXShareLinks();
         document.getElementById("result-single").scrollIntoView({ behavior: "smooth" });
     }
 
@@ -3456,6 +4040,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.getElementById("result-lead").classList.remove("hidden");
+        updateXShareLinks();
         document.getElementById("result-lead").scrollIntoView({ behavior: "smooth" });
     }
 
@@ -3484,6 +4069,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.addEventListener("click", (e) => {
+            const shareTarget = e.target.closest("[data-share-result]");
+            if (shareTarget) {
+                e.preventDefault();
+                shareResult(shareTarget.dataset.shareResult);
+                return;
+            }
+
+            const xShareTarget = e.target.closest("[data-share-x]");
+            if (xShareTarget) {
+                const payload = buildSharePayload(xShareTarget.dataset.shareX);
+                const intent = new URL("https://twitter.com/intent/tweet");
+                intent.searchParams.set("text", payload.text);
+                intent.searchParams.set("url", payload.url);
+                xShareTarget.href = intent.toString();
+                return;
+            }
+
             const routeTarget = e.target.closest("[data-route]");
             if (!routeTarget) return;
             const route = routeTarget.dataset.route;

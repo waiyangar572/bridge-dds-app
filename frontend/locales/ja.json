@@ -12,7 +12,8 @@
     },
     "buttons": {
         "analyze": "分析実行",
-        "mobileAnalyze": "分析"
+        "mobileAnalyze": "分析",
+        "share": "共有"
     },
     "meta": {
         "double-dummy": {
@@ -87,6 +88,17 @@
         "leaderNeed13": "{leader}の手札は13枚である必要があります (現在: {count}枚)",
         "handNeed13": "{hand}の手札が13枚ではありません",
         "errorPrefix": "Error: "
+    },
+    "share": {
+        "text": "{title} | Bridge Solver",
+        "textWithSummary": "{title}: {summary} | Bridge Solver",
+        "shared": "共有メニューを開きました",
+        "copied": "共有テキストをコピーしました",
+        "restored": "共有された結果を復元しました",
+        "restoreFailed": "共有結果を復元できませんでした",
+        "inputHeading": "入力条件",
+        "resultHeading": "結果",
+        "xLabel": "この結果をXで共有"
     },
     "result": {
         "doubleTitle": "メイク数分析結果",

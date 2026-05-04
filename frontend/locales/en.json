@@ -12,7 +12,8 @@
     },
     "buttons": {
         "analyze": "Analyze",
-        "mobileAnalyze": "Analyze"
+        "mobileAnalyze": "Analyze",
+        "share": "Share"
     },
     "meta": {
         "double-dummy": {
@@ -87,6 +88,17 @@
         "leaderNeed13": "{leader}'s hand must contain exactly 13 cards (current: {count}).",
         "handNeed13": "{hand} must contain exactly 13 cards.",
         "errorPrefix": "Error: "
+    },
+    "share": {
+        "text": "{title} | Bridge Solver",
+        "textWithSummary": "{title}: {summary} | Bridge Solver",
+        "shared": "Share sheet opened.",
+        "copied": "Share text copied.",
+        "restored": "Shared result restored.",
+        "restoreFailed": "Could not restore shared result.",
+        "inputHeading": "Input",
+        "resultHeading": "Result",
+        "xLabel": "Share this result on X"
     },
     "result": {
         "doubleTitle": "Double Dummy Result",
