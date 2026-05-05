@@ -2428,11 +2428,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderConditionalHandPanels() {
         const container = document.getElementById("cond-hands");
         if (!container) return;
-        container.innerHTML = HANDS.map((hand) => {
+        const seatClass = {
+            north: "w-full md:col-start-2 md:row-start-1 z-10 md:-mb-6",
+            west: "w-full md:col-start-1 md:row-start-2",
+            east: "w-full md:col-start-3 md:row-start-2",
+            south: "w-full md:col-start-2 md:row-start-3 z-10 md:-mt-6",
+        };
+        const panels = HANDS.map((hand) => {
             const label = tr(`terms.${hand}`, hand);
             return `
-                <div class="space-y-3 border-slate-200 pb-4">
-                <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
+                <div class="${seatClass[hand] || "w-full"}">
+                <div class="bg-white border border-slate-200 rounded-lg p-5 space-y-3 shadow-sm relative z-10">
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <h4 class="font-bold text-slate-900">${label}</h4>
                         <select id="cond-${hand}-mode" class="p-2 border rounded text-xs font-bold">
@@ -2472,6 +2478,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                 </div>`;
         }).join("");
+        container.innerHTML = `
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center">
+                ${panels}
+            </div>
+        `;
         initShapePresetMajorToggles();
     }
 
