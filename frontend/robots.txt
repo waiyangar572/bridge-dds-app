@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bridge-solver.waiyagar.com/sitemap.xml
+Sitemap: https://bridge-solver.waiyangar.com/sitemap.xml
