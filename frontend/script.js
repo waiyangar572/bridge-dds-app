@@ -2602,12 +2602,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 <input data-cond-field="name" class="p-2 border rounded text-sm" placeholder="${tr("probability.conditional.labelPlaceholder", "Label")}" />
             </div>
             <div data-cond-root>${conditionalGroupHtml(true)}</div>
-            <div class="flex flex-wrap items-center gap-3">
-                <details class="text-sm text-slate-600">
-                    <summary class="cursor-pointer font-semibold text-slate-500">${tr("probability.conditional.advancedEvent", "Advanced nested event")}</summary>
-                    <textarea data-cond-field="event-json" class="mt-2 w-full min-w-[280px] p-2 border rounded text-xs font-mono" rows="5" placeholder='{"op":"and","conditions":[{"hand":"north","type":"shape","value":"4-4-3-2"},{"op":"or","conditions":[{"hand":"north","type":"hcp","value":"10-12"},{"hand":"north","type":"card","value":"SA"}]}]}'></textarea>
-                </details>
-            </div>
             <div class="border-t border-slate-100 pt-2 space-y-2">
                 <div class="flex justify-end">
                     <button type="button" class="cond-duplicate-query text-sm font-semibold text-blue-700 hover:text-blue-900">${tr("probability.conditional.duplicate", "Duplicate")}</button>
@@ -3856,7 +3850,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     title: payload.title,
                     text: getShareTextWithUrl(payload),
                 });
-                showToast(tr("share.shared", "Share sheet opened."));
+                showFToast(tr("share.shared", "Share sheet opened."));
             } else {
                 await copyShareText(payload);
                 showToast(tr("share.copied", "Share text copied."));
