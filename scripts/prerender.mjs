@@ -230,15 +230,63 @@ async function createPrerenderServer(manifestRoutes) {
 async function waitForRouteReady(page, routePath) {
     await page.waitForFunction(
         (expectedPath) => {
+            const routeToExpectedState = (path) => {
+                const route = path.replace(/^\/(?:en|ja)(?=\/)/, "") || "/double-dummy";
+                if (route === "/single-dummy") return { viewId: "view-single" };
+                if (route === "/opening-lead") return { viewId: "view-lead" };
+                if (route === "/probability-solver") {
+                    return { viewId: "view-probability", visiblePanelId: "probability-solver-content" };
+                }
+                if (route === "/reference/imp") {
+                    return { viewId: "view-probability", visiblePanelId: "reference-panel-imp" };
+                }
+                if (route === "/reference/vp") {
+                    return { viewId: "view-probability", visiblePanelId: "reference-panel-vp" };
+                }
+                if (route === "/reference/probability") {
+                    return { viewId: "view-probability", visiblePanelId: "reference-panel-probability" };
+                }
+                if (route === "/privacy") return { viewId: "view-privacy" };
+                if (route === "/about") return { viewId: "view-about" };
+                if (route === "/contact") return { viewId: "view-contact" };
+                return { viewId: "view-double" };
+            };
+            const isVisible = (id) => {
+                const el = document.getElementById(id);
+                return !!el && !el.classList.contains("hidden");
+            };
+            const isHidden = (id) => {
+                const el = document.getElementById(id);
+                return !el || el.classList.contains("hidden");
+            };
             const canonical = document.querySelector('link[rel="canonical"]');
             if (!canonical) return false;
             const canonicalPath = new URL(canonical.href).pathname.replace(/\/$/, "");
             const currentPath = window.location.pathname.replace(/\/$/, "");
             const targetPath = expectedPath.replace(/\/$/, "");
+            const expectedState = routeToExpectedState(targetPath);
+            const viewIds = [
+                "view-double",
+                "view-single",
+                "view-lead",
+                "view-probability",
+                "view-privacy",
+                "view-about",
+                "view-contact",
+            ];
+            const routeViewReady =
+                isVisible(expectedState.viewId) &&
+                viewIds
+                    .filter((id) => id !== expectedState.viewId)
+                    .every((id) => isHidden(id));
+            const panelReady =
+                !expectedState.visiblePanelId || isVisible(expectedState.visiblePanelId);
             return (
                 window.__PRERENDER_READY__ === true &&
                 canonicalPath === targetPath &&
-                currentPath === targetPath
+                currentPath === targetPath &&
+                routeViewReady &&
+                panelReady
             );
         },
         routePath,
@@ -247,12 +295,16 @@ async function waitForRouteReady(page, routePath) {
     await page.waitForTimeout(500);
 }
 
+function removeNoScriptFallback(html) {
+    return html.replace(/<noscript\b[\s\S]*?<\/noscript>/gi, "");
+}
+
 async function captureRoute(page, baseUrl, routePath) {
     const url = `${baseUrl}${routePath}`;
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await waitForRouteReady(page, routePath);
 
-    let html = await page.content();
+    let html = removeNoScriptFallback(await page.content());
     if (!html.toLowerCase().startsWith("<!doctype html>")) {
         html = `<!doctype html>\n${html}`;
     }
