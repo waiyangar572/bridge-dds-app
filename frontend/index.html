@@ -49,6 +49,10 @@
         <meta
             name="twitter:image"
             content="https://bridge-solver.waiyangar.com/favicon-96x96.png" />
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171"
+            crossorigin="anonymous"></script>
         <script id="seo-json-ld" type="application/ld+json">
             {
                 "@context": "https://schema.org",
@@ -117,10 +121,6 @@
         <link rel="manifest" href="/site.webmanifest" />
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
-        <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171"
-            crossorigin="anonymous"></script>
         <style>
             :root {
                 --notion-blue: #0075de;
@@ -1718,7 +1718,8 @@
                 <div
                     id="result-single"
                     class="hidden mt-8 max-w-4xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
-                    <div class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                    <div
+                        class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
                         <h3 class="result-panel-title flex items-center gap-2">
                             <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 期待トリック数 (N/S)
                         </h3>
@@ -2254,7 +2255,8 @@
                 <div
                     id="result-lead"
                     class="hidden mt-8 w-full bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-                    <div class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                    <div
+                        class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
                         <h3 class="result-panel-title flex items-center gap-2">
                             <i data-lucide="bar-chart" class="w-4 h-4"></i> 獲得トリック確率分布
                         </h3>
@@ -2269,8 +2271,12 @@
                                 <select
                                     id="lead-sort"
                                     class="result-sort-select px-2 py-1 text-[11px] md:text-xs">
-                                    <option id="lead-sort-tricks" value="tricks">Exp Tricks</option>
-                                    <option id="lead-sort-setprob" value="setprob">Set Prob</option>
+                                    <option id="lead-sort-tricks" value="tricks">
+                                        Exp Tricks
+                                    </option>
+                                    <option id="lead-sort-setprob" value="setprob">
+                                        Set Prob
+                                    </option>
                                 </select>
                                 <span class="result-panel-count font-bold"
                                     >Simulations: <span id="lead-sim-count">-</span></span
