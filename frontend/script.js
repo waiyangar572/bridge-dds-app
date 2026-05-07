@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let latestSDDistribution = null;
     let latestSDCount = 0;
     let latestConditionalResult = null;
+    let condState = { north: [], south: [], east: [], west: [] };
     let referenceViewTab = "probability";
     const IMP_SCALE_ROWS = [
         { min: 0, max: 10, imp: 0 },
@@ -2413,6 +2414,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initConditionalProbabilityUI({ resetQueries = false } = {}) {
         renderConditionalHandPanels();
+        renderCardInterface("cond-container", toggleCardConditional, condState);
+        updateConditionalCardUI();
         const queryContainer = document.getElementById("cond-queries");
         if (resetQueries && queryContainer) queryContainer.innerHTML = "";
         if (
@@ -2446,7 +2449,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div data-cond-feature-only class="grid grid-cols-2 gap-2">
                             <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
                                 <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
                             </label>
@@ -2454,7 +2457,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
                             </label>
                         </div>
-                        <div>
+                        <div data-cond-feature-only>
                             <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
                             <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm mt-1 mb-2">
                                 <option value="any">${tr("select.any", "Any")}</option>
@@ -2473,8 +2476,15 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ).join("")}
                             </div>
                         </div>
-                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
+                        <label data-cond-cards-label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
                         <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK -DQ C2" />
+                        <div data-cond-hand-only class="hidden space-y-2">
+                            <div class="flex items-center justify-between text-xs text-slate-500">
+                                <span>${tr("probability.conditional.selectFullHand", "Select 13 cards")}</span>
+                                <span class="cond-count-badge count-badge bg-slate-400 text-white text-[10px] px-2 py-0.5 rounded-full">0 / 13</span>
+                            </div>
+                            <div id="cond-container-${hand}" class="space-y-1"></div>
+                        </div>
                         </div>
                 </div>`;
         }).join("");
@@ -2484,6 +2494,83 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
         initShapePresetMajorToggles();
+        HANDS.forEach(updateConditionalHandModeUI);
+        container.querySelectorAll('[id^="cond-"][id$="-mode"]').forEach((select) => {
+            select.addEventListener("change", () => {
+                const hand = select.id.replace(/^cond-/, "").replace(/-mode$/, "");
+                updateConditionalHandModeUI(hand);
+            });
+        });
+    }
+
+    function updateConditionalHandModeUI(hand) {
+        const modeSelect = document.getElementById(`cond-${hand}-mode`);
+        if (!modeSelect) return;
+        const isHandMode = modeSelect.value === "hand";
+        const panel = modeSelect.closest(".bg-white");
+        if (!panel) return;
+        panel.querySelectorAll("[data-cond-feature-only]").forEach((el) => {
+            el.classList.toggle("hidden", isHandMode);
+        });
+        panel.querySelectorAll("[data-cond-hand-only]").forEach((el) => {
+            el.classList.toggle("hidden", !isHandMode);
+        });
+        const cardsLabel = panel.querySelector("[data-cond-cards-label]");
+        if (cardsLabel) {
+            cardsLabel.textContent = isHandMode
+                ? tr("probability.conditional.fullHand", "Full hand")
+                : tr("probability.conditional.knownCards", "Known cards");
+        }
+        const cardsInput = document.getElementById(`cond-${hand}-cards`);
+        if (cardsInput) {
+            if (isHandMode && condState[hand].length === 0) {
+                condState[hand] = parseCardsText(cardsInput.value)
+                    .filter((card) => !card.startsWith("-"))
+                    .slice(0, 13);
+                syncConditionalHandInput(hand);
+            }
+            cardsInput.placeholder = isHandMode ? "SA SK SQ SJ ST S9 S8 S7 S6 S5 S4 S3 S2" : "SA HK -DQ C2";
+            cardsInput.classList.toggle("hidden", isHandMode);
+        }
+        updateConditionalCardUI();
+    }
+
+    function syncConditionalHandInput(hand) {
+        const input = document.getElementById(`cond-${hand}-cards`);
+        if (!input) return;
+        input.value = condState[hand].map(cardTextFromId).join(" ");
+    }
+
+    function getConditionalHandCards(hand) {
+        const mode = document.getElementById(`cond-${hand}-mode`)?.value || "feature";
+        if (mode === "hand") return [...(condState[hand] || [])];
+        return parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
+    }
+
+    function toggleCardConditional(hand, cardId) {
+        const btnId = `btn-cond-container-${hand}-${cardId}`;
+        const currentOwner = findCardOwner(condState, cardId);
+        if (currentOwner === hand) {
+            condState[hand] = condState[hand].filter((card) => card !== cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
+        } else if (currentOwner) {
+            triggerAnimation(btnId, "shake-animation", 300);
+            return;
+        } else {
+            if (condState[hand].length >= 13) {
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
+                triggerAnimation(btnId, "shake-animation", 300);
+                return;
+            }
+            condState[hand].push(cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
+        }
+        syncConditionalHandInput(hand);
+        updateConditionalCardUI();
+    }
+
+    function updateConditionalCardUI() {
+        updateCardUI("cond-container", condState);
     }
 
     function conditionInputHtml(prefix) {
@@ -2692,7 +2779,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const seen = new Set();
         const constraints = {};
         for (const hand of HANDS) {
-            const cards = parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
+            const cards = getConditionalHandCards(hand);
             for (const card of cards) {
                 if (card.startsWith("-")) continue;
                 if (seen.has(card))
@@ -2880,9 +2967,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function serializeConditionalState() {
         const hands = HANDS.reduce((acc, hand) => {
+            const mode = document.getElementById(`cond-${hand}-mode`)?.value || "feature";
             acc[hand] = {
-                mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
-                cards: document.getElementById(`cond-${hand}-cards`)?.value || "",
+                mode,
+                cards:
+                    mode === "hand"
+                        ? condState[hand].map(cardTextFromId).join(" ")
+                        : document.getElementById(`cond-${hand}-cards`)?.value || "",
                 hcpMin: numericInputValue(`cond-${hand}-hcp-min`, "0"),
                 hcpMax: numericInputValue(`cond-${hand}-hcp-max`, "37"),
                 preset: getShapePresetValue(`cond-${hand}-preset`),
@@ -2934,8 +3025,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.hands) {
             HANDS.forEach((hand) => {
                 const config = state.hands[hand] || {};
+                const parsedCards = parseCardsText(config.cards || "").filter(
+                    (card) => !card.startsWith("-"),
+                );
+                condState[hand] = config.mode === "hand" ? parsedCards.slice(0, 13) : [];
                 setInputValue(`cond-${hand}-mode`, config.mode || "feature");
-                setInputValue(`cond-${hand}-cards`, config.cards || "");
+                setInputValue(
+                    `cond-${hand}-cards`,
+                    config.mode === "hand" ? condState[hand].map(cardTextFromId).join(" ") : config.cards || "",
+                );
                 setInputValue(`cond-${hand}-hcp-min`, config.hcpMin ?? "0");
                 setInputValue(`cond-${hand}-hcp-max`, config.hcpMax ?? "37");
                 setInputValue(`cond-${hand}-preset`, config.preset || "any");
@@ -2949,7 +3047,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         config.suits?.[suit.id]?.max ?? "13",
                     );
                 });
+                updateConditionalHandModeUI(hand);
             });
+            updateConditionalCardUI();
         }
 
         const container = document.getElementById("cond-queries");
@@ -3148,6 +3248,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     leadBadge.classList.replace("bg-slate-400", "bg-emerald-500");
                 else leadBadge.classList.replace("bg-emerald-500", "bg-slate-400");
             }
+            const condBadge = document
+                .getElementById(`cond-container-${hand}`)
+                ?.closest("[data-cond-hand-only]")
+                ?.querySelector(".cond-count-badge");
+            if (condBadge && containerPrefix === "cond-container") {
+                condBadge.innerText = `${stateObj[hand].length} / 13`;
+                if (stateObj[hand].length === 13)
+                    condBadge.classList.replace("bg-slate-400", "bg-emerald-500");
+                else condBadge.classList.replace("bg-emerald-500", "bg-slate-400");
+            }
 
             const myCards = stateObj[hand];
             SUITS.forEach((suit) => {
@@ -3163,7 +3273,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         btn.classList.add("selected");
                     } else {
                         // Logic to show 'taken' grey out
-                        if (containerPrefix === "container") {
+                        if (containerPrefix === "container" || containerPrefix === "cond-container") {
                             // Double Dummy: Check any other hand
                             if (findCardOwner(stateObj, cardId)) btn.classList.add("taken");
                         } else if (containerPrefix === "sd-container") {
