@@ -28,6 +28,20 @@ const MIME_TYPES = {
     ".xml": "application/xml; charset=utf-8",
 };
 
+const PRERENDER_BLOCKED_HOSTS = [
+    "adm.shinobi.jp",
+    "sync.shinobi.jp",
+    "dmp.im-apps.net",
+    "pagead2.googlesyndication.com",
+    "googleads.g.doubleclick.net",
+    "googlesyndication.com",
+    "googletagservices.com",
+    "doubleclick.net",
+    "criteo.com",
+    "adtrafficquality.google",
+    "www.google.com",
+];
+
 function normalizeRoute(routePath) {
     if (!routePath) return "/";
     const trimmed = routePath.trim();
@@ -116,6 +130,30 @@ function safeJoin(baseDir, requestPath) {
     const resolvedTarget = path.resolve(targetPath);
     if (!resolvedTarget.startsWith(resolvedBase)) return null;
     return resolvedTarget;
+}
+
+function shouldBlockPrerenderRequest(requestUrl) {
+    let hostname = "";
+    try {
+        hostname = new URL(requestUrl).hostname;
+    } catch {
+        return false;
+    }
+
+    return PRERENDER_BLOCKED_HOSTS.some(
+        (blockedHost) => hostname === blockedHost || hostname.endsWith(`.${blockedHost}`),
+    );
+}
+
+async function configurePrerenderNetwork(page) {
+    await page.route("**/*", async (route) => {
+        const request = route.request();
+        if (shouldBlockPrerenderRequest(request.url())) {
+            await route.abort();
+            return;
+        }
+        await route.continue();
+    });
 }
 
 async function createPrerenderServer(manifestRoutes) {
@@ -230,6 +268,7 @@ async function main() {
     const page = await browser.newPage({
         viewport: { width: 1440, height: 1600 },
     });
+    await configurePrerenderNetwork(page);
 
     try {
         for (const routePath of routes) {

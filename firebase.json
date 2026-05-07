@@ -3,6 +3,83 @@
         "public": "frontend",
         "trailingSlash": false,
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+        "redirects": [
+            {
+                "source": "/",
+                "destination": "/en/double-dummy",
+                "type": 301
+            },
+            {
+                "source": "/index.html",
+                "destination": "/en/double-dummy",
+                "type": 301
+            },
+            {
+                "source": "/double-dummy",
+                "destination": "/en/double-dummy",
+                "type": 301
+            },
+            {
+                "source": "/single-dummy",
+                "destination": "/en/single-dummy",
+                "type": 301
+            },
+            {
+                "source": "/opening-lead",
+                "destination": "/en/opening-lead",
+                "type": 301
+            },
+            {
+                "source": "/probability-solver",
+                "destination": "/en/probability-solver",
+                "type": 301
+            },
+            {
+                "source": "/reference/probability",
+                "destination": "/en/reference/probability",
+                "type": 301
+            },
+            {
+                "source": "/reference/imp",
+                "destination": "/en/reference/imp",
+                "type": 301
+            },
+            {
+                "source": "/reference/vp",
+                "destination": "/en/reference/vp",
+                "type": 301
+            },
+            {
+                "source": "/privacy",
+                "destination": "/en/privacy",
+                "type": 301
+            },
+            {
+                "source": "/about",
+                "destination": "/en/about",
+                "type": 301
+            },
+            {
+                "source": "/contact",
+                "destination": "/en/contact",
+                "type": 301
+            },
+            {
+                "source": "/probability",
+                "destination": "/en/reference/probability",
+                "type": 301
+            },
+            {
+                "source": "/en/probability",
+                "destination": "/en/reference/probability",
+                "type": 301
+            },
+            {
+                "source": "/ja/probability",
+                "destination": "/ja/reference/probability",
+                "type": 301
+            }
+        ],
         "rewrites": [
             {
                 "source": "**",
