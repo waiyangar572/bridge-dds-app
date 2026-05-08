@@ -1,5 +1,6 @@
 {
     "hosting": {
+        "predeploy": ["npm run generate:seo"],
         "public": "frontend",
         "trailingSlash": false,
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -98,6 +99,24 @@
             },
             {
                 "source": "/sitemap.xml",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=300"
+                    }
+                ]
+            },
+            {
+                "source": "/rss.xml",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=300"
+                    }
+                ]
+            },
+            {
+                "source": "/atom.xml",
                 "headers": [
                     {
                         "key": "Cache-Control",
