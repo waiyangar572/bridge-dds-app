@@ -2404,6 +2404,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function rangeFromInputs(prefix, fallbackMin, fallbackMax) {
+        const rangeInput = document.getElementById(prefix);
+        if (rangeInput) {
+            const [rawMin, rawMax] = String(rangeInput.value || "")
+                .split("-")
+                .map((value) => Number.parseInt(value, 10));
+            return {
+                min: Number.isNaN(rawMin) ? fallbackMin : rawMin,
+                max: Number.isNaN(rawMax) ? fallbackMax : rawMax,
+            };
+        }
         const min = Number.parseInt(document.getElementById(`${prefix}-min`)?.value, 10);
         const max = Number.parseInt(document.getElementById(`${prefix}-max`)?.value, 10);
         return {
@@ -2449,31 +2459,35 @@ document.addEventListener("DOMContentLoaded", () => {
                             <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
-                        <div data-cond-feature-only class="grid grid-cols-2 gap-2">
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
-                                <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
-                            </label>
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMax", "HCP max")}
-                                <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
-                            </label>
-                        </div>
-                        <div data-cond-feature-only>
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
-                            <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm mt-1 mb-2">
-                                <option value="any">${tr("select.any", "Any")}</option>
-                                <option value="balanced">${tr("select.balanced", "Balanced")}</option>
-                                <option value="semiBalanced">${tr("select.semiBalanced", "Semi-balanced")}</option>
-                                <option value="unbalanced">${tr("select.unbalanced", "Unbalanced")}</option>
-                            </select>
-                            <div class="grid grid-cols-4 gap-2 mt-1">
-                                ${SUITS.map(
-                                    (suit) => `
-                                    <div>
-                                        <div class="${suit.color} text-center font-bold">${suit.label}</div>
-                                        <input id="cond-${hand}-${suit.id}-min" type="number" min="0" max="13" value="0" class="w-full p-1 border rounded text-xs text-center mb-1" />
-                                        <input id="cond-${hand}-${suit.id}-max" type="number" min="0" max="13" value="13" class="w-full p-1 border rounded text-xs text-center" />
-                                    </div>`,
-                                ).join("")}
+                        <div data-cond-feature-only class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpRange", "HCP Range")}</label>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" placeholder="${tr("probability.conditional.min", "Min")}" class="w-full p-2 border rounded text-sm" />
+                                    <span class="text-slate-400">-</span>
+                                    <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" placeholder="${tr("probability.conditional.max", "Max")}" class="w-full p-2 border rounded text-sm" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase mb-1 block">${tr("probability.conditional.shapeRange", "Shape Range")}</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    ${SUITS.map(
+                                        (suit) => `
+                                        <div class="text-center">
+                                            <span class="text-xs font-bold ${suit.color}">${suit.label}</span>
+                                            <input id="cond-${hand}-${suit.id}" type="text" class="w-full p-1 text-center border rounded text-xs mt-1" placeholder="0-13" />
+                                        </div>`,
+                                    ).join("")}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase mb-1 block">${tr("probability.conditional.shapeType", "Shape Type")}</label>
+                                <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">${tr("select.any", "Any")}</option>
+                                    <option value="balanced">${tr("select.balanced", "Balanced")}</option>
+                                    <option value="semiBalanced">${tr("select.semiBalanced", "Semi-balanced")}</option>
+                                    <option value="unbalanced">${tr("select.unbalanced", "Unbalanced")}</option>
+                                </select>
                             </div>
                         </div>
                         <label data-cond-cards-label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
@@ -2978,9 +2992,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 hcpMax: numericInputValue(`cond-${hand}-hcp-max`, "37"),
                 preset: getShapePresetValue(`cond-${hand}-preset`),
                 suits: SUITS.reduce((suitAcc, suit) => {
+                    const range = rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13);
                     suitAcc[suit.id] = {
-                        min: numericInputValue(`cond-${hand}-${suit.id}-min`, "0"),
-                        max: numericInputValue(`cond-${hand}-${suit.id}-max`, "13"),
+                        min: String(range.min),
+                        max: String(range.max),
                     };
                     return suitAcc;
                 }, {}),
@@ -3038,14 +3053,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 setInputValue(`cond-${hand}-hcp-max`, config.hcpMax ?? "37");
                 setInputValue(`cond-${hand}-preset`, config.preset || "any");
                 SUITS.forEach((suit) => {
-                    setInputValue(
-                        `cond-${hand}-${suit.id}-min`,
-                        config.suits?.[suit.id]?.min ?? "0",
-                    );
-                    setInputValue(
-                        `cond-${hand}-${suit.id}-max`,
-                        config.suits?.[suit.id]?.max ?? "13",
-                    );
+                    const min = config.suits?.[suit.id]?.min ?? "0";
+                    const max = config.suits?.[suit.id]?.max ?? "13";
+                    setInputValue(`cond-${hand}-${suit.id}`, `${min}-${max}`);
                 });
                 updateConditionalHandModeUI(hand);
             });
