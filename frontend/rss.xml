@@ -5,146 +5,146 @@
     <link>https://bridge-solver.waiyangar.com</link>
     <description>Contract bridge analysis tools: Double Dummy, Single Dummy, Opening Lead, and reference tables for probability, IMP, and VP scales.</description>
     <language>en</language>
-    <lastBuildDate>Fri, 08 May 2026 05:48:17 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 09 May 2026 05:59:04 GMT</lastBuildDate>
     <item>
       <title>Double Dummy Solver Online | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/double-dummy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/double-dummy</guid>
       <description>Use this double dummy solver online to analyze contract bridge hands, compare NT and suit contracts, and find optimal trick potential.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Contract Bridge Hand Analyzer | Single Dummy Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/single-dummy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/single-dummy</guid>
       <description>Run a contract bridge hand analyzer with HCP and shape constraints to estimate trick distributions for practical bidding decisions.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Opening Lead Calculator | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/opening-lead</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/opening-lead</guid>
       <description>Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Probability Solver | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/probability-solver</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/probability-solver</guid>
       <description>Calculate exact conditional bridge probabilities from known cards, HCP ranges, and suit-length constraints using combinatorial enumeration.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Reference Tables (Probability, IMP, VP) | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/reference/probability</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/reference/probability</guid>
       <description>Use bridge reference tables to check probability lines, IMP scale, and VP scale by board count.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge IMP Scale Table | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/reference/imp</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/reference/imp</guid>
       <description>Check IMP conversion quickly with a readable multi-column bridge IMP scale table.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge VP Scale by Boards | Bridge Solver</title>
       <link>https://bridge-solver.waiyangar.com/en/reference/vp</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/reference/vp</guid>
       <description>Check VP values by IMP difference and board count (including quick 16/32-board views).</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | Privacy Policy</title>
       <link>https://bridge-solver.waiyangar.com/en/privacy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/privacy</guid>
       <description>Privacy Policy for Bridge Solver, including cookie usage, ads, and analytics policy.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | About Us</title>
       <link>https://bridge-solver.waiyangar.com/en/about</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/about</guid>
       <description>About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | Contact</title>
       <link>https://bridge-solver.waiyangar.com/en/contact</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/en/contact</guid>
       <description>Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests.</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | ダブルダミー分析</title>
       <link>https://bridge-solver.waiyangar.com/ja/double-dummy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/double-dummy</guid>
       <description>コントラクトブリッジのDouble Dummy解析。NT/各スートの最適トリックを比較できます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | シングルダミー分析</title>
       <link>https://bridge-solver.waiyangar.com/ja/single-dummy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/single-dummy</guid>
       <description>HCP・Shape条件を指定したシングルダミーシミュレーションで実戦的な確率分布を確認できます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | オープニングリード分析</title>
       <link>https://bridge-solver.waiyangar.com/ja/opening-lead</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/opening-lead</guid>
       <description>Opening Lead候補ごとの期待トリック数とセット確率を比較できます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | 確率ソルバー</title>
       <link>https://bridge-solver.waiyangar.com/ja/probability-solver</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/probability-solver</guid>
       <description>既知カード、HCP、スート枚数レンジを指定して、コントラクトブリッジの条件付き確率を厳密な組合せ計算で求めます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | ブリッジ早見表</title>
       <link>https://bridge-solver.waiyangar.com/ja/reference/probability</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/reference/probability</guid>
       <description>確率表・IMP表・VP表を切り替えて確認でき、VPはボード数指定で早見できます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | IMPスケール表</title>
       <link>https://bridge-solver.waiyangar.com/ja/reference/imp</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/reference/imp</guid>
       <description>見やすい複数列のIMPスケール表で、スコア差からIMPを素早く確認できます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | VPスケール表</title>
       <link>https://bridge-solver.waiyangar.com/ja/reference/vp</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/reference/vp</guid>
       <description>ボード数ごとのVPスケールを確認できます。16/32ボードはワンタップ対応。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | プライバシーポリシー</title>
       <link>https://bridge-solver.waiyangar.com/ja/privacy</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/privacy</guid>
       <description>Bridge Solverのプライバシーポリシー。Cookie、広告、アクセス解析に関する方針を記載しています。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | 運営情報</title>
       <link>https://bridge-solver.waiyangar.com/ja/about</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/about</guid>
       <description>Bridge Solverの目的と、コントラクトブリッジ分析ツールの提供方針について。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
     <item>
       <title>Bridge Solver | お問い合わせ</title>
       <link>https://bridge-solver.waiyangar.com/ja/contact</link>
       <guid isPermaLink="true">https://bridge-solver.waiyangar.com/ja/contact</guid>
       <description>Bridge Solverへのお問い合わせ方法。Googleフォームからご連絡いただけます。</description>
-      <pubDate>Fri, 08 May 2026 05:48:17 GMT</pubDate>
+      <pubDate>Sat, 09 May 2026 05:59:04 GMT</pubDate>
     </item>
   </channel>
 </rss>

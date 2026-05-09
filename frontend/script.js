@@ -2410,8 +2410,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .split("-")
                 .map((value) => Number.parseInt(value, 10));
             return {
-                min: Number.isNaN(rawMin) ? fallbackMin : rawMin,
-                max: Number.isNaN(rawMax) ? fallbackMax : rawMax,
+                min: Number.isFinite(rawMin) ? rawMin : fallbackMin,
+                max: Number.isFinite(rawMax) ? rawMax : fallbackMax,
             };
         }
         const min = Number.parseInt(document.getElementById(`${prefix}-min`)?.value, 10);

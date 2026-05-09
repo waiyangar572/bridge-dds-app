@@ -21,9 +21,7 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         payload_queries = [
             {
                 "name": "North 10-12 HCP",
-                "join": "single",
-                "a": {"hand": "north", "type": "hcp", "value": "10-12"},
-                "b": {"hand": "", "type": "", "value": ""},
+                "event": {"hand": "north", "type": "hcp", "value": "10-12"},
             }
         ]
 
@@ -47,9 +45,7 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         payload_queries = [
             {
                 "name": "North has SA",
-                "join": "single",
-                "a": {"hand": "north", "type": "card", "value": "SA"},
-                "b": {"hand": "", "type": "", "value": ""},
+                "event": {"hand": "north", "type": "card", "value": "SA"},
             }
         ]
 
@@ -70,9 +66,7 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         payload_queries = [
             {
                 "name": "North 4-4-3-2",
-                "join": "single",
-                "a": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
-                "b": {"hand": "", "type": "", "value": ""},
+                "event": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
             }
         ]
 
@@ -94,9 +88,13 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         payload_queries = [
             {
                 "name": "North 4-4-3-2 and 10-12",
-                "join": "and",
-                "a": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
-                "b": {"hand": "north", "type": "hcp", "value": "10-12"},
+                "event": {
+                    "op": "and",
+                    "conditions": [
+                        {"hand": "north", "type": "shape", "value": "4-4-3-2"},
+                        {"hand": "north", "type": "hcp", "value": "10-12"},
+                    ],
+                },
             }
         ]
 
@@ -117,21 +115,21 @@ class ConditionalProbabilityApiAdapterTest(unittest.TestCase):
         }
         shape_query = {
             "name": "North 4-4-3-2",
-            "join": "single",
-            "a": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
-            "b": {"hand": "", "type": "", "value": ""},
+            "event": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
         }
         hcp_query = {
             "name": "North 10-12",
-            "join": "single",
-            "a": {"hand": "north", "type": "hcp", "value": "10-12"},
-            "b": {"hand": "", "type": "", "value": ""},
+            "event": {"hand": "north", "type": "hcp", "value": "10-12"},
         }
         joint_query = {
             "name": "North 4-4-3-2 and 10-12",
-            "join": "and",
-            "a": {"hand": "north", "type": "shape", "value": "4-4-3-2"},
-            "b": {"hand": "north", "type": "hcp", "value": "10-12"},
+            "event": {
+                "op": "and",
+                "conditions": [
+                    {"hand": "north", "type": "shape", "value": "4-4-3-2"},
+                    {"hand": "north", "type": "hcp", "value": "10-12"},
+                ],
+            },
         }
 
         response = calculate_conditional_probability(
