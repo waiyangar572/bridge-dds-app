@@ -326,6 +326,17 @@ function getPrerenderRouteState(routePath) {
 async function pruneInactivePrerenderContent(page, routePath) {
     const routeState = getPrerenderRouteState(routePath);
     await page.evaluate(({ viewId, visiblePanelId }) => {
+        const shellState = document.createElement("script");
+        const shellBody = document.body.cloneNode(true);
+        shellBody.querySelectorAll("noscript").forEach((node) => node.remove());
+        shellState.id = "spa-shell-state";
+        shellState.type = "application/json";
+        shellState.textContent = JSON.stringify({
+            bodyClass: document.body.className,
+            bodyHtml: shellBody.innerHTML,
+        }).replace(/<\/script/gi, "<\\/script");
+        document.head.appendChild(shellState);
+
         const viewIds = [
             "view-double",
             "view-single",

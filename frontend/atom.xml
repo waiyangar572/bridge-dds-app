@@ -4,145 +4,145 @@
   <link href="https://bridge-solver.waiyangar.com" />
   <link rel="self" href="https://bridge-solver.waiyangar.com/atom.xml" />
   <id>https://bridge-solver.waiyangar.com</id>
-  <updated>2026-05-11T17:47:41.434Z</updated>
+  <updated>2026-05-11T17:54:24.863Z</updated>
   <entry>
     <title>Double Dummy Solver Online | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/double-dummy" />
     <id>https://bridge-solver.waiyangar.com/en/double-dummy</id>
-    <updated>2026-05-11T17:47:23.603Z</updated>
+    <updated>2026-05-11T17:54:07.063Z</updated>
     <summary>Use this double dummy solver online to analyze contract bridge hands, compare NT and suit contracts, and find optimal trick potential.</summary>
   </entry>
   <entry>
     <title>Contract Bridge Hand Analyzer | Single Dummy Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/single-dummy" />
     <id>https://bridge-solver.waiyangar.com/en/single-dummy</id>
-    <updated>2026-05-11T17:47:24.701Z</updated>
+    <updated>2026-05-11T17:54:08.105Z</updated>
     <summary>Run a contract bridge hand analyzer with HCP and shape constraints to estimate trick distributions for practical bidding decisions.</summary>
   </entry>
   <entry>
     <title>Bridge Opening Lead Calculator | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/opening-lead" />
     <id>https://bridge-solver.waiyangar.com/en/opening-lead</id>
-    <updated>2026-05-11T17:47:25.653Z</updated>
+    <updated>2026-05-11T17:54:09.058Z</updated>
     <summary>Use a bridge opening lead calculator to compare lead candidates by expected tricks and set probability against target contracts.</summary>
   </entry>
   <entry>
     <title>Bridge Probability Solver | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/probability-solver" />
     <id>https://bridge-solver.waiyangar.com/en/probability-solver</id>
-    <updated>2026-05-11T17:47:26.512Z</updated>
+    <updated>2026-05-11T17:54:09.981Z</updated>
     <summary>Calculate exact conditional bridge probabilities from known cards, HCP ranges, and suit-length constraints using combinatorial enumeration.</summary>
   </entry>
   <entry>
     <title>Bridge Reference Tables (Probability, IMP, VP) | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/reference/probability" />
     <id>https://bridge-solver.waiyangar.com/en/reference/probability</id>
-    <updated>2026-05-11T17:47:27.499Z</updated>
+    <updated>2026-05-11T17:54:10.959Z</updated>
     <summary>Use bridge reference tables to check probability lines, IMP scale, and VP scale by board count.</summary>
   </entry>
   <entry>
     <title>Bridge IMP Scale Table | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/reference/imp" />
     <id>https://bridge-solver.waiyangar.com/en/reference/imp</id>
-    <updated>2026-05-11T17:47:28.450Z</updated>
+    <updated>2026-05-11T17:54:11.807Z</updated>
     <summary>Check IMP conversion quickly with a readable multi-column bridge IMP scale table.</summary>
   </entry>
   <entry>
     <title>Bridge VP Scale by Boards | Bridge Solver</title>
     <link href="https://bridge-solver.waiyangar.com/en/reference/vp" />
     <id>https://bridge-solver.waiyangar.com/en/reference/vp</id>
-    <updated>2026-05-11T17:47:29.400Z</updated>
+    <updated>2026-05-11T17:54:12.744Z</updated>
     <summary>Check VP values by IMP difference and board count (including quick 16/32-board views).</summary>
   </entry>
   <entry>
     <title>Bridge Solver | Privacy Policy</title>
     <link href="https://bridge-solver.waiyangar.com/en/privacy" />
     <id>https://bridge-solver.waiyangar.com/en/privacy</id>
-    <updated>2026-05-11T17:47:30.351Z</updated>
+    <updated>2026-05-11T17:54:13.625Z</updated>
     <summary>Privacy Policy for Bridge Solver, including cookie usage, ads, and analytics policy.</summary>
   </entry>
   <entry>
     <title>Bridge Solver | About Us</title>
     <link href="https://bridge-solver.waiyangar.com/en/about" />
     <id>https://bridge-solver.waiyangar.com/en/about</id>
-    <updated>2026-05-11T17:47:31.328Z</updated>
+    <updated>2026-05-11T17:54:14.586Z</updated>
     <summary>About Bridge Solver and our mission to provide modern, practical contract bridge analysis tools.</summary>
   </entry>
   <entry>
     <title>Bridge Solver | Contact</title>
     <link href="https://bridge-solver.waiyangar.com/en/contact" />
     <id>https://bridge-solver.waiyangar.com/en/contact</id>
-    <updated>2026-05-11T17:47:32.295Z</updated>
+    <updated>2026-05-11T17:54:15.508Z</updated>
     <summary>Contact Bridge Solver via Google Form for feedback, bug reports, and feature requests.</summary>
   </entry>
   <entry>
     <title>Bridge Solver | ダブルダミー分析</title>
     <link href="https://bridge-solver.waiyangar.com/ja/double-dummy" />
     <id>https://bridge-solver.waiyangar.com/ja/double-dummy</id>
-    <updated>2026-05-11T17:47:33.217Z</updated>
+    <updated>2026-05-11T17:54:16.439Z</updated>
     <summary>コントラクトブリッジのDouble Dummy解析。NT/各スートの最適トリックを比較できます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | シングルダミー分析</title>
     <link href="https://bridge-solver.waiyangar.com/ja/single-dummy" />
     <id>https://bridge-solver.waiyangar.com/ja/single-dummy</id>
-    <updated>2026-05-11T17:47:34.116Z</updated>
+    <updated>2026-05-11T17:54:17.400Z</updated>
     <summary>HCP・Shape条件を指定したシングルダミーシミュレーションで実戦的な確率分布を確認できます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | オープニングリード分析</title>
     <link href="https://bridge-solver.waiyangar.com/ja/opening-lead" />
     <id>https://bridge-solver.waiyangar.com/ja/opening-lead</id>
-    <updated>2026-05-11T17:47:34.981Z</updated>
+    <updated>2026-05-11T17:54:18.327Z</updated>
     <summary>Opening Lead候補ごとの期待トリック数とセット確率を比較できます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | 確率ソルバー</title>
     <link href="https://bridge-solver.waiyangar.com/ja/probability-solver" />
     <id>https://bridge-solver.waiyangar.com/ja/probability-solver</id>
-    <updated>2026-05-11T17:47:35.994Z</updated>
+    <updated>2026-05-11T17:54:19.267Z</updated>
     <summary>既知カード、HCP、スート枚数レンジを指定して、コントラクトブリッジの条件付き確率を厳密な組合せ計算で求めます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | ブリッジ早見表</title>
     <link href="https://bridge-solver.waiyangar.com/ja/reference/probability" />
     <id>https://bridge-solver.waiyangar.com/ja/reference/probability</id>
-    <updated>2026-05-11T17:47:36.951Z</updated>
+    <updated>2026-05-11T17:54:20.249Z</updated>
     <summary>確率表・IMP表・VP表を切り替えて確認でき、VPはボード数指定で早見できます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | IMPスケール表</title>
     <link href="https://bridge-solver.waiyangar.com/ja/reference/imp" />
     <id>https://bridge-solver.waiyangar.com/ja/reference/imp</id>
-    <updated>2026-05-11T17:47:37.874Z</updated>
+    <updated>2026-05-11T17:54:21.189Z</updated>
     <summary>見やすい複数列のIMPスケール表で、スコア差からIMPを素早く確認できます。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | VPスケール表</title>
     <link href="https://bridge-solver.waiyangar.com/ja/reference/vp" />
     <id>https://bridge-solver.waiyangar.com/ja/reference/vp</id>
-    <updated>2026-05-11T17:47:38.778Z</updated>
+    <updated>2026-05-11T17:54:22.087Z</updated>
     <summary>ボード数ごとのVPスケールを確認できます。16/32ボードはワンタップ対応。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | プライバシーポリシー</title>
     <link href="https://bridge-solver.waiyangar.com/ja/privacy" />
     <id>https://bridge-solver.waiyangar.com/ja/privacy</id>
-    <updated>2026-05-11T17:47:39.660Z</updated>
+    <updated>2026-05-11T17:54:22.980Z</updated>
     <summary>Bridge Solverのプライバシーポリシー。Cookie、広告、アクセス解析に関する方針を記載しています。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | 運営情報</title>
     <link href="https://bridge-solver.waiyangar.com/ja/about" />
     <id>https://bridge-solver.waiyangar.com/ja/about</id>
-    <updated>2026-05-11T17:47:40.564Z</updated>
+    <updated>2026-05-11T17:54:23.897Z</updated>
     <summary>Bridge Solverの目的と、コントラクトブリッジ分析ツールの提供方針について。</summary>
   </entry>
   <entry>
     <title>Bridge Solver | お問い合わせ</title>
     <link href="https://bridge-solver.waiyangar.com/ja/contact" />
     <id>https://bridge-solver.waiyangar.com/ja/contact</id>
-    <updated>2026-05-11T17:47:41.434Z</updated>
+    <updated>2026-05-11T17:54:24.863Z</updated>
     <summary>Bridge Solverへのお問い合わせ方法。Googleフォームからご連絡いただけます。</summary>
   </entry>
 </feed>

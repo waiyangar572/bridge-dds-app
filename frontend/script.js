@@ -896,13 +896,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         spaShellHydrationPromise = (async () => {
-            const response = await fetch("/spa-shell.html", { cache: "no-cache" });
-            if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
+            const embeddedShell = document.getElementById("spa-shell-state");
+            if (embeddedShell?.textContent) {
+                const shellState = JSON.parse(embeddedShell.textContent);
+                document.body.className = shellState.bodyClass || document.body.className;
+                document.body.innerHTML = shellState.bodyHtml;
+            } else {
+                const response = await fetch("/spa-shell.html", { cache: "no-cache" });
+                if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
 
-            const html = await response.text();
-            const shellDoc = new DOMParser().parseFromString(html, "text/html");
-            shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
-            document.body.replaceWith(shellDoc.body);
+                const html = await response.text();
+                const shellDoc = new DOMParser().parseFromString(html, "text/html");
+                shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
+                document.body.replaceWith(shellDoc.body);
+            }
 
             if (window.lucide?.createIcons) {
                 window.lucide.createIcons();
