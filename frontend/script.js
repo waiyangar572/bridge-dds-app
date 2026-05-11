@@ -69,6 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
         { min: 4000, max: null, imp: 24 },
     ];
     let vpBoardCount = 16;
+    let spaShellHydrationPromise = null;
+    let documentClickHandlerBound = false;
 
     const NAV_KEYS = ["double", "single", "lead", "solver", "probability"];
     const VIEW_IDS = [
@@ -161,16 +163,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- Init ---
-    lucide.createIcons();
-    if (document.getElementById("view-double")) {
-        initDoubleDummyUI();
-        initSingleDummyUI();
-        initLeadSolverUI();
-        initProbabilityUI();
+    if (window.lucide?.createIcons) {
+        window.lucide.createIcons();
     }
+    initializeExistingViews();
     initShapePresetMajorToggles();
     setupEventListeners();
     bootstrapApp();
+
+    function initializeExistingViews() {
+        if (document.getElementById("view-double")) initDoubleDummyUI();
+        if (document.getElementById("view-single")) initSingleDummyUI();
+        if (document.getElementById("view-lead")) initLeadSolverUI();
+        if (document.getElementById("view-probability")) initProbabilityUI();
+    }
 
     function markPrerenderReady() {
         window.__PRERENDER_READY__ = true;
@@ -876,6 +882,51 @@ document.addEventListener("DOMContentLoaded", () => {
             navigateTo(popRoutePath, false);
             markPrerenderReady();
         });
+    }
+
+    function hasFullSpaShell() {
+        return VIEW_IDS.every((id) => document.getElementById(id));
+    }
+
+    async function hydrateFullSpaShell() {
+        if (hasFullSpaShell()) return;
+        if (spaShellHydrationPromise) {
+            await spaShellHydrationPromise;
+            return;
+        }
+
+        spaShellHydrationPromise = (async () => {
+            const response = await fetch("/spa-shell.html", { cache: "no-cache" });
+            if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
+
+            const html = await response.text();
+            const shellDoc = new DOMParser().parseFromString(html, "text/html");
+            shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
+            document.body.replaceWith(shellDoc.body);
+
+            if (window.lucide?.createIcons) {
+                window.lucide.createIcons();
+            }
+            initializeExistingViews();
+            initShapePresetMajorToggles();
+            setupEventListeners();
+            applyTranslations();
+            renderRoute(getRoute(currentRoutePath));
+        })();
+
+        try {
+            await spaShellHydrationPromise;
+        } finally {
+            spaShellHydrationPromise = null;
+        }
+    }
+
+    async function navigateWithinSpa(route) {
+        const targetRoute = getRoute(route);
+        if (!document.getElementById(targetRoute.viewId)) {
+            await hydrateFullSpaShell();
+        }
+        navigateTo(route);
     }
 
     function triggerAnimation(elementId, animationClass, duration) {
@@ -4193,7 +4244,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         }
 
-        document.addEventListener("click", (e) => {
+        const handleDocumentClick = async (e) => {
             const shareTarget = e.target.closest("[data-share-result]");
             if (shareTarget) {
                 e.preventDefault();
@@ -4216,9 +4267,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const route = routeTarget.dataset.route;
             if (!route) return;
             e.preventDefault();
-            navigateTo(route);
-            if (mobileNav) mobileNav.classList.add("hidden");
-        });
+            await navigateWithinSpa(route);
+            document.getElementById("mobile-nav")?.classList.add("hidden");
+        };
+
+        if (!documentClickHandlerBound) {
+            document.addEventListener("click", handleDocumentClick);
+            documentClickHandlerBound = true;
+        }
 
         const switchers = ["lang-en", "lang-ja", "lang-en-mobile", "lang-ja-mobile"];
         switchers.forEach((id) => {
@@ -4263,9 +4319,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.querySelectorAll("[data-reference-tab]").forEach((btn) => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 if (!(btn instanceof HTMLElement)) return;
-                navigateTo(getReferenceTabRoute(btn.dataset.referenceTab || "probability"));
+                const route = getReferenceTabRoute(btn.dataset.referenceTab || "probability");
+                const targetRoute = getRoute(route);
+                const targetPanelId =
+                    targetRoute.referenceTab === "imp"
+                        ? "reference-panel-imp"
+                        : targetRoute.referenceTab === "vp"
+                          ? "reference-panel-vp"
+                          : "reference-panel-probability";
+                if (!document.getElementById(targetPanelId)) {
+                    await hydrateFullSpaShell();
+                }
+                await navigateWithinSpa(route);
             });
         });
 

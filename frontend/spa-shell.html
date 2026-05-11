@@ -1,0 +1,3151 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bridge Solver | Double Dummy</title>
+        <meta
+            name="description"
+            content="Contract bridge analysis tools: Double Dummy, Single Dummy, Opening Lead, and reference tables for probability, IMP, and VP scales." />
+        <meta
+            name="robots"
+            content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+        <link
+            rel="canonical"
+            href="https://bridge-solver.waiyangar.com/en/double-dummy"
+            data-seo="canonical" />
+        <link
+            rel="alternate"
+            hreflang="en"
+            href="https://bridge-solver.waiyangar.com/en/double-dummy"
+            data-hreflang="true" />
+        <link
+            rel="alternate"
+            hreflang="ja"
+            href="https://bridge-solver.waiyangar.com/ja/double-dummy"
+            data-hreflang="true" />
+        <link
+            rel="alternate"
+            hreflang="x-default"
+            href="https://bridge-solver.waiyangar.com/en/double-dummy"
+            data-hreflang="true" />
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="Bridge Solver RSS"
+            href="https://bridge-solver.waiyangar.com/rss.xml" />
+        <link
+            rel="alternate"
+            type="application/atom+xml"
+            title="Bridge Solver Atom"
+            href="https://bridge-solver.waiyangar.com/atom.xml" />
+        <meta property="og:title" content="Bridge Solver | Double Dummy Solver" />
+        <meta
+            property="og:description"
+            content="Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract." />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Bridge Solver" />
+        <meta property="og:url" content="https://bridge-solver.waiyangar.com/en/double-dummy" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale:alternate" content="ja_JP" />
+        <meta
+            property="og:image"
+            content="https://bridge-solver.waiyangar.com/favicon-96x96.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Bridge Solver | Double Dummy Solver" />
+        <meta
+            name="twitter:description"
+            content="Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract." />
+        <meta
+            name="twitter:image"
+            content="https://bridge-solver.waiyangar.com/favicon-96x96.png" />
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171"
+            crossorigin="anonymous"></script>
+        <script id="seo-json-ld" type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@graph": [
+                    {
+                        "@type": "WebSite",
+                        "@id": "https://bridge-solver.waiyangar.com/#website",
+                        "name": "Bridge Solver",
+                        "url": "https://bridge-solver.waiyangar.com/",
+                        "inLanguage": "en"
+                    },
+                    {
+                        "@type": "WebPage",
+                        "@id": "https://bridge-solver.waiyangar.com/en/double-dummy#webpage",
+                        "url": "https://bridge-solver.waiyangar.com/en/double-dummy",
+                        "name": "Bridge Solver | Double Dummy Solver",
+                        "description": "Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract.",
+                        "inLanguage": "en",
+                        "isPartOf": {
+                            "@id": "https://bridge-solver.waiyangar.com/#website"
+                        },
+                        "breadcrumb": {
+                            "@id": "https://bridge-solver.waiyangar.com/en/double-dummy#breadcrumb"
+                        },
+                        "mainEntity": {
+                            "@id": "https://bridge-solver.waiyangar.com/en/double-dummy#software"
+                        }
+                    },
+                    {
+                        "@type": "BreadcrumbList",
+                        "@id": "https://bridge-solver.waiyangar.com/en/double-dummy#breadcrumb",
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": 1,
+                                "name": "Bridge Solver",
+                                "item": "https://bridge-solver.waiyangar.com/en/double-dummy"
+                            }
+                        ]
+                    },
+                    {
+                        "@type": "SoftwareApplication",
+                        "@id": "https://bridge-solver.waiyangar.com/en/double-dummy#software",
+                        "name": "Bridge Solver | Double Dummy Solver",
+                        "description": "Double Dummy analysis for contract bridge. Compare optimal trick counts in NT and each suit contract.",
+                        "url": "https://bridge-solver.waiyangar.com/en/double-dummy",
+                        "inLanguage": "en",
+                        "applicationCategory": "GameApplication",
+                        "applicationSubCategory": "Bridge analysis tool",
+                        "operatingSystem": "Web",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        },
+                        "isAccessibleForFree": true,
+                        "browserRequirements": "Requires JavaScript. Works on modern browsers."
+                    }
+                ]
+            }
+        </script>
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <style>
+            :root {
+                --notion-blue: #0075de;
+                --notion-blue-active: #005bab;
+                --focus-blue: #097fe8;
+                --text-primary: rgba(0, 0, 0, 0.95);
+                --text-secondary: #615d59;
+                --text-muted: #a39e98;
+                --bg-white: #ffffff;
+                --bg-warm: #f6f5f4;
+                --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+                --card-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+                    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+                    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    -apple-system,
+                    system-ui,
+                    "Segoe UI",
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                background-color: var(--bg-white) !important;
+                color: var(--text-primary) !important;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--notion-blue);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            #mob-nav-double:hover {
+                text-decoration: none;
+            }
+            #mob-nav-single:hover {
+                text-decoration: none;
+            }
+            #mob-nav-lead:hover {
+                text-decoration: none;
+            }
+            #nav-double:hover {
+                text-decoration: none;
+            }
+            #nav-single:hover {
+                text-decoration: none;
+            }
+            #nav-lead:hover {
+                text-decoration: none;
+            }
+
+            .site-header {
+                background: var(--bg-white) !important;
+                border-bottom: var(--border-whisper);
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .site-header .site-brand {
+                color: var(--text-primary);
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.25px;
+            }
+
+            .site-header .site-logo {
+                border: var(--border-whisper);
+                background: var(--bg-warm);
+                color: var(--text-primary);
+                border-radius: 8px;
+            }
+
+            .site-header .site-logo i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .site-header .site-nav-btn {
+                color: var(--text-primary);
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.33;
+                border-bottom-width: 2px;
+            }
+
+            .site-header .tab-active {
+                color: var(--notion-blue) !important;
+                border-bottom-color: var(--notion-blue) !important;
+            }
+
+            .site-header .tab-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header .lang-switch {
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                border-radius: 9999px;
+                padding: 2px;
+            }
+
+            .site-header .lang-switch-btn {
+                border-radius: 9999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            .site-header .lang-switch-btn:hover {
+                color: var(--text-primary);
+            }
+
+            .site-header .lang-switch-btn.bg-indigo-600 {
+                background: var(--notion-blue) !important;
+                color: #fff !important;
+            }
+
+            .site-header .lang-switch-btn.text-slate-600 {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header #mobile-nav .text-indigo-600 {
+                color: var(--notion-blue) !important;
+                background: #f2f9ff;
+            }
+
+            .site-header #mobile-menu-btn {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                color: var(--text-secondary);
+            }
+
+            .site-header #mobile-menu-btn:hover {
+                color: var(--text-primary);
+                background: var(--bg-warm);
+            }
+
+            .sd-mode-switch-active {
+                background: #fff;
+                color: var(--notion-blue) !important;
+                box-shadow: var(--card-shadow);
+            }
+
+            .sd-mode-switch-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .sd-mode-switch-inactive:hover {
+                color: var(--text-primary) !important;
+            }
+
+            .shape-major-btn-active {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+            }
+
+            .shape-major-btn-inactive {
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-color: rgba(0, 0, 0, 0.12);
+            }
+
+            .result-panel-head {
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+
+            .result-panel-title {
+                color: var(--text-primary);
+                font-weight: 700;
+            }
+
+            .result-panel-count {
+                color: var(--focus-blue);
+                background: #f2f9ff;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
+
+            .result-sort-select {
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 4px;
+            }
+
+            .result-analysis-card {
+                background: #fff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+                padding: 12px;
+            }
+
+            .result-meta-label {
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.125px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .result-player-label {
+                color: var(--text-secondary);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-avg-value {
+                color: var(--notion-blue);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-value-primary {
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .result-value-accent {
+                color: #dd5b00;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-pill {
+                border-radius: 9999px;
+                padding: 2px 8px;
+                border: var(--border-whisper);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .result-pill-game {
+                background: rgba(26, 174, 57, 0.12);
+                color: #1aae39;
+            }
+
+            .result-pill-slam {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            .share-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .share-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1;
+                transition:
+                    background-color 120ms ease,
+                    color 120ms ease,
+                    border-color 120ms ease;
+            }
+
+            .share-button:hover {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+                text-decoration: none;
+            }
+
+            .share-button i {
+                width: 14px;
+                height: 14px;
+            }
+
+            .suit-nt {
+                color: var(--text-primary);
+            }
+
+            #total-count {
+                color: var(--notion-blue) !important;
+            }
+
+            .tab-active {
+                border-bottom-color: var(--notion-blue);
+                color: var(--notion-blue);
+                background-color: #f2f9ff;
+                font-weight: 600;
+            }
+            .tab-inactive {
+                border-bottom-color: transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            .tab-inactive:hover {
+                color: var(--text-primary);
+                background-color: var(--bg-warm);
+            }
+
+            #btn-run-double,
+            #btn-run-single,
+            #btn-run-lead {
+                background-color: var(--notion-blue) !important;
+                color: #fff !important;
+                border: 1px solid transparent;
+                border-radius: 4px !important;
+                box-shadow: var(--card-shadow) !important;
+                font-size: 15px;
+                font-weight: 600;
+                transition:
+                    transform 0.1s ease,
+                    background-color 0.15s ease;
+            }
+            #btn-run-double:hover,
+            #btn-run-single:hover,
+            #btn-run-lead:hover {
+                background-color: var(--notion-blue-active) !important;
+            }
+            #btn-run-double:active,
+            #btn-run-single:active,
+            #btn-run-lead:active {
+                transform: scale(0.96);
+            }
+
+            .pc-rank-btn {
+                font-size: 0.75rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.1s;
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                user-select: none;
+            }
+            .pc-rank-btn:hover {
+                background-color: var(--bg-warm);
+            }
+            .pc-rank-btn.selected {
+                background-color: var(--notion-blue);
+                color: #fff;
+                border-color: var(--notion-blue);
+                font-weight: 600;
+            }
+            .pc-rank-btn.taken {
+                background-color: var(--bg-warm);
+                color: var(--text-muted);
+                cursor: not-allowed;
+                border-color: transparent;
+            }
+
+            .bg-white,
+            section,
+            .hand-card {
+                border: var(--border-whisper) !important;
+                box-shadow: var(--card-shadow) !important;
+            }
+
+            input,
+            textarea,
+            select {
+                border: 1px solid #dddddd !important;
+                border-radius: 4px !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted) !important;
+            }
+
+            .count-badge,
+            .sd-count-badge,
+            .lead-count-badge {
+                border-radius: 9999px !important;
+                background: #f2f9ff !important;
+                color: var(--focus-blue) !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.125px;
+            }
+
+            .hand-card-mobile-active {
+                border-color: var(--focus-blue) !important;
+                box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.22);
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .suit-s {
+                color: #2a6f97;
+            }
+            .suit-h {
+                color: #c94040;
+            }
+            .suit-d {
+                color: #f97316;
+            }
+            .suit-c {
+                color: #16a34a;
+            }
+
+            .result-table th {
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.125px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+            .result-table td {
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                border-bottom: var(--border-whisper);
+                color: var(--text-primary);
+            }
+            .result-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .qdrop-fit-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .qdrop-fit-toggle:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .qdrop-fit-toggle.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-fit-toggle-caret {
+                font-size: 10px;
+                opacity: 0.8;
+            }
+
+            .qdrop-dialog {
+                position: fixed;
+                inset: 0;
+                z-index: 120;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .qdrop-dialog-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                backdrop-filter: blur(1px);
+            }
+
+            .qdrop-dialog-panel {
+                position: relative;
+                width: min(680px, 100%);
+                max-height: calc(100vh - 48px);
+                overflow: auto;
+                background: #ffffff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow:
+                    rgba(0, 0, 0, 0.1) 0px 20px 45px,
+                    rgba(0, 0, 0, 0.08) 0px 8px 20px;
+                padding: 14px;
+            }
+
+            .qdrop-dialog-close {
+                width: 28px;
+                height: 28px;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: #475569;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            @keyframes qdrop-sheet-in {
+                from {
+                    transform: translateY(24px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .qdrop-dialog {
+                    align-items: flex-end;
+                    justify-content: stretch;
+                    padding: 0;
+                }
+
+                .qdrop-dialog-panel {
+                    width: 100%;
+                    max-height: min(80vh, calc(100vh - 12px));
+                    border-radius: 20px 20px 0 0;
+                    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+                    animation: qdrop-sheet-in 0.2s ease-out;
+                    transition: transform 0.18s ease-out;
+                    will-change: transform;
+                    touch-action: pan-y;
+                }
+
+                .qdrop-dialog-panel.is-dragging {
+                    animation: none;
+                    transition: none;
+                }
+
+                .qdrop-dialog-handle {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: -16px -16px 8px;
+                    padding: 16px 16px 14px;
+                    touch-action: none;
+                }
+
+                .qdrop-dialog-handle::before {
+                    content: "";
+                    display: block;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 9999px;
+                    background: #cbd5e1;
+                }
+            }
+
+            .reference-tab-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 6px 14px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .reference-tab-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .reference-tab-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .prob-section-toggle {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                color: var(--text-primary);
+                text-align: left;
+            }
+
+            .prob-section-toggle:hover {
+                text-decoration: none;
+            }
+
+            .prob-section-toggle-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                color: var(--text-secondary);
+                background: #ffffff;
+                transition:
+                    transform 0.15s ease,
+                    background-color 0.15s ease;
+            }
+
+            .prob-section-toggle:hover .prob-section-toggle-icon {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .prob-section-toggle[aria-expanded="false"] .prob-section-toggle-icon {
+                transform: rotate(-90deg);
+            }
+
+            .vp-boards-input {
+                width: 88px;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .vp-preset-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .vp-preset-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .vp-preset-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-dialog-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 12px;
+                align-items: end;
+            }
+
+            .qdrop-dialog-field {
+                min-width: 92px;
+            }
+
+            .qdrop-dialog-field-label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qdrop-dialog-input {
+                width: 100%;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .qdrop-dialog-note {
+                min-height: 18px;
+            }
+
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: var(--bg-warm);
+                color: var(--text-secondary);
+                padding: 4px;
+                border: var(--border-whisper);
+                font-weight: 500;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: var(--border-whisper);
+                color: var(--text-muted);
+            }
+            .dist-table td.has-val {
+                color: var(--text-primary);
+                font-weight: 600;
+                background-color: #f2f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            *:focus-visible {
+                outline: 2px solid var(--focus-blue);
+                outline-offset: 1px;
+            }
+
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            /* --- アニメーション用クラス --- */
+            @keyframes shake-horizontal {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-3px);
+                }
+                75% {
+                    transform: translateX(3px);
+                }
+            }
+            .shake-animation {
+                animation: shake-horizontal 0.15s ease-in-out 0s 2;
+            }
+
+            @keyframes pop-scale {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            .pop-animation {
+                animation: pop-scale 0.15s ease-out;
+            }
+        </style>
+    </head>
+    <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+        <noscript>
+            <style>
+                #view-single,
+                #view-lead {
+                    display: none !important;
+                }
+                #view-probability {
+                    display: block !important;
+                }
+                #view-double:target,
+                #view-single:target,
+                #view-lead:target,
+                #view-probability:target {
+                    display: block !important;
+                }
+                main:has(#view-double:target) #view-single,
+                main:has(#view-double:target) #view-lead,
+                main:has(#view-double:target) #view-probability,
+                main:has(#view-single:target) #view-double,
+                main:has(#view-single:target) #view-lead,
+                main:has(#view-single:target) #view-probability,
+                main:has(#view-lead:target) #view-double,
+                main:has(#view-lead:target) #view-single,
+                main:has(#view-lead:target) #view-probability,
+                main:has(#view-probability:target) #view-double,
+                main:has(#view-probability:target) #view-single,
+                main:has(#view-probability:target) #view-lead {
+                    display: none !important;
+                }
+                #reference-panel-probability,
+                #reference-panel-imp,
+                #reference-panel-vp {
+                    display: block !important;
+                }
+                #reference-tab-probability,
+                #reference-tab-imp,
+                #reference-tab-vp {
+                    display: none !important;
+                }
+            </style>
+            <div
+                style="
+                    max-width: 960px;
+                    margin: 16px auto;
+                    padding: 12px;
+                    border: 1px solid #cbd5e1;
+                    background: #f8fafc;
+                    font-family: Arial, sans-serif;
+                ">
+                <strong>Bridge Solver</strong> requires JavaScript for interactive analysis.
+                <p style="margin-top: 8px">Direct links:</p>
+                <ul>
+                    <li>
+                        <a href="#view-double">Double Dummy</a> /
+                        <a href="#view-single">Single Dummy</a> /
+                        <a href="#view-lead">Opening Lead</a> /
+                        <a href="#view-probability">Reference</a>
+                    </li>
+                </ul>
+                <p style="margin-top: 8px">
+                    Reference tables below remain visible without JavaScript so crawlers can read
+                    the key bridge probability, IMP, and VP content.
+                </p>
+            </div>
+        </noscript>
+        <header class="site-header bg-white z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-2">
+                        <div class="site-logo p-1.5">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                        </div>
+                        <span id="site-title" class="site-brand">Bridge Solver</span>
+                    </div>
+
+                    <div class="hidden md:flex items-center gap-6">
+                        <nav class="hidden md:flex space-x-8">
+                            <a
+                                href="#view-double"
+                                id="nav-double"
+                                data-route="/double-dummy"
+                                class="site-nav-btn tab-active px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                ダブルダミー分析
+                            </a>
+                            <a
+                                href="#view-single"
+                                id="nav-single"
+                                data-route="/single-dummy"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                シングルダミー分析
+                            </a>
+                            <a
+                                href="#view-lead"
+                                id="nav-lead"
+                                data-route="/opening-lead"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                オープニングリード分析
+                            </a>
+                            <a
+                                href="#view-probability"
+                                id="nav-solver"
+                                data-route="/probability-solver"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                確率ソルバー
+                            </a>
+                            <a
+                                href="#view-probability"
+                                id="nav-probability"
+                                data-route="/reference/probability"
+                                class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+                                早見表
+                            </a>
+                        </nav>
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja" class="lang-switch-btn px-2.5 py-1">
+                                JP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden flex items-center gap-2">
+                        <div class="lang-switch flex items-center">
+                            <button
+                                type="button"
+                                id="lang-en-mobile"
+                                class="lang-switch-btn px-2 py-1 text-[10px]">
+                                EN
+                            </button>
+                            <button
+                                type="button"
+                                id="lang-ja-mobile"
+                                class="lang-switch-btn px-2 py-1 text-[10px]">
+                                JP
+                            </button>
+                        </div>
+                        <button id="mobile-menu-btn" class="p-2">
+                            <i data-lucide="menu" class="text-slate-500"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
+                <div class="flex flex-col p-2 space-y-1">
+                    <a
+                        href="#view-double"
+                        id="mob-nav-double"
+                        data-route="/double-dummy"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-indigo-600">
+                        ダブルダミー分析
+                    </a>
+                    <a
+                        href="#view-single"
+                        id="mob-nav-single"
+                        data-route="/single-dummy"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        シングルダミー分析
+                    </a>
+                    <a
+                        href="#view-lead"
+                        id="mob-nav-lead"
+                        data-route="/opening-lead"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        オープニングリード分析
+                    </a>
+                    <a
+                        href="#view-probability"
+                        id="mob-nav-solver"
+                        data-route="/probability-solver"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        確率ソルバー
+                    </a>
+                    <a
+                        href="#view-probability"
+                        id="mob-nav-probability"
+                        data-route="/reference/probability"
+                        class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">
+                        早見表
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+            <div id="view-double" class="flex-grow flex flex-col fade-in">
+                <div class="flex justify-between items-center mb-6 px-1">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        Double Dummy Solver
+                    </h2>
+                    <div
+                        class="text-xs font-mono text-slate-500 bg-white px-3 py-1.5 rounded border shadow-sm flex items-center gap-2">
+                        <i data-lucide="layers" class="w-3 h-3"></i>
+                        <span id="total-count" class="font-bold">0</span> / 52 cards
+                    </div>
+                </div>
+
+                <div
+                    class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-center items-center mb-4">
+                    <div class="w-full md:col-start-2 md:row-start-1 z-10 md:-mb-6">
+                        <div
+                            id="hand-north"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default relative bg-white z-10">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >North</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-north" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-1 md:row-start-2">
+                        <div
+                            id="hand-west"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >West</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-west" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-3 md:row-start-2">
+                        <div
+                            id="hand-east"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >East</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-east" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:col-start-2 md:row-start-3 md:-mt-6">
+                        <div
+                            id="hand-south"
+                            class="hand-card bg-white p-3 rounded-xl shadow-sm border-2 border-transparent transition-all cursor-pointer md:cursor-default relative bg-white z-10">
+                            <div
+                                class="flex justify-between items-center mb-2 border-b border-slate-100 pb-1">
+                                <span
+                                    class="font-bold text-slate-700 text-sm uppercase tracking-wider"
+                                    >South</span
+                                >
+                                <span
+                                    class="text-[10px] text-white bg-slate-400 px-1.5 py-0.5 rounded-full count-badge"
+                                    >0</span
+                                >
+                            </div>
+                            <div id="container-south" class="space-y-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-double"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <span id="btn-run-double-text">分析実行</span>
+                    </button>
+                </div>
+
+                <div
+                    id="result-double"
+                    class="hidden mt-8 max-w-2xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                    <div
+                        class="bg-indigo-50 px-4 py-3 border-b border-indigo-100 flex flex-wrap justify-between items-center gap-3">
+                        <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+                            <i data-lucide="table" class="w-4 h-4"></i> メイク数分析結果
+                        </h3>
+                        <div class="share-actions">
+                            <span class="text-xs text-indigo-500 font-mono">DDS Engine</span>
+                            <button type="button" class="share-button" data-share-result="double">
+                                <i data-lucide="share-2"></i>
+                                <span data-share-label>共有</span>
+                            </button>
+                            <a
+                                class="share-button"
+                                data-share-x="double"
+                                href="#"
+                                target="_blank"
+                                rel="noopener">
+                                <i data-lucide="twitter"></i>
+                                <span>X</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full result-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-left w-20">Player</th>
+                                    <th class="text-slate-900">NT</th>
+                                    <th class="suit-s">♠</th>
+                                    <th class="text-rose-700">♥</th>
+                                    <th class="text-orange-500">♦</th>
+                                    <th class="text-green-600">♣</th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                id="result-body-double"
+                                class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/o/2452c9aa9b29bbfa3e2e8799678272f0"></script>
+                <!-- admax -->
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">
+                        このツールについて (Overview)
+                    </h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Double Dummy
+                        Solverは、4ハンド52枚が既知の前提で、各プレイヤーが最善を尽くした場合のメイクトリック数を高速に算出する分析機能です。
+                        契約成否の確認だけでなく、スートごとの上限トリック比較により、最適コントラクトの見直しにも使えます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>
+                            North / South / East / West
+                            にカードを割り当て、合計52枚になるまで入力します。
+                        </li>
+                        <li>
+                            「分析実行」を押すと、NT・各スート契約のトリック上限が表示されます。
+                        </li>
+                        <li>
+                            NSとEWの結果差を見て、実戦での競りや最終コントラクト判断に活用します。
+                        </li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-double-term-1" class="font-bold text-slate-800">
+                                Double Dummy
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                全員の手が見えている前提での理論最適プレイ解析。
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+
+            <div id="view-single" class="hidden fade-in">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    Single Dummy Analyzer
+                </h2>
+
+                <div
+                    class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
+                    <div
+                        class="w-full md:col-start-2 md:row-start-1 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mb-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h4 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4"></i> North
+                            </h4>
+                            <div class="flex bg-slate-100 rounded p-0.5">
+                                <button
+                                    class="sd-mode-switch sd-mode-switch-active px-2 py-0.5 text-[10px] font-bold rounded"
+                                    data-hand="north"
+                                    data-mode="hand">
+                                    Hand
+                                </button>
+                                <button
+                                    class="sd-mode-switch sd-mode-switch-inactive px-2 py-0.5 text-[10px] font-bold rounded"
+                                    data-hand="north"
+                                    data-mode="feature">
+                                    Feature
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="sd-mode-hand-north" class="sd-content-hand">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 sd-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="sd-container-north" class="space-y-1"></div>
+                        </div>
+
+                        <div id="sd-mode-feature-north" class="sd-content-feature hidden">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="sd-north-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="15" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="sd-north-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="17" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="sd-north-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="sd-north-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-1 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> West
+                        </h4>
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold text-slate-500 uppercase"
+                                >HCP Range</label
+                            >
+                            <div class="flex items-center gap-2 mt-1">
+                                <input
+                                    type="number"
+                                    id="sd-west-hcp-min"
+                                    placeholder="Min"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="0" />
+                                <span class="text-slate-400">-</span>
+                                <input
+                                    type="number"
+                                    id="sd-west-hcp-max"
+                                    placeholder="Max"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="37" />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Range</label
+                            >
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="text-center">
+                                    <span class="text-xs font-bold suit-s">♠</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-s"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-red-500">♥</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-h"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-orange-500">♦</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-d"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-green-600">♣</span
+                                    ><input
+                                        type="text"
+                                        id="sd-west-c"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Type</label
+                            >
+                            <select
+                                id="sd-west-preset"
+                                class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                <option value="any">指定なし</option>
+                                <option value="balanced">バランスハンド</option>
+                                <option value="semiBalanced">セミバランスハンド</option>
+                                <option value="unbalanced">アンバランスハンド</option>
+                                <option value="balanced-without-major">バランスハンド</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-3 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> East
+                        </h4>
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold text-slate-500 uppercase"
+                                >HCP Range</label
+                            >
+                            <div class="flex items-center gap-2 mt-1">
+                                <input
+                                    type="number"
+                                    id="sd-east-hcp-min"
+                                    placeholder="Min"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="0" />
+                                <span class="text-slate-400">-</span>
+                                <input
+                                    type="number"
+                                    id="sd-east-hcp-max"
+                                    placeholder="Max"
+                                    class="w-full p-2 border rounded text-sm"
+                                    value="37" />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Range</label
+                            >
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="text-center">
+                                    <span class="text-xs font-bold suit-s">♠</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-s"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-red-500">♥</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-h"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-orange-500">♦</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-d"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-xs font-bold text-green-600">♣</span
+                                    ><input
+                                        type="text"
+                                        id="sd-east-c"
+                                        class="w-full p-1 text-center border rounded text-xs mt-1"
+                                        placeholder="0-13" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                >Shape Type</label
+                            >
+                            <select
+                                id="sd-east-preset"
+                                class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                <option value="any">指定なし</option>
+                                <option value="balanced">バランスハンド</option>
+                                <option value="semiBalanced">セミバランスハンド</option>
+                                <option value="unbalanced">アンバランスハンド</option>
+                                <option value="balanced-without-major">バランスハンド</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:col-start-2 md:row-start-3 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mt-6">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h4 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4"></i> South
+                            </h4>
+                            <div class="flex bg-slate-100 rounded p-0.5">
+                                <button
+                                    class="sd-mode-switch sd-mode-switch-active px-2 py-0.5 text-[10px] font-bold rounded"
+                                    data-hand="south"
+                                    data-mode="hand">
+                                    Hand
+                                </button>
+                                <button
+                                    class="sd-mode-switch sd-mode-switch-inactive px-2 py-0.5 text-[10px] font-bold rounded"
+                                    data-hand="south"
+                                    data-mode="feature">
+                                    Feature
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="sd-mode-hand-south" class="sd-content-hand">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 sd-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="sd-container-south" class="space-y-1"></div>
+                        </div>
+
+                        <div id="sd-mode-feature-south" class="sd-content-feature hidden">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="sd-south-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="sd-south-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="10" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="sd-south-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="sd-south-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="max-w-2xl mx-auto mt-6 mb-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> 詳細設定
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1"
+                                >シミュレーション回数</label
+                            >
+                            <input
+                                type="number"
+                                id="sd-simulations"
+                                class="w-full p-2 border rounded text-sm focus:outline-none focus:border-emerald-500"
+                                value="1000" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1"
+                                >Advanced TCL (Optional)</label
+                            >
+                            <textarea
+                                id="sd-advanced-tcl"
+                                class="w-full p-2 border rounded text-sm h-[38px] focus:outline-none focus:border-emerald-500"
+                                placeholder="e.g. reject if {...}"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-single"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                        <span id="btn-run-single-text">分析実行</span>
+                    </button>
+                </div>
+
+                <div
+                    id="result-single"
+                    class="hidden mt-8 max-w-4xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                    <div
+                        class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                        <h3 class="result-panel-title flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 期待トリック数 (N/S)
+                        </h3>
+                        <div class="share-actions">
+                            <span id="sd-sim-count" class="result-panel-count text-xs"
+                                >Samples: -</span
+                            >
+                            <button type="button" class="share-button" data-share-result="single">
+                                <i data-lucide="share-2"></i>
+                                <span data-share-label>共有</span>
+                            </button>
+                            <a
+                                class="share-button"
+                                data-share-x="single"
+                                href="#"
+                                target="_blank"
+                                rel="noopener">
+                                <i data-lucide="twitter"></i>
+                                <span>X</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="result-single-content" class="p-4 space-y-4"></div>
+                </div>
+
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/o/2452c9aa9b29bbfa3e2e8799678272f0"></script>
+                <!-- admax -->
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">
+                        このツールについて (Overview)
+                    </h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Single Dummy
+                        Solverは、見えている手札情報とHCP・Shape条件から未知ハンドをサンプリングし、
+                        取り得るトリック分布を推定する機能です。実戦で情報が不完全な場面でも、ゲーム・スラム到達率を定量的に比較できます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>North/Southは「Hand」または「Feature」を選択して入力します。</li>
+                        <li>
+                            未知ハンド側にはHCPレンジ、各スート枚数レンジ、Shape Typeを設定します。
+                        </li>
+                        <li>
+                            分析実行後、平均トリック・Game率・Slam率を比較して最適契約候補を判断します。
+                        </li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-single-term-1" class="font-bold text-slate-800">
+                                バランスハンド
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                4333,4432,5332のいずれかの形。メジャー5枚を含むかどうかは取り決め次第。
+                            </dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-single-term-2" class="font-bold text-slate-800">
+                                セミバランスハンド
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                ショートがなく、7枚スートがないハンド。基本的に6枚メジャーは持たない。
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+
+            <div id="view-lead" class="hidden fade-in">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    Opening Lead Analyzer
+                </h2>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                    <h3
+                        id="lead-basic-title"
+                        class="font-bold text-lg mb-4 text-slate-700 border-b pb-2">
+                        基本設定
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label
+                                id="lead-leader-label"
+                                class="block text-sm font-medium text-slate-600 mb-1"
+                                >オープニングリーダー</label
+                            >
+                            <select id="lead-leader" class="w-full p-2 border rounded bg-slate-50">
+                                <option value="West">West</option>
+                                <option value="East">East</option>
+                                <option value="North">North</option>
+                                <option value="South">South</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                id="lead-contract-label"
+                                class="block text-sm font-medium text-slate-600 mb-1"
+                                >コントラクト</label
+                            >
+                            <input
+                                type="text"
+                                id="lead-contract"
+                                class="w-full p-2 border rounded bg-slate-50 focus:outline-none focus:border-orange-500"
+                                placeholder="e.g. 3NT, 4S" />
+                        </div>
+                        <div>
+                            <label
+                                id="lead-declarer-label"
+                                class="block text-sm font-medium text-slate-600 mb-1"
+                                >宣言側 (Declarer)</label
+                            >
+                            <div
+                                id="lead-declarer-display"
+                                class="p-2 text-slate-500 text-sm bg-slate-50 rounded border border-slate-200">
+                                South (自動設定)
+                            </div>
+                        </div>
+                        <div
+                            class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 pt-4 border-t border-slate-100">
+                            <div>
+                                <label
+                                    id="lead-simulations-label"
+                                    class="block text-sm font-medium text-slate-600 mb-1"
+                                    >シミュレーション回数</label
+                                >
+                                <input
+                                    type="number"
+                                    id="lead-simulations"
+                                    class="w-full p-2 border rounded bg-slate-50 focus:outline-none focus:border-orange-500"
+                                    value="1000" />
+                            </div>
+                            <div>
+                                <label
+                                    id="lead-advanced-tcl-label"
+                                    class="block text-sm font-medium text-slate-600 mb-1"
+                                    >Advanced TCL (Optional)</label
+                                >
+                                <textarea
+                                    id="lead-advanced-tcl"
+                                    class="w-full p-2 border rounded bg-slate-50 h-10 focus:outline-none focus:border-orange-500"
+                                    placeholder="e.g. reject if {...}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-y-0 md:gap-x-4 place-items-stretch items-center mb-4">
+                    <div
+                        id="lead-panel-north"
+                        class="w-full md:col-start-2 md:row-start-1 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mb-6">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> North
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-north" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-north-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-north-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-north-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-north-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-west"
+                        class="w-full md:col-start-1 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> West
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-west" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-west-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-west-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-west-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-west-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-east"
+                        class="w-full md:col-start-3 md:row-start-2 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> East
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-east" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-east-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-east-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-east-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-east-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="lead-panel-south"
+                        class="w-full md:col-start-2 md:row-start-3 bg-white p-5 rounded-lg border border-slate-200 shadow-sm relative z-10 md:-mt-6">
+                        <h4
+                            class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> South
+                        </h4>
+                        <div class="lead-card-selector hidden">
+                            <div
+                                class="text-[10px] text-white bg-slate-400 px-2 py-0.5 rounded-full inline-block mb-2 lead-count-badge">
+                                0 / 13
+                            </div>
+                            <div id="lead-container-south" class="space-y-1"></div>
+                        </div>
+                        <div class="lead-feature-input">
+                            <div class="mb-4">
+                                <label class="text-xs font-semibold text-slate-500 uppercase"
+                                    >HCP Range</label
+                                >
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input
+                                        type="number"
+                                        id="lead-south-hcp-min"
+                                        placeholder="Min"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="0" />
+                                    <span class="text-slate-400">-</span>
+                                    <input
+                                        type="number"
+                                        id="lead-south-hcp-max"
+                                        placeholder="Max"
+                                        class="w-full p-2 border rounded text-sm"
+                                        value="37" />
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Range</label
+                                >
+                                <div class="grid grid-cols-4 gap-2">
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold suit-s">♠</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-s"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-red-500">♥</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-h"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-orange-500">♦</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-d"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                    <div class="text-center">
+                                        <span class="text-xs font-bold text-green-600">♣</span
+                                        ><input
+                                            type="text"
+                                            id="lead-south-c"
+                                            class="w-full p-1 text-center border rounded text-xs mt-1"
+                                            placeholder="0-13" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="text-xs font-semibold text-slate-500 uppercase mb-1 block"
+                                    >Shape Type</label
+                                >
+                                <select
+                                    id="lead-south-preset"
+                                    class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">指定なし</option>
+                                    <option value="balanced">バランスハンド</option>
+                                    <option value="semiBalanced">セミバランスハンド</option>
+                                    <option value="unbalanced">アンバランスハンド</option>
+                                    <option value="balanced-without-major">バランスハンド</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 mb-10 md:mb-0">
+                    <button
+                        id="btn-run-lead"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-10 py-3 rounded-full font-bold shadow-lg shadow-orange-200 transition-all active:scale-95 inline-flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <span id="btn-run-lead-text">分析実行</span>
+                    </button>
+                </div>
+
+                <div
+                    id="result-lead"
+                    class="hidden mt-8 w-full bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                    <div
+                        class="result-panel-head px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                        <h3 class="result-panel-title flex items-center gap-2">
+                            <i data-lucide="bar-chart" class="w-4 h-4"></i> 獲得トリック確率分布
+                        </h3>
+                        <div class="share-actions text-[10px] md:text-xs">
+                            <div class="flex items-center gap-2">
+                                <label
+                                    id="lead-sort-label"
+                                    for="lead-sort"
+                                    class="text-slate-600 font-semibold"
+                                    >Sort</label
+                                >
+                                <select
+                                    id="lead-sort"
+                                    class="result-sort-select px-2 py-1 text-[11px] md:text-xs">
+                                    <option id="lead-sort-tricks" value="tricks">
+                                        Exp Tricks
+                                    </option>
+                                    <option id="lead-sort-setprob" value="setprob">
+                                        Set Prob
+                                    </option>
+                                </select>
+                                <span class="result-panel-count font-bold"
+                                    >Simulations: <span id="lead-sim-count">-</span></span
+                                >
+                            </div>
+                            <button type="button" class="share-button" data-share-result="lead">
+                                <i data-lucide="share-2"></i>
+                                <span data-share-label>共有</span>
+                            </button>
+                            <a
+                                class="share-button"
+                                data-share-x="lead"
+                                href="#"
+                                target="_blank"
+                                rel="noopener">
+                                <i data-lucide="twitter"></i>
+                                <span>X</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="result-lead-content" class="p-4 space-y-6"></div>
+                </div>
+
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/o/2452c9aa9b29bbfa3e2e8799678272f0"></script>
+                <!-- admax -->
+
+                <section class="mt-12 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">
+                        このツールについて (Overview)
+                    </h3>
+                    <p class="text-sm text-slate-700 leading-7 mb-5">
+                        Opening Lead Analyzerは、想定コントラクトに対する初手リード候補を比較し、
+                        期待トリック数とセット確率を同時に確認できる分析ツールです。守備側の最適化だけでなく、
+                        宣言側がケアすべきリード筋の把握にも役立ちます。
+                    </p>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">使い方 (How to use)</h4>
+                    <ol class="list-decimal list-inside text-sm text-slate-700 space-y-2 mb-5">
+                        <li>リーダー席、コントラクト、シミュレーション回数を設定します。</li>
+                        <li>リーダーの13枚を入力し、他席はHCP/Shape条件でレンジ指定します。</li>
+                        <li>
+                            結果の「Exp Tricks」と「Set
+                            Prob」を比較して、守備の初手方針を選びます。
+                        </li>
+                    </ol>
+                    <h4 class="text-base font-bold text-slate-900 mb-3">用語解説 (Glossary)</h4>
+                    <dl class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-lead-term-1" class="font-bold text-slate-800">
+                                バランスハンド
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                4333,4432,5332のいずれかの形。メジャー5枚を含むかどうかは取り決め次第。
+                            </dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-lead-term-2" class="font-bold text-slate-800">
+                                セミバランスハンド
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                ショートがなく、7枚スートがないハンド。基本的に6枚メジャーは持たない。
+                            </dd>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <dt id="glossary-lead-term-3" class="font-bold text-slate-800">
+                                Set Prob
+                            </dt>
+                            <dd class="text-slate-600 mt-1">
+                                コントラクトを1ダウン以上にできる確率。
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
+
+            <div id="view-probability" class="hidden fade-in">
+                <h2 id="probability-title" class="text-2xl font-bold text-slate-800 mb-6">
+                    Bridge Reference
+                </h2>
+                <p id="probability-lead" class="text-sm text-slate-600 mb-6">
+                    Frequently used bridge probabilities at a glance.
+                </p>
+
+                <div
+                    id="reference-tabs"
+                    class="flex items-center gap-2 mb-6"
+                    role="tablist"
+                    aria-label="Reference tabs">
+                    <button
+                        id="reference-tab-probability"
+                        type="button"
+                        class="reference-tab-btn is-active"
+                        data-reference-tab="probability"
+                        role="tab"
+                        aria-controls="reference-panel-probability"
+                        aria-selected="true">
+                        Probability
+                    </button>
+                    <button
+                        id="reference-tab-imp"
+                        type="button"
+                        class="reference-tab-btn"
+                        data-reference-tab="imp"
+                        role="tab"
+                        aria-controls="reference-panel-imp"
+                        aria-selected="false">
+                        IMP Scale
+                    </button>
+                    <button
+                        id="reference-tab-vp"
+                        type="button"
+                        class="reference-tab-btn"
+                        data-reference-tab="vp"
+                        role="tab"
+                        aria-controls="reference-panel-vp"
+                        aria-selected="false">
+                        VP Scale
+                    </button>
+                </div>
+
+                <div id="reference-panel-probability" role="tabpanel">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                            <button
+                                type="button"
+                                class="prob-section-toggle mb-3"
+                                data-prob-section-toggle="prob-suit-content"
+                                aria-expanded="true"
+                                aria-controls="prob-suit-content">
+                                <span
+                                    id="prob-suit-title"
+                                    class="text-lg font-bold text-slate-900">
+                                    Suit distribution probability
+                                </span>
+                                <span class="prob-section-toggle-icon" aria-hidden="true">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </span>
+                            </button>
+                            <div id="prob-suit-content">
+                                <p id="prob-suit-help" class="text-sm text-slate-600 mb-4">
+                                    Estimate split probabilities for missing cards in one suit.
+                                </p>
+                                <div id="prob-suit-result" class="text-sm text-slate-700">
+                                    <div class="text-xs text-slate-500 mb-2">
+                                        Static fallback summary for common fit lengths. JavaScript
+                                        expands this into the full table set.
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="result-meta-label mb-1">8-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-2</td>
+                                                    <td>67.8%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">4-1</td>
+                                                    <td>28.3%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">5-0</td>
+                                                    <td>3.9%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="result-meta-label mb-1">9-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">2-2</td>
+                                                    <td>40.7%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-1</td>
+                                                    <td>49.7%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">4-0</td>
+                                                    <td>9.6%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <div class="result-meta-label mb-1">10-card fit</div>
+                                        <table class="w-full result-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left">Opponent split</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-left font-semibold">2-1</td>
+                                                    <td>78.3%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left font-semibold">3-0</td>
+                                                    <td>21.7%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                            <button
+                                type="button"
+                                class="prob-section-toggle mb-3"
+                                data-prob-section-toggle="prob-finesse-content"
+                                aria-expanded="true"
+                                aria-controls="prob-finesse-content">
+                                <span
+                                    id="prob-finesse-title"
+                                    class="text-lg font-bold text-slate-900">
+                                    Q-drop cashing probability
+                                </span>
+                                <span class="prob-section-toggle-icon" aria-hidden="true">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </span>
+                            </button>
+                            <div id="prob-finesse-content">
+                                <p id="prob-finesse-help" class="text-sm text-slate-600 mb-4">
+                                    Probability of taking all tricks by cashing when Q is missing.
+                                </p>
+                                <p id="prob-qdrop-click-hint" class="text-xs text-slate-500 mb-3">
+                                    Click a fit cell to toggle comparison for that holding.
+                                </p>
+                                <div id="prob-finesse-result" class="text-sm text-slate-700">
+                                    <div class="text-xs text-slate-500 mb-2">
+                                        Static fallback summary of representative best lines when
+                                        one queen is missing.
+                                    </div>
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Fit</th>
+                                                <th class="text-left">Recommended line</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4</td>
+                                                <td class="text-left">Cash A, then finesse.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-3</td>
+                                                <td class="text-left">Cash A, then finesse.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">6-2</td>
+                                                <td class="text-left">Take two finesses.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-4 / 6-3</td>
+                                                <td class="text-left">
+                                                    Cash A and switch line depending on the count.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">7-2</td>
+                                                <td class="text-left">Cash AK.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section
+                        class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
+                        <button
+                            type="button"
+                            class="prob-section-toggle mb-3"
+                            data-prob-section-toggle="prob-hcp-content"
+                            aria-expanded="true"
+                            aria-controls="prob-hcp-content">
+                            <span id="prob-hcp-title" class="text-lg font-bold text-slate-900">
+                                HCP distribution probability
+                            </span>
+                            <span class="prob-section-toggle-icon" aria-hidden="true">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </span>
+                        </button>
+                        <div id="prob-hcp-content">
+                            <p id="prob-hcp-help" class="text-sm text-slate-600 mb-4">
+                                Probability for each HCP total in a random 13-card hand.
+                            </p>
+                            <div id="prob-hcp-result" class="text-sm text-slate-700">
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">HCP</th>
+                                                <th>Probability</th>
+                                                <th>At least</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">8</td>
+                                                <td>8.892%</td>
+                                                <td>71.42%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">9</td>
+                                                <td>9.356%</td>
+                                                <td>62.52%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">10</td>
+                                                <td>9.405%</td>
+                                                <td>53.17%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">11</td>
+                                                <td>8.945%</td>
+                                                <td>43.76%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">12</td>
+                                                <td>8.027%</td>
+                                                <td>34.82%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section
+                        class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mt-6">
+                        <button
+                            type="button"
+                            class="prob-section-toggle mb-3"
+                            data-prob-section-toggle="prob-shape-content"
+                            aria-expanded="true"
+                            aria-controls="prob-shape-content">
+                            <span id="prob-shape-title" class="text-lg font-bold text-slate-900">
+                                Shape distribution probability
+                            </span>
+                            <span class="prob-section-toggle-icon" aria-hidden="true">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </span>
+                        </button>
+                        <div id="prob-shape-content">
+                            <p id="prob-shape-help" class="text-sm text-slate-600 mb-4">
+                                Suit-order-independent probabilities for random 13-card hand
+                                shapes.
+                            </p>
+                            <div id="prob-shape-result" class="text-sm text-slate-700">
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                    <table class="w-full result-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Shape</th>
+                                                <th>Probability</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-3-3-3</td>
+                                                <td>10.536%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4-3-2</td>
+                                                <td>21.551%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">4-4-4-1</td>
+                                                <td>2.993%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-3-3-2</td>
+                                                <td>15.517%</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-left font-semibold">5-4-2-2</td>
+                                                <td>10.580%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="probability-solver-content" class="hidden">
+                    <div id="cond-hands" class="mb-6">
+                        <div class="text-sm text-slate-500">読み込み中...</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h4 id="cond-compare-title" class="text-base font-bold text-slate-900">
+                            Compare events
+                        </h4>
+                        <button id="cond-add-query" type="button" class="reference-tab-btn">
+                            Add
+                        </button>
+                    </div>
+                    <div id="cond-queries" class="space-y-3 mb-5"></div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            id="cond-run"
+                            type="button"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold transition-colors">
+                            Calculate exact probability
+                        </button>
+                        <button type="button" class="share-button" data-share-result="solver">
+                            <i data-lucide="share-2"></i>
+                            <span data-share-label>共有</span>
+                        </button>
+                        <a
+                            class="share-button"
+                            data-share-x="solver"
+                            href="#"
+                            target="_blank"
+                            rel="noopener">
+                            <i data-lucide="twitter"></i>
+                            <span>X</span>
+                        </a>
+                    </div>
+                    <div id="cond-status" class="mt-3 text-xs text-slate-500"></div>
+                    <div id="cond-result" class="mt-5 text-sm text-slate-700"></div>
+                </div>
+
+                <div id="reference-panel-imp" role="tabpanel" class="hidden">
+                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <h3 id="imp-title" class="text-lg font-bold text-slate-900 mb-3">
+                            IMP Scale
+                        </h3>
+                        <p id="imp-help" class="text-sm text-slate-600 mb-4">
+                            Convert score difference to IMPs.
+                        </p>
+                        <div id="imp-result" class="text-sm text-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-left font-semibold">0-10</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">20-40</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">50-80</td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">90-120</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">130-160</td>
+                                            <td>4</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">170-210</td>
+                                            <td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">220-260</td>
+                                            <td>6</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">270-310</td>
+                                            <td>7</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-left font-semibold">320-360</td>
+                                            <td>8</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">370-420</td>
+                                            <td>9</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">430-490</td>
+                                            <td>10</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">500-590</td>
+                                            <td>11</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">600-740</td>
+                                            <td>12</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">750-890</td>
+                                            <td>13</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">900-1090</td>
+                                            <td>14</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1100-1290</td>
+                                            <td>15</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table class="w-full result-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Score diff</th>
+                                            <th>IMPs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-left font-semibold">1300-1490</td>
+                                            <td>16</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1500-1740</td>
+                                            <td>17</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">1750-1990</td>
+                                            <td>18</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2000-2240</td>
+                                            <td>19</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2250-2490</td>
+                                            <td>20</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">2500-2990</td>
+                                            <td>21</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">3000-3490</td>
+                                            <td>22</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">3500-3990</td>
+                                            <td>23</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left font-semibold">4000+</td>
+                                            <td>24</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">
+                                Use absolute score difference, then apply sign by result direction.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="reference-panel-vp" role="tabpanel" class="hidden">
+                    <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <h3 id="vp-title" class="text-lg font-bold text-slate-900 mb-3">
+                            WBF VP Scale
+                        </h3>
+                        <p id="vp-help" class="text-sm text-slate-600 mb-4">
+                            Check winner-side VP ranges by IMP difference.
+                        </p>
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <label
+                                id="vp-boards-label"
+                                for="vp-boards-input"
+                                class="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                                Boards
+                            </label>
+                            <input
+                                id="vp-boards-input"
+                                type="number"
+                                min="1"
+                                max="128"
+                                step="1"
+                                value="16"
+                                class="vp-boards-input" />
+                            <button
+                                id="vp-boards-8"
+                                type="button"
+                                data-vp-boards="8"
+                                class="vp-preset-btn is-active">
+                                8
+                            </button>
+                            <button
+                                id="vp-boards-16"
+                                type="button"
+                                data-vp-boards="16"
+                                class="vp-preset-btn is-active">
+                                16
+                            </button>
+                            <button
+                                id="vp-boards-32"
+                                type="button"
+                                data-vp-boards="32"
+                                class="vp-preset-btn">
+                                32
+                            </button>
+                        </div>
+                        <div id="vp-result" class="text-sm text-slate-700">
+                            <div class="text-xs text-slate-500 mb-2">
+                                Static fallback example for 16 boards. JavaScript can switch board
+                                count and expand the full table.
+                            </div>
+                            <table class="w-full result-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">IMP diff</th>
+                                        <th>VP (winner-loser)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-left font-semibold">0</td>
+                                        <td>10.00-10.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">1</td>
+                                        <td>10.31-9.69</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">5</td>
+                                        <td>11.48-8.52</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">10</td>
+                                        <td>12.80-7.20</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">15</td>
+                                        <td>13.97-6.03</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">20</td>
+                                        <td>15.00-5.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">25</td>
+                                        <td>15.92-4.08</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">30</td>
+                                        <td>16.73-3.27</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">40</td>
+                                        <td>18.09-1.91</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">50</td>
+                                        <td>19.16-0.84</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left font-semibold">60+</td>
+                                        <td>20.00-0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/o/2452c9aa9b29bbfa3e2e8799678272f0"></script>
+                <!-- admax -->
+            </div>
+
+            <div id="view-privacy" class="hidden fade-in">
+                <section
+                    class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">Privacy Policy</h2>
+                    <div class="space-y-4 text-sm text-slate-700 leading-7">
+                        <p>
+                            本サイトは、コントラクトブリッジの分析機能を提供するために運営されています。サービス品質向上のため、アクセス情報を収集する場合があります。
+                        </p>
+                        <p>
+                            当サイトでは、Google
+                            AdSense等の第三者配信広告サービスを利用する可能性があります。これらのサービスはCookieを使用し、ユーザーの興味に応じた広告を表示することがあります。
+                        </p>
+                        <p>
+                            アクセス解析には、トラフィック把握を目的として解析ツールを利用する場合があります。収集される情報は匿名の統計データとして扱われ、個人を特定する目的では使用しません。
+                        </p>
+                        <p>
+                            Cookieの利用を希望しない場合、ブラウザ設定で無効化できます。ただし一部機能が正しく動作しない場合があります。
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-about" class="hidden fade-in">
+                <section
+                    class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">About Us</h2>
+                    <div class="space-y-4 text-sm text-slate-700 leading-7">
+                        <p>
+                            Bridge
+                            Solverは、モダンで使いやすいコントラクトブリッジ分析ツールを提供することを目的に運営しています。
+                        </p>
+                        <p>
+                            ダブルダミー分析、条件付きシミュレーション、オープニングリード検討を1つの画面で扱い、学習者から競技者まで実戦的な意思決定を支援します。
+                        </p>
+                        <p>
+                            今後も、読み物コンテンツと分析機能を継続的に拡充し、ブリッジ学習における再現性ある検証環境を提供していきます。
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-contact" class="hidden fade-in">
+                <section
+                    class="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">Contact</h2>
+                    <p class="text-sm text-slate-700 leading-7 mb-6">
+                        ご意見・不具合報告・機能改善のご提案は、以下のGoogleフォームからお送りください。
+                    </p>
+                    <a
+                        href="https://forms.gle/v4fY6mpdQeyJNQ679"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold transition-colors">
+                        Googleフォームで問い合わせる
+                    </a>
+                </section>
+            </div>
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
+                        <p class="text-sm leading-relaxed mb-4">
+                            モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a
+                                    href="/double-dummy"
+                                    data-route="/double-dummy"
+                                    class="hover:text-white"
+                                    >Double Dummy Solver</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/single-dummy"
+                                    data-route="/single-dummy"
+                                    class="hover:text-white"
+                                    >Single Dummy Solver</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/opening-lead"
+                                    data-route="/opening-lead"
+                                    class="hover:text-white"
+                                    >Opening Lead Analyzer</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/reference/probability"
+                                    data-route="/reference/probability"
+                                    class="hover:text-white"
+                                    >Reference</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-4">Information</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/privacy" data-route="/privacy" class="hover:text-white"
+                                    >Privacy Policy</a
+                                >
+                            </li>
+                            <li>
+                                <a href="/about" data-route="/about" class="hover:text-white"
+                                    >About Us</a
+                                >
+                            </li>
+                            <li>
+                                <a href="/contact" data-route="/contact" class="hover:text-white"
+                                    >Contact</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div
+                    class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                    &copy; 2024 Bridge Solver
+                </div>
+            </div>
+        </footer>
+
+        <div
+            id="toast"
+            class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 transition-all duration-300 translate-x-full opacity-0">
+            <div
+                class="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+                <span id="toast-msg">Notification</span>
+            </div>
+        </div>
+
+        <div
+            id="loading-overlay"
+            class="hidden fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                <div
+                    class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                <span id="loading-label" class="font-bold text-slate-700">Analyzing...</span>
+            </div>
+        </div>
+
+        <script src="/script.js"></script>
+    </body>
+</html>

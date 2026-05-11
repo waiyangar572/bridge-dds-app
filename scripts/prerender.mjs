@@ -13,6 +13,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const frontendDir = path.join(repoRoot, "frontend");
 const manifestPath = path.join(frontendDir, "prerender-routes.json");
 const shellHtmlPath = path.join(frontendDir, "index.html");
+const spaShellHtmlPath = path.join(frontendDir, "spa-shell.html");
 
 const MIME_TYPES = {
     ".css": "text/css; charset=utf-8",
@@ -122,6 +123,11 @@ function routeToOutputPath(routePath) {
 
 async function ensureOutputDirectory(filePath) {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
+}
+
+async function writeSpaShell() {
+    const shellHtml = await fs.readFile(shellHtmlPath, "utf8");
+    await fs.writeFile(spaShellHtmlPath, shellHtml, "utf8");
 }
 
 function safeJoin(baseDir, requestPath) {
@@ -295,6 +301,61 @@ async function waitForRouteReady(page, routePath) {
     await page.waitForTimeout(500);
 }
 
+function getPrerenderRouteState(routePath) {
+    const route = normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/)/, "") || "/double-dummy";
+    if (route === "/single-dummy") return { viewId: "view-single" };
+    if (route === "/opening-lead") return { viewId: "view-lead" };
+    if (route === "/probability-solver") {
+        return { viewId: "view-probability", visiblePanelId: "probability-solver-content" };
+    }
+    if (route === "/reference/imp") {
+        return { viewId: "view-probability", visiblePanelId: "reference-panel-imp" };
+    }
+    if (route === "/reference/vp") {
+        return { viewId: "view-probability", visiblePanelId: "reference-panel-vp" };
+    }
+    if (route === "/reference/probability") {
+        return { viewId: "view-probability", visiblePanelId: "reference-panel-probability" };
+    }
+    if (route === "/privacy") return { viewId: "view-privacy" };
+    if (route === "/about") return { viewId: "view-about" };
+    if (route === "/contact") return { viewId: "view-contact" };
+    return { viewId: "view-double" };
+}
+
+async function pruneInactivePrerenderContent(page, routePath) {
+    const routeState = getPrerenderRouteState(routePath);
+    await page.evaluate(({ viewId, visiblePanelId }) => {
+        const viewIds = [
+            "view-double",
+            "view-single",
+            "view-lead",
+            "view-probability",
+            "view-privacy",
+            "view-about",
+            "view-contact",
+        ];
+        viewIds.forEach((id) => {
+            if (id === viewId) return;
+            document.getElementById(id)?.remove();
+        });
+
+        const panelIds = [
+            "probability-solver-content",
+            "reference-panel-probability",
+            "reference-panel-imp",
+            "reference-panel-vp",
+        ];
+        panelIds.forEach((id) => {
+            if (id === visiblePanelId) return;
+            document.getElementById(id)?.remove();
+        });
+
+        document.documentElement.dataset.prerenderView = viewId;
+        if (visiblePanelId) document.documentElement.dataset.prerenderPanel = visiblePanelId;
+    }, routeState);
+}
+
 function removeNoScriptFallback(html) {
     return html.replace(/<noscript\b[\s\S]*?<\/noscript>/gi, "");
 }
@@ -303,6 +364,7 @@ async function captureRoute(page, baseUrl, routePath) {
     const url = `${baseUrl}${routePath}`;
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await waitForRouteReady(page, routePath);
+    await pruneInactivePrerenderContent(page, routePath);
 
     let html = removeNoScriptFallback(await page.content());
     if (!html.toLowerCase().startsWith("<!doctype html>")) {
@@ -314,6 +376,7 @@ async function captureRoute(page, baseUrl, routePath) {
 async function main() {
     const manifest = await readManifest();
     const routes = buildRouteList(manifest);
+    await writeSpaShell();
     const playwright = loadPlaywright();
     const server = await createPrerenderServer(routes);
     const browser = await playwright.chromium.launch({ headless: true });
