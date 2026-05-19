@@ -289,6 +289,20 @@
             "exactFraction": "Exact fraction",
             "count": "Count",
             "calculateExact": "Calculate exact probability",
+            "instructions": {
+                "title": "How to use",
+                "steps": [
+                    "Choose Feature or Full hand for each seat. Feature mode narrows possible hands by HCP, shape, and known cards; Full hand fixes all 13 cards.",
+                    "In Compare events, define the event to calculate, such as a player's HCP range, shape, or specific card holding.",
+                    "Use Add condition or Add group when the event needs AND/OR logic, then click Calculate exact probability."
+                ],
+                "notesTitle": "Input notes",
+                "notes": [
+                    "Shape ranges use the same format as the other tools, for example 0-13 or 5-7.",
+                    "Known cards accept tokens such as SA, HK, or -DQ. A minus sign means the hand does not hold that card.",
+                    "If no deals match the base conditions, loosen the HCP, shape, or known-card constraints."
+                ]
+            },
             "description": "Exact enumeration for known cards and hand-feature conditions. If the condition space is too broad, narrow known cards, HCP, or shape ranges."
         },
         "imp": {

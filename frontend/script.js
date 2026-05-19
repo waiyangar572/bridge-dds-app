@@ -463,7 +463,17 @@ document.addEventListener("DOMContentLoaded", () => {
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
+        updateRouteLinkHrefs();
         updateXShareLinks();
+    }
+
+    function updateRouteLinkHrefs() {
+        document.querySelectorAll("a[data-route]").forEach((link) => {
+            const routePath = link.dataset.route;
+            if (!routePath) return;
+            const route = getRoute(routePath);
+            link.href = buildLocalizedPath(currentLanguage, route.path);
+        });
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -1534,6 +1544,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
             ),
         );
+        renderConditionalInstructions();
+    }
+
+    function renderConditionalInstructions() {
+        const solverContent = document.getElementById("probability-solver-content");
+        if (!solverContent) return;
+        let section = document.getElementById("cond-instructions");
+        if (!section) {
+            section = document.createElement("section");
+            section.id = "cond-instructions";
+            section.className =
+                "mt-8 bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm text-sm text-slate-700 leading-7";
+            solverContent.appendChild(section);
+        }
+        const steps = tr("probability.conditional.instructions.steps", [
+            "Choose feature or full hand for each seat.",
+            "Add the event you want to calculate.",
+            "Click calculate to get the exact probability.",
+        ]);
+        const notes = tr("probability.conditional.instructions.notes", [
+            "Feature mode accepts HCP ranges, shape ranges, presets, and known cards.",
+            "Full hand mode requires exactly 13 cards for that seat.",
+        ]);
+        section.innerHTML = `
+            <h3 class="text-lg font-bold text-slate-900 mb-3">${tr("probability.conditional.instructions.title", "How to use")}</h3>
+            <ol class="list-decimal list-inside space-y-2 mb-5">
+                ${steps.map((step) => `<li>${step}</li>`).join("")}
+            </ol>
+            <h4 class="text-base font-bold text-slate-900 mb-2">${tr("probability.conditional.instructions.notesTitle", "Input notes")}</h4>
+            <ul class="list-disc list-inside space-y-2">
+                ${notes.map((note) => `<li>${note}</li>`).join("")}
+            </ul>
+        `;
     }
 
     function updateImpScaleResult() {
