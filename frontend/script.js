@@ -371,6 +371,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tr("probability.conditional.calculateExact", "Calculate exact probability"),
         );
 
+        setNodeText("#double-page-title", tr("content.double.heading", "Double Dummy Solver Online"));
+        setNodeText("#double-page-lead", tr("content.double.lead", ""));
+        setNodeText("#single-page-title", tr("content.single.heading", "Single Dummy Bridge Analyzer"));
+        setNodeText("#single-page-lead", tr("content.single.lead", ""));
+        setNodeText("#lead-page-title", tr("content.lead.heading", "Bridge Opening Lead Calculator"));
+        setNodeText("#lead-page-lead", tr("content.lead.lead", ""));
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
                 ? "このツールについて (Overview)"
@@ -402,9 +408,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeTexts("#view-privacy .space-y-4 p", tr("content.privacy", []));
         setNodeTexts("#view-about .space-y-4 p", tr("content.about", []));
 
-        setNodeText("#view-privacy h2", tr("pages.privacyTitle", "Privacy Policy"));
-        setNodeText("#view-about h2", tr("pages.aboutTitle", "About Us"));
-        setNodeText("#view-contact h2", tr("pages.contactTitle", "Contact"));
+        setNodeText("#view-privacy h1", tr("pages.privacyTitle", "Privacy Policy"));
+        setNodeText("#view-about h1", tr("pages.aboutTitle", "About Us"));
+        setNodeText("#view-contact h1", tr("pages.contactTitle", "Contact"));
         setNodeText("#view-contact p.text-sm", tr("pages.contactLead", ""));
         setNodeText("#view-contact a", tr("pages.contactButton", ""));
         setNodeText("#view-contact p.text-xs", tr("pages.contactNote", ""));
@@ -896,20 +902,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         spaShellHydrationPromise = (async () => {
-            const embeddedShell = document.getElementById("spa-shell-state");
-            if (embeddedShell?.textContent) {
-                const shellState = JSON.parse(embeddedShell.textContent);
-                document.body.className = shellState.bodyClass || document.body.className;
-                document.body.innerHTML = shellState.bodyHtml;
-            } else {
-                const response = await fetch("/spa-shell.html", { cache: "no-cache" });
-                if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
+            const response = await fetch("/spa-shell.html", { cache: "no-cache" });
+            if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
 
-                const html = await response.text();
-                const shellDoc = new DOMParser().parseFromString(html, "text/html");
-                shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
-                document.body.replaceWith(shellDoc.body);
-            }
+            const html = await response.text();
+            const shellDoc = new DOMParser().parseFromString(html, "text/html");
+            shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
+            document.body.replaceWith(shellDoc.body);
 
             if (window.lucide?.createIcons) {
                 window.lucide.createIcons();

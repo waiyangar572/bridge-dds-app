@@ -127,7 +127,16 @@ async function ensureOutputDirectory(filePath) {
 
 async function writeSpaShell() {
     const shellHtml = await fs.readFile(shellHtmlPath, "utf8");
-    await fs.writeFile(spaShellHtmlPath, shellHtml, "utf8");
+    const noIndexShellHtml = /<meta\s+name=["']robots["'][^>]*>/i.test(shellHtml)
+        ? shellHtml.replace(
+              /<meta\s+name=["']robots["'][^>]*>/i,
+              '<meta name="robots" content="noindex,nofollow">',
+          )
+        : shellHtml.replace(
+              /<\/head>/i,
+              '        <meta name="robots" content="noindex,nofollow">\n    </head>',
+          );
+    await fs.writeFile(spaShellHtmlPath, noIndexShellHtml, "utf8");
 }
 
 function safeJoin(baseDir, requestPath) {
@@ -326,17 +335,6 @@ function getPrerenderRouteState(routePath) {
 async function pruneInactivePrerenderContent(page, routePath) {
     const routeState = getPrerenderRouteState(routePath);
     await page.evaluate(({ viewId, visiblePanelId }) => {
-        const shellState = document.createElement("script");
-        const shellBody = document.body.cloneNode(true);
-        shellBody.querySelectorAll("noscript").forEach((node) => node.remove());
-        shellState.id = "spa-shell-state";
-        shellState.type = "application/json";
-        shellState.textContent = JSON.stringify({
-            bodyClass: document.body.className,
-            bodyHtml: shellBody.innerHTML,
-        }).replace(/<\/script/gi, "<\\/script");
-        document.head.appendChild(shellState);
-
         const viewIds = [
             "view-double",
             "view-single",

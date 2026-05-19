@@ -124,6 +124,8 @@
     },
     "content": {
         "double": {
+            "heading": "Double Dummy Solver Online",
+            "lead": "Analyze all four contract bridge hands under perfect information and compare the maximum tricks available in no-trump and each suit contract.",
             "overview": "The Double Dummy Solver assumes all 52 cards are known and computes the maximum achievable tricks under best play from both sides. It helps you compare contract ceilings by denomination and reassess the best final contract.",
             "how": [
                 "Assign cards to North, South, East, and West until all 52 cards are entered.",
@@ -135,6 +137,8 @@
             ]
         },
         "single": {
+            "heading": "Single Dummy Bridge Analyzer",
+            "lead": "Estimate practical trick distributions from known cards, HCP ranges, and shape constraints when only part of the deal is visible.",
             "overview": "Single Dummy Solver samples unknown hands from visible cards plus HCP and shape constraints, then estimates trick distributions. It is useful in practical situations where complete information is unavailable.",
             "how": [
                 "For North/South, choose Hand or Feature input mode and enter your constraints.",
@@ -147,6 +151,8 @@
             ]
         },
         "lead": {
+            "heading": "Bridge Opening Lead Calculator",
+            "lead": "Compare opening lead candidates by expected tricks and set probability for a target contract.",
             "overview": "Opening Lead Analyzer compares candidate opening leads against an assumed contract and reports expected tricks together with set probability. It supports both defensive lead selection and declarer-side risk awareness.",
             "how": [
                 "Set the opening leader seat, contract, and number of simulations.",
