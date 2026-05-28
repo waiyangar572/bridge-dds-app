@@ -16,6 +16,9 @@ const localesDir = path.join(frontendDir, "locales");
 const SITE_TITLE = "Bridge Solver";
 const SITE_DESCRIPTION =
     "Contract bridge analysis tools: Double Dummy, Single Dummy, Opening Lead, and reference tables for probability, IMP, and VP scales.";
+const SUPPORTED_LANGUAGES = ["en", "ja"];
+const DEFAULT_LANGUAGE = "en";
+const DEFAULT_ROUTE = "/double-dummy";
 
 function normalizeRoute(routePath) {
     if (!routePath) return "/";
@@ -38,8 +41,12 @@ function getRouteLanguage(routePath) {
     return match?.[1] || "en";
 }
 
+function stripRouteLanguage(routePath) {
+    return normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/)/, "");
+}
+
 function getMetaKey(routePath) {
-    const routeWithoutLang = normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/)/, "");
+    const routeWithoutLang = stripRouteLanguage(routePath);
     if (routeWithoutLang === "/reference/probability") return "probability";
     if (routeWithoutLang === "/reference/imp") return "imp";
     if (routeWithoutLang === "/reference/vp") return "vp";
@@ -109,30 +116,75 @@ function getRouteMeta(routePath, locales) {
 
 function buildSitemap(entries) {
     const urls = entries
-        .map(
-            (entry) => `  <url>
+        .map((entry) => {
+            const alternateLinks = [
+                ...entry.alternates.map(
+                    (alternate) =>
+                        `    <xhtml:link rel="alternate" hreflang="${alternate.lang}" href="${escapeXml(alternate.url)}" />`,
+                ),
+                `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(entry.xDefaultUrl)}" />`,
+            ].join("\n");
+
+            return `  <url>
     <loc>${escapeXml(entry.url)}</loc>
+${alternateLinks}
     <lastmod>${entry.lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${entry.priority}</priority>
-  </url>`,
-        )
+  </url>`;
+        })
         .join("\n");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls}
 </urlset>
 `;
 }
 
+function buildLocalizedRoute(lang, unlocalizedRoute) {
+    return `/${lang}${unlocalizedRoute}`;
+}
+
+function getAlternateEntries(routePath, baseUrl) {
+    const unlocalizedRoute = stripRouteLanguage(routePath);
+    return SUPPORTED_LANGUAGES.map((lang) => ({
+        lang,
+        url: `${baseUrl}${buildLocalizedRoute(lang, unlocalizedRoute)}`,
+    }));
+}
+
+function buildRssAlternateLinks(entry) {
+    return [
+        ...entry.alternates.map(
+            (alternate) =>
+                `      <atom:link rel="alternate" hreflang="${alternate.lang}" type="text/html" href="${escapeXml(alternate.url)}" />`,
+        ),
+        `      <atom:link rel="alternate" hreflang="x-default" type="text/html" href="${escapeXml(entry.xDefaultUrl)}" />`,
+    ].join("\n");
+}
+
+function buildAtomAlternateLinks(entry) {
+    return [
+        ...entry.alternates.map(
+            (alternate) =>
+                `    <link rel="alternate" hreflang="${alternate.lang}" type="text/html" href="${escapeXml(alternate.url)}" />`,
+        ),
+        `    <link rel="alternate" hreflang="x-default" type="text/html" href="${escapeXml(entry.xDefaultUrl)}" />`,
+    ].join("\n");
+}
+
 function buildRss(entries, baseUrl, updated) {
+    const defaultPageUrl = `${baseUrl}${buildLocalizedRoute(DEFAULT_LANGUAGE, DEFAULT_ROUTE)}`;
     const items = entries
         .map(
-            (entry) => `    <item>
+            (entry) => `    <item xml:lang="${entry.lang}">
       <title>${escapeXml(entry.title)}</title>
       <link>${escapeXml(entry.url)}</link>
       <guid isPermaLink="true">${escapeXml(entry.url)}</guid>
+${buildRssAlternateLinks(entry)}
       <description>${escapeXml(entry.description)}</description>
       <pubDate>${entry.mtime.toUTCString()}</pubDate>
     </item>`,
@@ -140,12 +192,14 @@ function buildRss(entries, baseUrl, updated) {
         .join("\n");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(SITE_TITLE)}</title>
-    <link>${escapeXml(baseUrl)}</link>
+    <link>${escapeXml(defaultPageUrl)}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
-    <language>en</language>
+    <language>en-US</language>
+    <atom:link href="${escapeXml(`${baseUrl}/rss.xml`)}" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeXml(`${baseUrl}/atom.xml`)}" rel="alternate" type="application/atom+xml" />
     <lastBuildDate>${updated.toUTCString()}</lastBuildDate>
 ${items}
   </channel>
@@ -154,11 +208,12 @@ ${items}
 }
 
 function buildAtom(entries, baseUrl, updated) {
+    const defaultPageUrl = `${baseUrl}${buildLocalizedRoute(DEFAULT_LANGUAGE, DEFAULT_ROUTE)}`;
     const entriesXml = entries
         .map(
-            (entry) => `  <entry>
+            (entry) => `  <entry xml:lang="${entry.lang}">
     <title>${escapeXml(entry.title)}</title>
-    <link href="${escapeXml(entry.url)}" />
+${buildAtomAlternateLinks(entry)}
     <id>${escapeXml(entry.url)}</id>
     <updated>${entry.mtime.toISOString()}</updated>
     <summary>${escapeXml(entry.description)}</summary>
@@ -167,11 +222,12 @@ function buildAtom(entries, baseUrl, updated) {
         .join("\n");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="${DEFAULT_LANGUAGE}">
   <title>${escapeXml(SITE_TITLE)}</title>
-  <link href="${escapeXml(baseUrl)}" />
-  <link rel="self" href="${escapeXml(`${baseUrl}/atom.xml`)}" />
-  <id>${escapeXml(baseUrl)}</id>
+  <link rel="alternate" type="text/html" hreflang="${DEFAULT_LANGUAGE}" href="${escapeXml(defaultPageUrl)}" />
+  <link rel="self" type="application/atom+xml" href="${escapeXml(`${baseUrl}/atom.xml`)}" />
+  <link rel="alternate" type="application/rss+xml" href="${escapeXml(`${baseUrl}/rss.xml`)}" />
+  <id>${escapeXml(`${baseUrl}/`)}</id>
   <updated>${updated.toISOString()}</updated>
 ${entriesXml}
 </feed>
@@ -202,6 +258,11 @@ async function main() {
                 ...getRouteMeta(normalizedRoute, locales),
                 routePath: normalizedRoute,
                 url: `${baseUrl}${normalizedRoute}`,
+                alternates: getAlternateEntries(normalizedRoute, baseUrl),
+                xDefaultUrl: `${baseUrl}${buildLocalizedRoute(
+                    DEFAULT_LANGUAGE,
+                    stripRouteLanguage(normalizedRoute),
+                )}`,
                 priority: getPriority(normalizedRoute),
                 mtime,
                 lastmod: formatTokyoIso(mtime),
