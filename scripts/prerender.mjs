@@ -248,6 +248,7 @@ async function waitForRouteReady(page, routePath) {
             const routeToExpectedState = (path) => {
                 const route = path.replace(/^\/(?:en|ja)(?=\/|$)/, "");
                 if (route === "" || route === "/") return { viewId: "view-home" };
+                if (route.indexOf("/guide/") === 0) return { viewId: "view-guide" };
                 if (route === "/single-dummy") return { viewId: "view-single" };
                 if (route === "/opening-lead") return { viewId: "view-lead" };
                 if (route === "/probability-solver") {
@@ -283,6 +284,7 @@ async function waitForRouteReady(page, routePath) {
             const expectedState = routeToExpectedState(targetPath);
             const viewIds = [
                 "view-home",
+                "view-guide",
                 "view-double",
                 "view-single",
                 "view-lead",
@@ -315,6 +317,7 @@ async function waitForRouteReady(page, routePath) {
 function getPrerenderRouteState(routePath) {
     const route = normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/|$)/, "");
     if (route === "" || route === "/") return { viewId: "view-home" };
+    if (route.startsWith("/guide/")) return { viewId: "view-guide" };
     if (route === "/single-dummy") return { viewId: "view-single" };
     if (route === "/opening-lead") return { viewId: "view-lead" };
     if (route === "/probability-solver") {
@@ -340,6 +343,7 @@ async function pruneInactivePrerenderContent(page, routePath) {
     await page.evaluate(({ viewId, visiblePanelId }) => {
         const viewIds = [
             "view-home",
+            "view-guide",
             "view-double",
             "view-single",
             "view-lead",

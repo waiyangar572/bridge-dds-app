@@ -1,0 +1,983 @@
+<!DOCTYPE html><html lang="ja" data-prerender-ready="true" data-prerender-view="view-guide"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>オープニングリードの選び方 | Bridge Solver</title>
+        <meta name="description" content="ビッドの読み取り方、パッシブリードとアグレッシブリードの使い分け、そしてシミュレーションでリードを検証する方法を、3NTに対する実例つきで解説します。">
+        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+        <link rel="canonical" href="https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy" data-seo="canonical">
+        
+        
+        
+        <link rel="alternate" type="application/rss+xml" title="Bridge Solver RSS" href="https://bridge-solver.waiyangar.com/rss.xml">
+        <link rel="alternate" type="application/atom+xml" title="Bridge Solver Atom" href="https://bridge-solver.waiyangar.com/atom.xml">
+        <meta property="og:title" content="オープニングリードの選び方 | Bridge Solver">
+        <meta property="og:description" content="ビッドの読み取り方、パッシブリードとアグレッシブリードの使い分け、そしてシミュレーションでリードを検証する方法を、3NTに対する実例つきで解説します。">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Bridge Solver">
+        <meta property="og:url" content="https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy">
+        <meta property="og:locale" content="ja_JP">
+        <meta property="og:locale:alternate" content="en_US">
+        <meta property="og:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="オープニングリードの選び方 | Bridge Solver">
+        <meta name="twitter:description" content="ビッドの読み取り方、パッシブリードとアグレッシブリードの使い分け、そしてシミュレーションでリードを検証する方法を、3NTに対する実例つきで解説します。">
+        <meta name="twitter:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <script async="" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171" crossorigin="anonymous"></script>
+        <script id="seo-json-ld" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://bridge-solver.waiyangar.com/#website","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/","inLanguage":"ja"},{"@type":"WebPage","@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#webpage","url":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy","name":"オープニングリードの選び方 | Bridge Solver","description":"ビッドの読み取り方、パッシブリードとアグレッシブリードの使い分け、そしてシミュレーションでリードを検証する方法を、3NTに対する実例つきで解説します。","inLanguage":"ja","isPartOf":{"@id":"https://bridge-solver.waiyangar.com/#website"},"breadcrumb":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#breadcrumb"},"keywords":"bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale","mainEntity":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#article"}},{"@type":"BreadcrumbList","@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Bridge Solver","item":"https://bridge-solver.waiyangar.com/ja"},{"@type":"ListItem","position":2,"name":"オープニングリードの選び方と、その検証のしかた","item":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy"}]},{"@type":"Article","@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#article","headline":"オープニングリードの選び方 | Bridge Solver","description":"ビッドの読み取り方、パッシブリードとアグレッシブリードの使い分け、そしてシミュレーションでリードを検証する方法を、3NTに対する実例つきで解説します。","url":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy","inLanguage":"ja","mainEntityOfPage":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy#webpage"},"datePublished":"2026-09-07","dateModified":"2026-09-07","author":{"@type":"Organization","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/"},"publisher":{"@id":"https://bridge-solver.waiyangar.com/#website"}}]}</script>
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <style>
+            :root {
+                --notion-blue: #0075de;
+                --notion-blue-active: #005bab;
+                --focus-blue: #097fe8;
+                --text-primary: rgba(0, 0, 0, 0.95);
+                --text-secondary: #615d59;
+                --text-muted: #a39e98;
+                --bg-white: #ffffff;
+                --bg-warm: #f6f5f4;
+                --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+                --card-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+                    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+                    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    -apple-system,
+                    system-ui,
+                    "Segoe UI",
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                background-color: var(--bg-white) !important;
+                color: var(--text-primary) !important;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--notion-blue);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            #mob-nav-double:hover {
+                text-decoration: none;
+            }
+            #mob-nav-single:hover {
+                text-decoration: none;
+            }
+            #mob-nav-lead:hover {
+                text-decoration: none;
+            }
+            #nav-double:hover {
+                text-decoration: none;
+            }
+            #nav-single:hover {
+                text-decoration: none;
+            }
+            #nav-lead:hover {
+                text-decoration: none;
+            }
+
+            .site-header {
+                background: var(--bg-white) !important;
+                border-bottom: var(--border-whisper);
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .site-header .site-brand {
+                color: var(--text-primary);
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.25px;
+            }
+
+            .site-header .site-logo {
+                border: var(--border-whisper);
+                background: var(--bg-warm);
+                color: var(--text-primary);
+                border-radius: 8px;
+            }
+
+            .site-header .site-logo i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .site-header .site-nav-btn {
+                color: var(--text-primary);
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.33;
+                border-bottom-width: 2px;
+            }
+
+            .site-header .tab-active {
+                color: var(--notion-blue) !important;
+                border-bottom-color: var(--notion-blue) !important;
+            }
+
+            .site-header .tab-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header .lang-switch {
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                border-radius: 9999px;
+                padding: 2px;
+            }
+
+            .site-header .lang-switch-btn {
+                border-radius: 9999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            .site-header .lang-switch-btn:hover {
+                color: var(--text-primary);
+            }
+
+            .site-header .lang-switch-btn.bg-indigo-600 {
+                background: var(--notion-blue) !important;
+                color: #fff !important;
+            }
+
+            .site-header .lang-switch-btn.text-slate-600 {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header #mobile-nav .text-indigo-600 {
+                color: var(--notion-blue) !important;
+                background: #f2f9ff;
+            }
+
+            .site-header #mobile-menu-btn {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                color: var(--text-secondary);
+            }
+
+            .site-header #mobile-menu-btn:hover {
+                color: var(--text-primary);
+                background: var(--bg-warm);
+            }
+
+            .sd-mode-switch-active {
+                background: #fff;
+                color: var(--notion-blue) !important;
+                box-shadow: var(--card-shadow);
+            }
+
+            .sd-mode-switch-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .sd-mode-switch-inactive:hover {
+                color: var(--text-primary) !important;
+            }
+
+            .shape-major-btn-active {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+            }
+
+            .shape-major-btn-inactive {
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-color: rgba(0, 0, 0, 0.12);
+            }
+
+            .result-panel-head {
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+
+            .result-panel-title {
+                color: var(--text-primary);
+                font-weight: 700;
+            }
+
+            .result-panel-count {
+                color: var(--focus-blue);
+                background: #f2f9ff;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
+
+            .result-sort-select {
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 4px;
+            }
+
+            .result-analysis-card {
+                background: #fff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+                padding: 12px;
+            }
+
+            .result-meta-label {
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.125px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .result-player-label {
+                color: var(--text-secondary);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-avg-value {
+                color: var(--notion-blue);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-value-primary {
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .result-value-accent {
+                color: #dd5b00;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-pill {
+                border-radius: 9999px;
+                padding: 2px 8px;
+                border: var(--border-whisper);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .result-pill-game {
+                background: rgba(26, 174, 57, 0.12);
+                color: #1aae39;
+            }
+
+            .result-pill-slam {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            .share-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .share-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1;
+                transition:
+                    background-color 120ms ease,
+                    color 120ms ease,
+                    border-color 120ms ease;
+            }
+
+            .share-button:hover {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+                text-decoration: none;
+            }
+
+            .share-button i {
+                width: 14px;
+                height: 14px;
+            }
+
+            .suit-nt {
+                color: var(--text-primary);
+            }
+
+            #total-count {
+                color: var(--notion-blue) !important;
+            }
+
+            .tab-active {
+                border-bottom-color: var(--notion-blue);
+                color: var(--notion-blue);
+                background-color: #f2f9ff;
+                font-weight: 600;
+            }
+            .tab-inactive {
+                border-bottom-color: transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            .tab-inactive:hover {
+                color: var(--text-primary);
+                background-color: var(--bg-warm);
+            }
+
+            #btn-run-double,
+            #btn-run-single,
+            #btn-run-lead {
+                background-color: var(--notion-blue) !important;
+                color: #fff !important;
+                border: 1px solid transparent;
+                border-radius: 4px !important;
+                box-shadow: var(--card-shadow) !important;
+                font-size: 15px;
+                font-weight: 600;
+                transition:
+                    transform 0.1s ease,
+                    background-color 0.15s ease;
+            }
+            #btn-run-double:hover,
+            #btn-run-single:hover,
+            #btn-run-lead:hover {
+                background-color: var(--notion-blue-active) !important;
+            }
+            #btn-run-double:active,
+            #btn-run-single:active,
+            #btn-run-lead:active {
+                transform: scale(0.96);
+            }
+
+            .pc-rank-btn {
+                font-size: 0.75rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.1s;
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                user-select: none;
+            }
+            .pc-rank-btn:hover {
+                background-color: var(--bg-warm);
+            }
+            .pc-rank-btn.selected {
+                background-color: var(--notion-blue);
+                color: #fff;
+                border-color: var(--notion-blue);
+                font-weight: 600;
+            }
+            .pc-rank-btn.taken {
+                background-color: var(--bg-warm);
+                color: var(--text-muted);
+                cursor: not-allowed;
+                border-color: transparent;
+            }
+
+            .bg-white,
+            section,
+            .hand-card {
+                border: var(--border-whisper) !important;
+                box-shadow: var(--card-shadow) !important;
+            }
+
+            input,
+            textarea,
+            select {
+                border: 1px solid #dddddd !important;
+                border-radius: 4px !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted) !important;
+            }
+
+            .count-badge,
+            .sd-count-badge,
+            .lead-count-badge {
+                border-radius: 9999px !important;
+                background: #f2f9ff !important;
+                color: var(--focus-blue) !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.125px;
+            }
+
+            .hand-card-mobile-active {
+                border-color: var(--focus-blue) !important;
+                box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.22);
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .suit-s {
+                color: #2a6f97;
+            }
+            .suit-h {
+                color: #c94040;
+            }
+            .suit-d {
+                color: #f97316;
+            }
+            .suit-c {
+                color: #16a34a;
+            }
+
+            .result-table th {
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.125px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+            .result-table td {
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                border-bottom: var(--border-whisper);
+                color: var(--text-primary);
+            }
+            .result-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .qdrop-fit-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .qdrop-fit-toggle:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .qdrop-fit-toggle.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-fit-toggle-caret {
+                font-size: 10px;
+                opacity: 0.8;
+            }
+
+            .qdrop-dialog {
+                position: fixed;
+                inset: 0;
+                z-index: 120;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .qdrop-dialog-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                backdrop-filter: blur(1px);
+            }
+
+            .qdrop-dialog-panel {
+                position: relative;
+                width: min(680px, 100%);
+                max-height: calc(100vh - 48px);
+                overflow: auto;
+                background: #ffffff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow:
+                    rgba(0, 0, 0, 0.1) 0px 20px 45px,
+                    rgba(0, 0, 0, 0.08) 0px 8px 20px;
+                padding: 14px;
+            }
+
+            .qdrop-dialog-close {
+                width: 28px;
+                height: 28px;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: #475569;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            @keyframes qdrop-sheet-in {
+                from {
+                    transform: translateY(24px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .qdrop-dialog {
+                    align-items: flex-end;
+                    justify-content: stretch;
+                    padding: 0;
+                }
+
+                .qdrop-dialog-panel {
+                    width: 100%;
+                    max-height: min(80vh, calc(100vh - 12px));
+                    border-radius: 20px 20px 0 0;
+                    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+                    animation: qdrop-sheet-in 0.2s ease-out;
+                    transition: transform 0.18s ease-out;
+                    will-change: transform;
+                    touch-action: pan-y;
+                }
+
+                .qdrop-dialog-panel.is-dragging {
+                    animation: none;
+                    transition: none;
+                }
+
+                .qdrop-dialog-handle {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: -16px -16px 8px;
+                    padding: 16px 16px 14px;
+                    touch-action: none;
+                }
+
+                .qdrop-dialog-handle::before {
+                    content: "";
+                    display: block;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 9999px;
+                    background: #cbd5e1;
+                }
+            }
+
+            .reference-tab-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 6px 14px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .reference-tab-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .reference-tab-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .prob-section-toggle {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                color: var(--text-primary);
+                text-align: left;
+            }
+
+            .prob-section-toggle:hover {
+                text-decoration: none;
+            }
+
+            .prob-section-toggle-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                color: var(--text-secondary);
+                background: #ffffff;
+                transition:
+                    transform 0.15s ease,
+                    background-color 0.15s ease;
+            }
+
+            .prob-section-toggle:hover .prob-section-toggle-icon {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .prob-section-toggle[aria-expanded="false"] .prob-section-toggle-icon {
+                transform: rotate(-90deg);
+            }
+
+            .vp-boards-input {
+                width: 88px;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .vp-preset-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .vp-preset-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .vp-preset-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-dialog-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 12px;
+                align-items: end;
+            }
+
+            .qdrop-dialog-field {
+                min-width: 92px;
+            }
+
+            .qdrop-dialog-field-label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qdrop-dialog-input {
+                width: 100%;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .qdrop-dialog-note {
+                min-height: 18px;
+            }
+
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: var(--bg-warm);
+                color: var(--text-secondary);
+                padding: 4px;
+                border: var(--border-whisper);
+                font-weight: 500;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: var(--border-whisper);
+                color: var(--text-muted);
+            }
+            .dist-table td.has-val {
+                color: var(--text-primary);
+                font-weight: 600;
+                background-color: #f2f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            *:focus-visible {
+                outline: 2px solid var(--focus-blue);
+                outline-offset: 1px;
+            }
+
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            /* --- アニメーション用クラス --- */
+            @keyframes shake-horizontal {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-3px);
+                }
+                75% {
+                    transform: translateX(3px);
+                }
+            }
+            .shake-animation {
+                animation: shake-horizontal 0.15s ease-in-out 0s 2;
+            }
+
+            @keyframes pop-scale {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            .pop-animation {
+                animation: pop-scale 0.15s ease-out;
+            }
+        </style>
+    <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.bottom-20{bottom:5rem}.right-4{right:1rem}.z-10{z-index:10}.z-50{z-index:50}.z-\[100\]{z-index:100}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-3{margin-top:0.75rem}.mt-2{margin-top:0.5rem}.mt-5{margin-top:1.25rem}.mt-auto{margin-top:auto}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-16{height:4rem}.h-3{height:0.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-\[38px\]{height:38px}.h-10{height:2.5rem}.min-h-screen{min-height:100vh}.w-20{width:5rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-full{width:100%}.w-10{width:2.5rem}.min-w-20{min-width:5rem}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-7xl{max-width:80rem}.max-w-3xl{max-width:48rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.place-items-center{place-items:center}.place-items-stretch{place-items:stretch}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-12{gap:3rem}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-y-2{row-gap:0.5rem}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(241 245 249 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded-lg{border-radius:0.5rem}.rounded-r-lg{border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t{border-top-width:1px}.border-l-4{border-left-width:4px}.border-indigo-100{--tw-border-opacity:1;border-color:rgb(224 231 255 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-indigo-300{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-t-indigo-600{--tw-border-opacity:1;border-top-color:rgb(79 70 229 / var(--tw-border-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-slate-400{--tw-bg-opacity:1;background-color:rgb(148 163 184 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-orange-600{--tw-bg-opacity:1;background-color:rgb(234 88 12 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}.fill-current{fill:currentColor}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-4{padding:1rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.px-8{padding-left:2rem;padding-right:2rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.pb-1{padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pt-4{padding-top:1rem}.pt-8{padding-top:2rem}.pb-3{padding-bottom:0.75rem}.pt-2{padding-top:0.5rem}.pl-5{padding-left:1.25rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-center{text-align:center}.align-top{vertical-align:top}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[11px\]{font-size:11px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:0.05em}.tracking-wide{letter-spacing:0.025em}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-indigo-900{--tw-text-opacity:1;color:rgb(49 46 129 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-rose-700{--tw-text-opacity:1;color:rgb(190 18 60 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-indigo-400{--tw-text-opacity:1;color:rgb(129 140 248 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-indigo-200{--tw-shadow-color:#c7d2fe;--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-200{--tw-shadow-color:#a7f3d0;--tw-shadow:var(--tw-shadow-colored)}.shadow-orange-200{--tw-shadow-color:#fed7aa;--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.last\:mb-0:last-child{margin-bottom:0px}.hover\:border-indigo-300:hover{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-orange-700:hover{--tw-bg-opacity:1;background-color:rgb(194 65 12 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-blue-900:hover{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:no-underline:hover{-webkit-text-decoration-line:none;text-decoration-line:none}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.focus\:border-orange-500:focus{--tw-border-opacity:1;border-color:rgb(249 115 22 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:col-span-2{grid-column:span 2 / span 2}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 768px){.md\:bottom-8{bottom:2rem}.md\:right-8{right:2rem}.md\:col-span-3{grid-column:span 3 / span 3}.md\:col-start-1{grid-column-start:1}.md\:col-start-2{grid-column-start:2}.md\:col-start-3{grid-column-start:3}.md\:row-start-1{grid-row-start:1}.md\:row-start-2{grid-row-start:2}.md\:row-start-3{grid-row-start:3}.md\:-mb-6{margin-bottom:-1.5rem}.md\:-mt-6{margin-top:-1.5rem}.md\:mb-0{margin-bottom:0px}.md\:flex{display:flex}.md\:hidden{display:none}.md\:cursor-default{cursor:default}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:grid-cols-\[1fr_1fr_1fr_auto\]{grid-template-columns:1fr 1fr 1fr auto}.md\:gap-x-4{column-gap:1rem}.md\:gap-y-0{row-gap:0px}.md\:p-8{padding:2rem}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-xs{font-size:0.75rem;line-height:1rem}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (min-width: 1280px){.xl\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1536px){.\32xl\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style><meta name="keywords" content="bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale"><link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/guide/opening-lead-strategy" data-hreflang="true"><link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/guide/opening-lead-strategy" data-hreflang="true"><link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/guide/opening-lead-strategy" data-hreflang="true"></head>
+    <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+        
+        <header class="site-header bg-white z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/ja" data-route="/" class="flex items-center gap-2 hover:no-underline">
+                        <div class="site-logo p-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="play" aria-hidden="true" class="lucide lucide-play w-5 h-5 fill-current"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>
+                        </div>
+                        <span id="site-title" class="site-brand">Bridge Solver</span>
+                    </a>
+
+                    <div class="hidden md:flex items-center gap-6">
+                        <nav class="hidden md:flex space-x-8">
+                            <a href="/ja/double-dummy" id="nav-double" data-route="/double-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">ダブルダミー分析</a>
+                            <a href="/ja/single-dummy" id="nav-single" data-route="/single-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">シングルダミー分析</a>
+                            <a href="/ja/opening-lead" id="nav-lead" data-route="/opening-lead" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">オープニングリード分析</a>
+                            <a href="/ja/probability-solver" id="nav-solver" data-route="/probability-solver" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">確率ソルバー</a>
+                            <a href="/ja/reference/probability" id="nav-probability" data-route="/reference/probability" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">早見表</a>
+                        </nav>
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1 text-slate-600">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja" class="lang-switch-btn px-2.5 py-1 bg-indigo-600 text-white">
+                                JP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden flex items-center gap-2">
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en-mobile" class="lang-switch-btn px-2 py-1 text-[10px] text-slate-600">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja-mobile" class="lang-switch-btn px-2 py-1 text-[10px] bg-indigo-600 text-white">
+                                JP
+                            </button>
+                        </div>
+                        <button id="mobile-menu-btn" class="p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" aria-hidden="true" class="lucide lucide-menu text-slate-500"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
+                <div class="flex flex-col p-2 space-y-1">
+                    <a href="/ja/double-dummy" id="mob-nav-double" data-route="/double-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">ダブルダミー分析</a>
+                    <a href="/ja/single-dummy" id="mob-nav-single" data-route="/single-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">シングルダミー分析</a>
+                    <a href="/ja/opening-lead" id="mob-nav-lead" data-route="/opening-lead" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">オープニングリード分析</a>
+                    <a href="/ja/probability-solver" id="mob-nav-solver" data-route="/probability-solver" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">確率ソルバー</a>
+                    <a href="/ja/reference/probability" id="mob-nav-probability" data-route="/reference/probability" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">早見表</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+            
+
+            <div id="view-guide" class="fade-in"><article class="max-w-3xl mx-auto"><div class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6"><h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">オープニングリードの選び方と、その検証のしかた</h1><p class="text-sm md:text-base text-slate-700 leading-7">オープニングリードは、ビッドと13枚のカード以外に何の情報もない状態でプレーされる唯一のカードであり、同時にコントラクトの成否をもっとも左右する一手でもあります。この記事では、ビッドから何が読めるか、パッシブとアグレッシブをどう使い分けるか、保持からどのカードを選ぶかという標準的な取り決め、そしてシミュレーションでリードを検証する方法を扱います。自然に見えるオナーリードが、同じスートの小さいカードより9ポイント劣る実例も示します。</p></div><nav class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6"><h2 class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">目次</h2><ol class="list-decimal pl-5 space-y-1 text-sm"><li><a class="text-indigo-600 hover:underline" href="#guide-section-1">オープニングリードがもっとも難しい一手である理由</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-2">自分のハンドより先にビッドを読む</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-3">パッシブとアグレッシブ</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-4">スートを決めたあと、どのカードを出すか</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-5">実例：どのカードか、それともどのスートか</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-6">自分でリード検証を回すには</a></li></ol></nav><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-1"><h2 class="text-lg font-bold text-slate-900">オープニングリードがもっとも難しい一手である理由</h2><p class="text-sm text-slate-700 leading-7">以降のカードはすべて、より多くの情報のもとでプレーされます。ダミーが公開され、パートナーがシグナルを出し、ディクレアラーが方針を見せています。オープニングリードにはそれが一切ありません。13枚のカードとビッドだけを頼りに、どれも決め手に欠ける4つのスートから選ぶことになります。</p><p class="text-sm text-slate-700 leading-7">同時に、誤りがもっとも取り返しにくい一手でもあります。ディクレアラー自身では取れなかったトリックを与えてしまうリード、あるいは相手が育てる必要のあったスートを代わりに育ててしまうリードは、その後のプレーでは通常取り戻せません。この非対称性こそが、オープニングリードに不釣り合いなほどの学習時間を割く価値がある理由です。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-2"><h2 class="text-lg font-bold text-slate-900">自分のハンドより先にビッドを読む</h2><p class="text-sm text-slate-700 leading-7">ビッドは手元にある唯一の証拠であり、たいていの場合は自分の持っているカードよりも多くを語ります。毎回問うべきことが3つあります。</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>相手は止まったのか、突っ走ったのか。インビテーショナルなシークエンスを経て3NTに這い上がったペアは、戦力を合算しただけで追加のトリック源を持っていません。腰を据えて、相手に自力でトリックを作らせて構いません。ジャンプでゲームに突っ込んだペアは、形か強さに余剰があり、待っているとディスカードを許しがちです。</li><li>誰かがロングサイドスートを示したか。ディクレアラーがディスカード用に育てられる5枚のスートをダミーが示しているなら、パッシブなディフェンスは何もせずに負けます。そのスートが整う前に、トリックを取るか育てるかしてください。</li><li>パートナーは何を言ったか、そして何を言わなかったか。オーバーコールできたはずなのにしなかったパートナーが、良質な5枚スートを持っている可能性は低いはずです。プリエンプティブなレイズは、強さではなく形について語っています。</li></ul><p class="text-sm text-slate-700 leading-7">1NTから3NTへというようなリミットな競りで到達したノートランプコントラクトに対しては、自分のもっとも長く強いスートをリードするのが標準的な答えです。長さを育てる競走であり、ラフによるトリックを期待できないからです。スートコントラクトに対しては、一般則よりビッドの内容がはるかに重要になります。トランプの存在が、競走の性質もリスクの大きさも変えてしまうからです。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-3"><h2 class="text-lg font-bold text-slate-900">パッシブとアグレッシブ</h2><p class="text-sm text-slate-700 leading-7">リードの選択はほぼすべて、1本の軸上の位置決めです。攻めるためにどれだけ与えることを許容するか、という軸です。</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>アグレッシブなリードは、自分がオナーを持つスートを攻め、素早くトリックを立てにいきます。キングからのリードや欠けのある保持からのリードは、相手が残りのオナーを持っていれば単純に1トリック損をします。それが速度の対価です。</li><li>パッシブなリードは、トランプ、シークエンス、あるいは失うもののないスートからのリードで、何も与えずディクレアラーに仕事をさせます。代償はテンポであり、それが問題になるのはディクレアラーにルーザーの捨て場がある場合だけです。</li></ul><p class="text-sm text-slate-700 leading-7">どちらを選ぶかはビッドから決まります。ディクレアラーに長く整ったサイドスートがあるなら、テンポの価値がリスクを上回り、アグレッシブが正解です。相手がバランスハンド同士で薄いコントラクトに到達しているなら、ディクレアラーに素早いディスカードはなく、こちらが与えるトリックはすべて相手が自力では取れなかったトリックですから、パッシブが正解です。スモールスラムに対しては、ディスカードが来るとビッドが警告していない限りパッシブ、というのが古典的な目安です。必要なトリックは1つだけであり、2つ目を育てる時間はまずないからです。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-4"><h2 class="text-lg font-bold text-slate-900">スートを決めたあと、どのカードを出すか</h2><p class="text-sm text-slate-700 leading-7">スートを選ぶことと、カードを選ぶことは別の判断です。後者は主としてパートナーシップの取り決めの問題になります。カードはトリックを取るだけでなくパートナーへの情報も運ぶため、取り決めは正確に共有しておく価値があります。</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>シークエンスのトップ。K Q J x からはキング、Q J T x からはクイーンをリードします。安全であり、同時に保持を即座に伝えられます。</li><li>長さからは4番目。ノートランプに対して欠けのあるスートからは上から4番目をリードします。K J 8 6 3 なら6です。オナーをディクレアラーの後ろに残せるうえ、パートナーはイレブンルールを適用できます。出たカードの数字を11から引くと、リーダー以外の3ハンドにあるそれより上のカードの枚数がわかります。</li><li>何もないところからのトップ、あるいはMUD。小さいカード3枚からは、最上位をリードするか中位をリードするかをペアで決めます。取り決めの目的は、無価値な保持とオナーを含む保持を区別することです。</li><li>スートコントラクトに対して、支えのないエースから離れてリードしない。エースのリードはコントロールを手放しますし、A x x から小さく出せばエースごと失いかねません。</li></ul><p class="text-sm text-slate-700 leading-7">ノートランプに対するリードは長さの問題になりやすく、スートコントラクトに対するリードは態度の問題になりやすい傾向があります。理由は構造的なもので、ノートランプではロングスートが勝負カードになるのに対し、トランプがある相手ではサイドスートの5枚目はたいてい単なる1枚だからです。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-5"><h2 class="text-lg font-bold text-slate-900">実例：どのカードか、それともどのスートか</h2><p class="text-sm text-slate-700 leading-7">Westは ♠ K J 8 6 3、♥ 9 4、♦ Q 7 2、♣ 8 6 5 を持ち、左隣の1NTが3NTにレイズされるのを聞きました。15〜17に対して8〜10、双方バランス。4番目のスペードが自動的な選択に見えます。オープニングリード分析で、この競りと矛盾しないディールを候補リードごとに1,000回シミュレートすると、次のようになりました。</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><caption class="text-xs text-slate-500 text-left mb-2">West が 3NT に対してリード、候補ごとに1,000ディールをシミュレーション</caption><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">リード</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">3NTを落とす確率</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">平均ディフェンストリック</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♣ 6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">29.4%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.84</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♥ 9</td><td class="border-b border-slate-100 py-2 pr-4 align-top">28.0%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.80</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♠ 3 / ♠ 6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">27.9%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.70</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♠ 8</td><td class="border-b border-slate-100 py-2 pr-4 align-top">27.5%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.68</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♦ 2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">24.3%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.64</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♠ J</td><td class="border-b border-slate-100 py-2 pr-4 align-top">20.2%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.46</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♦ Q</td><td class="border-b border-slate-100 py-2 pr-4 align-top">20.0%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.46</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">♠ K</td><td class="border-b border-slate-100 py-2 pr-4 align-top">18.5%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3.38</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">目を引く点が2つあり、そのうち推奨として使えるのは片方だけです。</p><p class="text-sm text-slate-700 leading-7">1つ目は、表の上位が統計的には同着だということです。候補あたり1,000ディールでは、1〜2ポイントの差はノイズの内側に収まります。この結果を根拠とする限り、クラブ、ハート、4番目のスペードは同じリードです。「クラブが1.5%良い」と報告するのは、シミュレーションが持っていない精度を主張することになります。</p><p class="text-sm text-slate-700 leading-7">2つ目は、表の下位はまったく同着ではないということです。K J 8 6 3 からキングをリードするとコントラクトを落とせるのは18.5%で、小さいカードの27.9%に対しておよそ9ポイントの差があり、これは標本誤差をはるかに超えています。ジャックもほぼ同程度に悪い選択です。どちらもオナーをディクレアラーの保持にぶつけ、その後どう守っても取り戻せないトリックを差し出しています。</p><p class="text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3">これがリード問題でシミュレーションを使う実践的なやり方です。有力な候補を小数点以下まで順位付けするためではなく、明らかに誤っている候補を特定するために使います。ノイズを超えて残る差こそが、実際のディフェンスを変える差です。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-6"><h2 class="text-lg font-bold text-slate-900">自分でリード検証を回すには</h2><p class="text-sm text-slate-700 leading-7">シミュレーションの答えの質は、与える条件によって完全に決まります。その条件こそが「ビッドと矛盾しないディール」の定義そのものだからです。</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>見えていないハンドに、ビッドがかけたとおりの条件をかける。1NTオープンが15〜17のバランスを示すなら、正確にそう設定します。条件をかけないハンドがあると、シミュレータは競りがすでに否定した形や強さを配ってしまい、答えは無意味なほうへ劣化します。</li><li>レスポンダーにも条件をかける。3NTへのレイズはレンジを含意しますし、ステイマンを使うペアなら4枚メジャーを否定していることも多いはずです。これらの制約は、向かい側に現れるハンドを変えます。</li><li>十分な回数を回し、小さな差はノイズとして扱う。候補あたり1,000ディールなら、30%前後の成功率における標準誤差はおよそ1.5ポイントです。3ポイント程度未満の差は未決着と考えてください。</li><li>第一候補だけでなくリスト全体を見る。この作業の価値はたいてい、考えもしなかったリードが自動的な選択と同等だとわかること、あるいは自動的な選択が破滅的だとわかることにあります。</li></ul></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4"><h2 class="text-lg font-bold text-slate-900">よくある質問</h2><h3 class="text-sm font-bold text-slate-900 pt-2">4番目リードと3rd/5thリードのどちらを使うべきですか。</h3><p class="text-sm text-slate-700 leading-7">ペアで合意していればどちらでも機能しますし、その差は正しいスートを選ぶことに比べればはるかに小さい問題です。4番目リードはイレブンルールを支え、3rd/5thは長さについてより明確な情報をパートナーに与えます。どちらもスート選択の誤りを救ってはくれません。</p><h3 class="text-sm font-bold text-slate-900 pt-2">トランプリードは常にパッシブですか。</h3><p class="text-sm text-slate-700 leading-7">通常もっともパッシブな選択であり、だからこそディクレアラーがダミーでルーザーをラフする計画だとビッドが示唆しているときに正解になります。素早くトリックを育てる必要がある場面では誤りですし、守られるはずだったトランプのオナーを持っている場合には単純に1トリック損をすることもあります。</p><h3 class="text-sm font-bold text-slate-900 pt-2">シミュレーション回数はどれくらい必要ですか。</h3><p class="text-sm text-slate-700 leading-7">気にしている差が標本誤差より大きくなる程度には必要です。リードあたり1,000ディールで、およそ3ポイント以上の差なら判別できます。2つのリードがその範囲に収まったなら、シミュレーションでは区別できないというのが誠実な結論です。</p><h3 class="text-sm font-bold text-slate-900 pt-2">教わった原則をすべて破るリードをシミュレータが推しています。信じてよいですか。</h3><p class="text-sm text-slate-700 leading-7">まず条件を確認してください。奇妙な結果の原因は、条件をかけ忘れたハンドであることがほとんどです。条件が本当に競りを反映していて、差がノイズを十分に超えているなら、そのシミュレーションは特定のハンドタイプについて実在する何かを伝えています。それこそが実行する目的です。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm"><h2 class="text-lg font-bold text-slate-900 mb-4">実際に試す</h2><ul class="space-y-3"><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/opening-lead" href="/ja/opening-lead">オープニングリード分析</a><p class="text-sm text-slate-600 leading-6">コントラクトと条件を設定して、合法なリードをすべて比較します。</p></li><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/single-dummy" href="/ja/single-dummy">シングルダミー分析</a><p class="text-sm text-slate-600 leading-6">競りと矛盾しないディールにわたって、コントラクトの成否を検証します。</p></li></ul></section></article></div>
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
+                        <p class="text-sm leading-relaxed mb-4">モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。</p>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/double-dummy" data-route="/double-dummy" class="hover:text-white">ダブルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/single-dummy" data-route="/single-dummy" class="hover:text-white">シングルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/opening-lead" data-route="/opening-lead" class="hover:text-white">オープニングリード分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/reference/probability" data-route="/reference/probability" class="hover:text-white">早見表</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Guides</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/guide/double-dummy-analysis" data-route="/guide/double-dummy-analysis" class="hover:text-white">ダブルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/guide/opening-lead-strategy" data-route="/guide/opening-lead-strategy" class="hover:text-white">オープニングリード戦略</a>
+                            </li>
+                            <li>
+                                <a href="/ja/guide/suit-break-probability" data-route="/guide/suit-break-probability" class="hover:text-white">スート分割確率</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Information</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/privacy" data-route="/privacy" class="hover:text-white">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="/ja/about" data-route="/about" class="hover:text-white">About Us</a>
+                            </li>
+                            <li>
+                                <a href="/ja/contact" data-route="/contact" class="hover:text-white">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                    © 2024 Bridge Solver
+                </div>
+            </div>
+        </footer>
+
+        <div id="toast" class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 transition-all duration-300 translate-x-full opacity-0">
+            <div class="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" aria-hidden="true" class="lucide lucide-info w-5 h-5 text-indigo-400"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                <span id="toast-msg">Notification</span>
+            </div>
+        </div>
+
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                <span id="loading-label" class="font-bold text-slate-700">解析中...</span>
+            </div>
+        </div>
+
+        <script src="/script.js"></script>
+    
+
+</body></html>

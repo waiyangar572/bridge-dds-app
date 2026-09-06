@@ -16,6 +16,18 @@
         "share": "Share"
     },
     "meta": {
+        "guide-double-dummy-analysis": {
+            "title": "Double Dummy Analysis Explained | Bridge Solver",
+            "description": "What a double dummy solver actually computes, why the result differs from what you make at the table, and a worked bridge deal where 24 high card points produce no notrump game."
+        },
+        "guide-opening-lead-strategy": {
+            "title": "Opening Lead Strategy in Contract Bridge | Bridge Solver",
+            "description": "How to read the auction, choose between passive and aggressive opening leads, and test a lead problem by simulation, with a worked example against 3NT."
+        },
+        "guide-suit-break-probability": {
+            "title": "Bridge Suit Break Probability Explained | Bridge Solver",
+            "description": "A priori suit split percentages, vacant spaces, restricted choice, and what \"eight ever, nine never\" is actually worth once the arithmetic is done."
+        },
         "home": {
             "title": "Bridge Solver | Contract Bridge Analysis Tools",
             "description": "Free online contract bridge tools: double dummy and single dummy solvers, opening lead analysis, and probability, IMP, and VP reference tables."
@@ -111,6 +123,7 @@
         "player": "Player"
     },
     "footer": {
+        "guides": "Guides",
         "description": "A modern browser-based contract bridge analysis platform.",
         "tools": "Tools",
         "info": "Information",
@@ -123,7 +136,18 @@
         "lead": "Bridge Solver is a free browser-based toolkit for analyzing contract bridge hands. Run double dummy and single dummy analysis, compare opening leads, and look up the probability, IMP, and VP tables you need at the table or during review. Nothing to install, and every tool runs from the same card-entry interface.",
         "sections": [
             "Analysis Tools",
+            "Guides",
             "About Bridge Solver"
+        ],
+        "guideTitles": [
+            "What Double Dummy Analysis Tells You (And What It Doesn't)",
+            "Opening Leads: How to Choose, and How to Check Your Choice",
+            "Suit Breaks, Vacant Spaces, and the Numbers Behind Play Decisions"
+        ],
+        "guideTexts": [
+            "What a solver actually computes, why the number differs from what you make at the table, and a worked deal where 24 high card points produce no notrump game.",
+            "Reading the auction, choosing between passive and aggressive leads, and a simulated example where the natural-looking honour lead costs nine percentage points.",
+            "How the outstanding cards split, why an even number of missing cards breaks badly, and what \"eight ever, nine never\" is really worth."
         ],
         "cardTitles": [
             "Double Dummy Solver",
@@ -145,6 +169,732 @@
             "Opening lead analysis applies the same simulation to the defence: for a stated contract it evaluates each legal lead and reports how often each one holds the declarer to fewer tricks.",
             "The reference tables cover the numbers that come up constantly in bidding and play decisions, including how the outstanding cards in a suit are likely to split, how often a given high-card point total occurs, and how a raw score converts to IMPs or victory points."
         ]
+    },
+    "guides": {
+        "double-dummy-analysis": {
+            "short": "Double Dummy Analysis",
+            "title": "What Double Dummy Analysis Tells You (And What It Doesn't)",
+            "lead": "A double dummy solver answers a precise question: with all 52 cards visible and both sides playing perfectly, how many tricks does each declarer take in each strain? That number is invaluable for reviewing a deal, and it is routinely misread as a prediction of what would happen at the table. This guide sets out what the solver computes, works through a deal where 24 high card points produce no notrump game, and marks the boundary between what the number does and does not tell you.",
+            "contentsLabel": "Contents",
+            "faqLabel": "Frequently asked questions",
+            "relatedLabel": "Try it yourself",
+            "sections": [
+                {
+                    "heading": "What a double dummy solver actually computes",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "\"Double dummy\" describes a form of the game nobody plays: every card is face up. Declarer knows where all 26 defensive cards are, and each defender knows the other three hands as well. Under those conditions the deal has an exact value — a number of tricks that neither side can improve on against best play. That number is what a double dummy solver returns."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The computation is a search, not a simulation. The solver explores the tree of legal plays and evaluates each position assuming both sides continue optimally; alpha-beta pruning and transposition tables bring an otherwise astronomical search down to milliseconds. Because it searches a fully specified deal, the answer is deterministic: the same 52 cards always give the same table, and there is no sampling error to allow for."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The result is a 20-cell table — five strains by four possible declarers. Reading down a column tells you how the deal plays for one declarer in every strain. Reading across a row tells you how the same contract fares from each side of the table, which matters more often than people expect: a contract can be cold from one hand and down one from the other, purely because of which defender is on lead."
+                        }
+                    ]
+                },
+                {
+                    "heading": "A worked example: 24 high card points and no notrump game",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "North-South hold 24 high card points between them and a four-four fit in both majors:"
+                        },
+                        {
+                            "type": "table",
+                            "caption": "The full deal",
+                            "head": [
+                                "Hand",
+                                "♠",
+                                "♥",
+                                "♦",
+                                "♣"
+                            ],
+                            "rows": [
+                                [
+                                    "North",
+                                    "K J 8 5",
+                                    "A 9 7 4",
+                                    "6 3",
+                                    "K 8 2"
+                                ],
+                                [
+                                    "East",
+                                    "6 2",
+                                    "T 8",
+                                    "J T 7 5 2",
+                                    "Q J T 3"
+                                ],
+                                [
+                                    "South",
+                                    "A Q 9 4",
+                                    "K 6 5 2",
+                                    "A 8 4",
+                                    "9 5"
+                                ],
+                                [
+                                    "West",
+                                    "T 7 3",
+                                    "Q J 3",
+                                    "K Q 9",
+                                    "A 7 6 4"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "A pair using high card points as the primary guide to game will often land in 3NT here. The solver's verdict:"
+                        },
+                        {
+                            "type": "table",
+                            "caption": "Tricks available with best play by both sides",
+                            "head": [
+                                "Strain",
+                                "North",
+                                "South",
+                                "East",
+                                "West"
+                            ],
+                            "rows": [
+                                [
+                                    "Notrump",
+                                    "8",
+                                    "8",
+                                    "4",
+                                    "4"
+                                ],
+                                [
+                                    "Spades",
+                                    "10",
+                                    "10",
+                                    "3",
+                                    "3"
+                                ],
+                                [
+                                    "Hearts",
+                                    "10",
+                                    "10",
+                                    "3",
+                                    "3"
+                                ],
+                                [
+                                    "Diamonds",
+                                    "6",
+                                    "6",
+                                    "6",
+                                    "6"
+                                ],
+                                [
+                                    "Clubs",
+                                    "6",
+                                    "6",
+                                    "6",
+                                    "6"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "3NT is down one against best defence, while four spades and four hearts both make exactly. The two extra tricks in a suit contract are not conjured from nothing. In notrump, North-South have no long suit to establish and no way to stop the defenders cashing out; in a major, the small cards in the short hand ruff, and the defenders' club and diamond winners stop being winners."
+                        },
+                        {
+                            "type": "note",
+                            "text": "The point is not that the deal is exotic. It is that high card points measure one thing and trick-taking measures another. The double dummy table separates them, because it prices every strain on the same 52 cards."
+                        },
+                        {
+                            "type": "p",
+                            "text": "Notice also that both minors produce six tricks for either side. When the two partnerships can take the same number of tricks in a strain, the deal is close to a pure race, and the table tells you at a glance that neither pair has a cheap sacrifice available."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Why the number is not what you would make at the table",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The most common misuse of a double dummy result is to treat it as a prediction. It is not, and the reasons cut in both directions."
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "The solver's defenders see everything. They find the only lead that beats the contract, the only switch that stops a discard, and the duck that severs communication — with no clue from the auction or from partner's carding. A defender leading blind at trick one is playing a genuinely harder game.",
+                                "The solver's declarer also sees everything. It never misguesses a two-way finesse, never falls for a falsecard, and never takes a safety play it did not need. Contracts that hinge on locating a queen are cold double dummy and coin flips in practice.",
+                                "The two effects do not cancel deal by deal. Where a contract depends on finding a blind opening lead, the double dummy result understates declarer's real chances; where it depends on a two-way guess, it overstates them."
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "So a double dummy result is best read as the value of the deal rather than the expectation for a table. If you want to know how a contract will fare when only your own cards are known, that is a different computation — a single dummy simulation."
+                        }
+                    ]
+                },
+                {
+                    "heading": "What it is genuinely good for",
+                    "blocks": [
+                        {
+                            "type": "ul",
+                            "items": [
+                                "Choosing between strains. This is the strongest use. The table prices every denomination on the same deal, so a question like \"was the four-four major fit really better than the five-three?\" gets an exact answer.",
+                                "Settling sacrifice and par questions. Reading both sides of the table shows whether five of a minor doubled was cheaper than letting the opponents play their game.",
+                                "Separating a wrong contract from bad play. If the contract you reached is a trick short double dummy, no technique was going to bring it home, and the post-mortem belongs in the auction.",
+                                "Calibrating judgment over many deals. Run the same class of hand repeatedly and you build a feel for what a fifth trump, a side-suit singleton, or an honour wasted opposite shortness is really worth."
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "heading": "Double dummy or single dummy?",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The two analyses answer different questions, and choosing between them is mostly a matter of what you are allowed to see."
+                        },
+                        {
+                            "type": "table",
+                            "head": [
+                                "",
+                                "Double dummy",
+                                "Single dummy"
+                            ],
+                            "rows": [
+                                [
+                                    "What is known",
+                                    "All 52 cards",
+                                    "Your side's cards, plus constraints on the others"
+                                ],
+                                [
+                                    "Method",
+                                    "Exhaustive search",
+                                    "Simulation over consistent deals"
+                                ],
+                                [
+                                    "Output",
+                                    "One exact number per strain",
+                                    "A distribution of trick counts"
+                                ],
+                                [
+                                    "Question answered",
+                                    "What was this deal worth?",
+                                    "What should I do, not knowing the rest?"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "Use double dummy when the deal is over and you want the truth about it. Use single dummy while you are still deciding — bidding a close game, choosing between two contracts, judging whether a suit is worth playing for — because it prices the decision across every layout consistent with what you actually know."
+                        }
+                    ]
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Is a double dummy result an upper bound on declarer's tricks?",
+                    "a": "Only against perfect defence. Real defenders miss the killing lead often enough that declarers regularly take more tricks at the table than the double dummy figure; on other deals they take fewer, because declarer faces a guess the solver never has to make."
+                },
+                {
+                    "q": "Why can the same contract be worth different tricks depending on who declares it?",
+                    "a": "Because the opening lead comes from a different hand. Leading through a holding like K J x is far more attractive for the defence than leading round to it, so a tenace that is protected from the lead in one direction is exposed in the other. The two columns for each partnership make this visible at a glance."
+                },
+                {
+                    "q": "Do I have to enter all 52 cards?",
+                    "a": "For double dummy analysis, yes — the computation is only defined on a fully specified deal. If you know only your own side, use the single dummy solver, which fills in the rest many times over and reports the distribution."
+                },
+                {
+                    "q": "Which opening lead does the solver assume?",
+                    "a": "The best one, chosen with knowledge of all four hands. That is exactly the assumption a defender cannot make at the table, and it is the single largest source of difference between double dummy results and table results."
+                }
+            ],
+            "related": [
+                {
+                    "route": "/double-dummy",
+                    "label": "Double Dummy Solver",
+                    "text": "Enter a deal and get the full table of tricks by strain and declarer."
+                },
+                {
+                    "route": "/single-dummy",
+                    "label": "Single Dummy Solver",
+                    "text": "Fix your own hands and simulate the trick distribution across the unknown ones."
+                }
+            ]
+        },
+        "opening-lead-strategy": {
+            "short": "Opening Lead Strategy",
+            "title": "Opening Leads: How to Choose, and How to Check Your Choice",
+            "lead": "The opening lead is the only card in the deal played with no information beyond the auction and thirteen cards, and it is the single play most likely to decide the contract. This guide covers what the auction tells you, how to choose between passive and aggressive leads, the standard agreements about which card to lead from a holding, and how to test a lead problem by simulation — including a worked example where the natural-looking honour lead is worth nine percentage points less than a small card from the same suit.",
+            "contentsLabel": "Contents",
+            "faqLabel": "Frequently asked questions",
+            "relatedLabel": "Try it yourself",
+            "sections": [
+                {
+                    "heading": "Why the opening lead is the hardest card in the deal",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "Every later card is played with more information: dummy is on the table, partner has signalled, declarer has revealed a plan. The opening lead has none of that. You see thirteen cards and hear an auction, and the choice is often between four suits with nothing obviously right about any of them."
+                        },
+                        {
+                            "type": "p",
+                            "text": "It is also the play where errors are least recoverable. A lead that gives declarer a trick he could not take himself, or that establishes the suit he needed to develop, usually cannot be undone later in the hand. That asymmetry is why the opening lead repays a disproportionate share of study time."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Read the auction before you read your hand",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The auction is the only evidence you have, and it is usually more informative than the cards you are holding. Three questions are worth asking every time."
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "Did the opponents stop, or did they drive? A partnership that crawls to 3NT after an invitational sequence has combined values and no source of extra tricks, so you can afford to sit back and make them find their own tricks. A partnership that blasts to game has extra shape or extra strength, and waiting tends to let declarer get discards.",
+                                "Did anyone show a long side suit? If dummy has advertised a five-card suit declarer can set up for discards, passive defence loses by default. Take your tricks, or establish them, before the suit is ready.",
+                                "What did partner say, and what did partner not say? A partner who could have overcalled and did not is unlikely to hold a good five-card suit. A preemptive raise says something about shape rather than strength."
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "Against a notrump contract reached by a limit auction — one notrump raised to three, say — the standard answer is your longest and strongest suit, because the contest is a race to establish length and there are no ruffing tricks to look for. Against a suit contract the auction matters far more than any general rule, because trumps change both the race and the risk."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Passive and aggressive",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "Almost every lead choice is a position on one axis: how much are you willing to give away in order to attack?"
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "An aggressive lead attacks a suit where you hold honours, hoping to set up tricks quickly. Leading from a king or a broken holding may cost a trick outright if declarer holds the missing honours. That is the price of speed.",
+                                "A passive lead — a trump, a sequence, or a suit where you have nothing to lose — gives nothing away and makes declarer do the work. It costs a tempo, which only matters if declarer has somewhere to put losers."
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "The choice follows from the auction. When declarer has a long, ready side suit, tempo is worth more than the risk and aggression is right. When the opponents have bid to a thin contract with balanced hands, declarer has no fast discards and every trick you hand over is one he could not have taken himself, so passive is right. Against a small slam the usual rule of thumb is passive unless the auction warned you that discards are coming: you only need one trick, and there is rarely time to develop a second."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Which card, once you have picked the suit",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "Choosing the suit and choosing the card are separate decisions, and the second is largely a matter of partnership agreement. These agreements are worth stating precisely, because the card carries information for partner as well as taking tricks."
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "Top of a sequence. From K Q J x lead the king; from Q J T x lead the queen. The lead is safe and describes the holding immediately.",
+                                "Fourth best from length. From a broken suit against notrump, lead the fourth highest — from K J 8 6 3, the six. It keeps the honours behind declarer and lets partner apply the rule of eleven: subtract the spot from eleven to get the number of higher cards outside the leader's hand.",
+                                "Top of nothing, or middle-up-down. From three small cards, partnerships lead either the highest or the middle card. The point of the agreement is to distinguish a worthless holding from one containing an honour.",
+                                "Not away from an unsupported ace against a suit contract. Leading the ace surrenders control, and leading small from A x x risks losing it altogether."
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "Against notrump, leads tend to be about length; against a suit contract they tend to be about attitude. The reason is structural: in notrump long suits become winners, while against a trump suit the fifth card of a side suit is usually just a card."
+                        }
+                    ]
+                },
+                {
+                    "heading": "A worked example: which card, or which suit?",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "West holds ♠ K J 8 6 3, ♥ 9 4, ♦ Q 7 2, ♣ 8 6 5, and hears one notrump on the left raised to three notrump — fifteen to seventeen opposite eight to ten, both balanced. The fourth-best spade looks automatic. The Opening Lead Analyzer simulated a thousand deals consistent with that auction for each candidate lead:"
+                        },
+                        {
+                            "type": "table",
+                            "caption": "Simulation over 1,000 deals per lead, West on lead against 3NT",
+                            "head": [
+                                "Lead",
+                                "Defeats 3NT",
+                                "Average defensive tricks"
+                            ],
+                            "rows": [
+                                [
+                                    "♣ 6",
+                                    "29.4%",
+                                    "3.84"
+                                ],
+                                [
+                                    "♥ 9",
+                                    "28.0%",
+                                    "3.80"
+                                ],
+                                [
+                                    "♠ 3 / ♠ 6",
+                                    "27.9%",
+                                    "3.70"
+                                ],
+                                [
+                                    "♠ 8",
+                                    "27.5%",
+                                    "3.68"
+                                ],
+                                [
+                                    "♦ 2",
+                                    "24.3%",
+                                    "3.64"
+                                ],
+                                [
+                                    "♠ J",
+                                    "20.2%",
+                                    "3.46"
+                                ],
+                                [
+                                    "♦ Q",
+                                    "20.0%",
+                                    "3.46"
+                                ],
+                                [
+                                    "♠ K",
+                                    "18.5%",
+                                    "3.38"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "Two things stand out, and only one of them is a recommendation."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The first is that the top of the table is a statistical tie. With a thousand deals per candidate, a difference of one or two percentage points sits inside the noise; on this evidence the club, the heart and the fourth-best spade are the same lead. Reporting that a club is \"1.5% better\" would be claiming precision the simulation does not have."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The second is that the bottom of the table is not a tie at all. Leading the king from K J 8 6 3 beats the contract 18.5% of the time against 27.9% for a small one — a gap of roughly nine percentage points, far outside sampling error. The jack is nearly as bad. Both crash an honour into declarer's holding and hand over a trick that no amount of later defence gets back."
+                        },
+                        {
+                            "type": "note",
+                            "text": "This is the practical way to use simulation on lead problems: not to rank the plausible candidates to the decimal, but to identify which candidates are clearly wrong. The gaps that survive the noise are the ones that change how you defend."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Running your own lead study",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The quality of a simulated answer depends entirely on the constraints you supply, because those constraints define what \"a deal consistent with the auction\" means."
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "Constrain the hidden hands the way the auction did. If a one notrump opening shows fifteen to seventeen balanced, set exactly that. An unconstrained hand lets the simulator deal shapes and strengths the bidding has already ruled out, and the answer degrades toward meaninglessness.",
+                                "Constrain responder too. A raise to three notrump implies a range, and often denies a four-card major if the partnership uses Stayman. Those restrictions change the hands that appear opposite.",
+                                "Use enough deals, and treat small gaps as noise. A thousand deals per candidate gives a standard error near one and a half percentage points on a set rate around thirty percent, so differences under about three points are unresolved.",
+                                "Compare the whole list, not just your first choice. The value of the exercise is usually in finding that a lead you would never have considered is as good as the automatic one — or that the automatic one is a disaster."
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Should I lead fourth best, or third and fifth?",
+                    "a": "Either works as long as the partnership agrees, and the difference matters far less than picking the right suit. Fourth best supports the rule of eleven; third-and-fifth gives partner a clearer read on length. Neither will rescue a lead from the wrong suit."
+                },
+                {
+                    "q": "Is leading a trump always passive?",
+                    "a": "It is usually the most passive lead available, which is exactly why it is right when the auction suggests declarer plans to ruff losers in dummy. It is wrong when you need tricks quickly, and it can cost a trick outright when you hold a trump honour that would otherwise have been protected."
+                },
+                {
+                    "q": "How many simulated deals do I need?",
+                    "a": "Enough that the gaps you care about are larger than the sampling error. A thousand deals per lead resolves differences of about three percentage points or more; if two leads finish within that, the honest conclusion is that the simulation cannot separate them."
+                },
+                {
+                    "q": "The simulator likes a lead that breaks every rule I was taught. Should I believe it?",
+                    "a": "Check the constraints first, because an unconstrained hidden hand is the usual explanation for a strange result. If the constraints genuinely reflect the auction and the gap is well outside the noise, the simulation is telling you something real about that specific hand type, which is the whole point of running it."
+                }
+            ],
+            "related": [
+                {
+                    "route": "/opening-lead",
+                    "label": "Opening Lead Analyzer",
+                    "text": "Set the contract and the constraints, and compare every legal lead."
+                },
+                {
+                    "route": "/single-dummy",
+                    "label": "Single Dummy Solver",
+                    "text": "Test how a contract fares across the deals consistent with an auction."
+                }
+            ]
+        },
+        "suit-break-probability": {
+            "short": "Suit Break Probability",
+            "title": "Suit Breaks, Vacant Spaces, and the Numbers Behind Play Decisions",
+            "lead": "Most play decisions come down to comparing two numbers: how likely the suit is to break, and how likely the finesse is. The first is a fixed table anyone can memorise; the second moves with everything you learn during the auction and the play. This guide covers both — the a priori splits, why they come out as unevenly as they do, how to update them as evidence arrives, and what the old maxims are actually worth once the arithmetic is done.",
+            "contentsLabel": "Contents",
+            "faqLabel": "Frequently asked questions",
+            "relatedLabel": "Try it yourself",
+            "sections": [
+                {
+                    "heading": "How the outstanding cards split",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "Before a card is played, the probability that the missing cards divide in a particular way depends only on how many are missing. These are the numbers every declarer should know cold:"
+                        },
+                        {
+                            "type": "table",
+                            "caption": "A priori probability of each split, by the length of your combined fit",
+                            "head": [
+                                "Your fit",
+                                "Missing",
+                                "Most likely",
+                                "Probability",
+                                "Next",
+                                "Probability"
+                            ],
+                            "rows": [
+                                [
+                                    "Six cards",
+                                    "7",
+                                    "4-3",
+                                    "62.17%",
+                                    "5-2",
+                                    "30.52%"
+                                ],
+                                [
+                                    "Seven cards",
+                                    "6",
+                                    "4-2",
+                                    "48.45%",
+                                    "3-3",
+                                    "35.53%"
+                                ],
+                                [
+                                    "Eight cards",
+                                    "5",
+                                    "3-2",
+                                    "67.83%",
+                                    "4-1",
+                                    "28.26%"
+                                ],
+                                [
+                                    "Nine cards",
+                                    "4",
+                                    "3-1",
+                                    "49.74%",
+                                    "2-2",
+                                    "40.70%"
+                                ],
+                                [
+                                    "Ten cards",
+                                    "3",
+                                    "2-1",
+                                    "78.00%",
+                                    "3-0",
+                                    "22.00%"
+                                ],
+                                [
+                                    "Eleven cards",
+                                    "2",
+                                    "1-1",
+                                    "52.00%",
+                                    "2-0",
+                                    "48.00%"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "Two rows deserve to be memorised as a pair, because they decide contracts. Missing five cards, the three-two break comes home just over two thirds of the time — this is the number behind almost every \"draw trumps and claim\" line. Missing four, the even two-two break is the minority case at 40.70%, less likely than three-one."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Why an even number of missing cards breaks badly",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The rule of thumb is that an even number of missing cards tends to split unevenly, and an odd number splits as evenly as it can. It sounds like folklore, and it is straightforward counting."
+                        },
+                        {
+                            "type": "p",
+                            "text": "Splits are decided by counting arrangements of individual cards, not by counting patterns. With four cards missing there are six ways to give two specific cards to West and two to East, but eight ways to produce a three-one split once both defenders are counted — four with West long and four with East long. The weighting by the space left in each hand nudges the balanced case up a little, but not enough to overturn the count: three-one finishes at 49.74% against 40.70% for two-two."
+                        },
+                        {
+                            "type": "note",
+                            "text": "The practical version: missing four cards to the queen, do not plan on the drop. Missing five, plan on the three-two and have a fallback for the four-one."
+                        },
+                        {
+                            "type": "p",
+                            "text": "All of these figures assume you know nothing about the defenders' hands. Once the bidding or the early play says otherwise, they stop being the right numbers — and the shift is often large enough to reverse a decision."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Vacant spaces: updating as evidence arrives",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "By the time you face the critical decision you usually know something: a preempt has shown seven cards in a suit, or three rounds of a side suit have been played out. The tool for updating is the vacant-spaces count."
+                        },
+                        {
+                            "type": "p",
+                            "text": "Count the cards still unaccounted for in each defender's hand. If West has shown up with seven spades and East with two, then once those cards are accounted for West has six unknown cards left and East has eleven. A missing queen in another suit is therefore roughly eleven-to-six to sit with East — not even money, and a finesse that looked like a coin flip is a substantial favourite in one direction."
+                        },
+                        {
+                            "type": "p",
+                            "text": "This is why good declarers cash side suits before taking a critical finesse. Every round played reveals more about the shape behind the decision, and the finesse is not going anywhere. The cost of the delay is the risk of a ruff; the benefit is a better-informed guess."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The same reasoning applies to the auction. A defender who opened a weak two has already told you about six cards, and applying the a priori table after that is simply using the wrong table."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Eight ever, nine never — and what the numbers say",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "The best-known maxim in card play says that with eight cards missing the queen you should always finesse, and with nine you should play for the drop. Like most maxims it compresses a real calculation, and it is worth seeing what the calculation gives. The reference tables on this site model the standard holding — A K J T and small opposite small cards — and report the all-win probability of the best line:"
+                        },
+                        {
+                            "type": "table",
+                            "caption": "All-win probability with the queen missing, best line, by fit and division",
+                            "head": [
+                                "Fit",
+                                "Division",
+                                "Best line",
+                                "All-win probability"
+                            ],
+                            "rows": [
+                                [
+                                    "Eight cards",
+                                    "4-4",
+                                    "Cash the ace, then finesse",
+                                    "52.83%"
+                                ],
+                                [
+                                    "Eight cards",
+                                    "5-3",
+                                    "Cash the ace, then finesse",
+                                    "50.87%"
+                                ],
+                                [
+                                    "Eight cards",
+                                    "6-2",
+                                    "Take two finesses",
+                                    "48.04%"
+                                ],
+                                [
+                                    "Nine cards",
+                                    "5-4",
+                                    "Cash the ace; finesse if a 4-0 shows onside, otherwise cash the king",
+                                    "57.91%"
+                                ],
+                                [
+                                    "Nine cards",
+                                    "6-3",
+                                    "Cash the ace; finesse if a 4-0 shows onside, otherwise cash the king",
+                                    "57.91%"
+                                ],
+                                [
+                                    "Nine cards",
+                                    "7-2",
+                                    "Cash the ace and king",
+                                    "53.13%"
+                                ]
+                            ]
+                        },
+                        {
+                            "type": "p",
+                            "text": "The maxim survives, but the margins are far narrower than its confident phrasing suggests. The recommended nine-card line is worth 57.91%, and the eight-card finesse 52.83% — real edges, but small enough that a single inference from the bidding can overturn them. \"Nine never\" is a default for when you know nothing, not a law."
+                        },
+                        {
+                            "type": "note",
+                            "text": "If a defender has shown length elsewhere, the vacant-spaces count almost always outweighs the few percentage points separating these lines. Evidence beats maxims."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Restricted choice",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "One inference deserves singling out because it is genuinely counter-intuitive. Missing the queen and the jack, if a defender drops one of them on the first round, the odds favour finessing against the other rather than playing for the drop."
+                        },
+                        {
+                            "type": "p",
+                            "text": "The reason is that a defender holding both honours could have played either one, while a defender holding only that card had no choice. The card you saw is therefore about twice as likely to have come from the singleton holding, and the finesse becomes the percentage play. The principle generalises: when a defender makes a play he could have made in more than one way, the fact that he chose that particular way is evidence about what he holds."
+                        }
+                    ]
+                },
+                {
+                    "heading": "Combining chances",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "A single percentage is rarely the end of the analysis, because most contracts have more than one route home. The skill is ordering the chances so that a failure of the first still leaves the second available."
+                        },
+                        {
+                            "type": "ul",
+                            "items": [
+                                "Test the suit that can be abandoned. If a three-three break would solve everything and a finesse is the fallback, play the suit you can still recover from first.",
+                                "Count the tricks you need, not the tricks available. At teams, a line that brings home the contract 90% of the time and the overtrick 60% beats one that delivers both 75% of the time.",
+                                "Prefer the line that survives the bad break. Where two lines are close, the one that still delivers on a four-one is usually the better practical choice, because bad breaks are where contracts die."
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "heading": "From table to conditional probability",
+                    "blocks": [
+                        {
+                            "type": "p",
+                            "text": "A printed table can only answer the unconditional question. Once you have information — a preempt, a shape shown by a raise, three rounds of a side suit — the number you need is conditional, and it is in no book, because it depends on exactly what you know."
+                        },
+                        {
+                            "type": "p",
+                            "text": "That is the gap the Probability Solver fills: you state the constraints you have actually established, and it computes the split probabilities that follow from them rather than the ones that would apply to an unknown deal."
+                        }
+                    ]
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Is the three-two break really 68%?",
+                    "a": "67.83%, before any evidence. That figure assumes you know nothing about the defenders' hands; after an opposing preempt or a revealing auction it can move a long way in either direction."
+                },
+                {
+                    "q": "Why is two-two less likely than three-one when only four cards are out?",
+                    "a": "Because there are more ways for the cards to fall three-one than two-two once both defenders are counted. Splits are decided by counting arrangements of individual cards, not patterns, and the count favours the uneven case: 49.74% against 40.70%."
+                },
+                {
+                    "q": "Does the vacant-spaces calculation apply to honours as well as shape?",
+                    "a": "It applies to the location of any specific unseen card, honours included. It is a good approximation rather than an exact posterior, because the bidding carries information about strength as well as shape, and vacant spaces only track the shape half."
+                },
+                {
+                    "q": "When should I abandon \"nine never\"?",
+                    "a": "As soon as you have evidence. The line is worth a few percentage points over the alternative on an unknown deal, and a defender who has shown six cards in another suit shifts the odds by considerably more than that."
+                }
+            ],
+            "related": [
+                {
+                    "route": "/reference/probability",
+                    "label": "Reference Tables",
+                    "text": "Suit splits, HCP distribution, optimal-line percentages, and the IMP and VP scales."
+                },
+                {
+                    "route": "/probability-solver",
+                    "label": "Probability Solver",
+                    "text": "Compute split probabilities conditioned on what you already know."
+                }
+            ]
+        }
     },
     "pages": {
         "privacyTitle": "Privacy Policy",

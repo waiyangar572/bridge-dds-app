@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const NAV_KEYS = ["double", "single", "lead", "solver", "probability"];
     const VIEW_IDS = [
         "view-home",
+        "view-guide",
         "view-double",
         "view-single",
         "view-lead",
@@ -167,6 +168,24 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "page",
             metaKey: "contact",
             viewId: "view-contact",
+        },
+        "/guide/double-dummy-analysis": {
+            type: "guide",
+            metaKey: "guide-double-dummy-analysis",
+            guideSlug: "double-dummy-analysis",
+            viewId: "view-guide",
+        },
+        "/guide/opening-lead-strategy": {
+            type: "guide",
+            metaKey: "guide-opening-lead-strategy",
+            guideSlug: "opening-lead-strategy",
+            viewId: "view-guide",
+        },
+        "/guide/suit-break-probability": {
+            type: "guide",
+            metaKey: "guide-suit-break-probability",
+            guideSlug: "suit-break-probability",
+            viewId: "view-guide",
         },
     };
 
@@ -419,6 +438,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeTexts("#view-home .home-card-title", tr("home.cardTitles", []));
         setNodeTexts("#view-home .home-card-text", tr("home.cardTexts", []));
         setNodeTexts("#view-home .home-card-cta", tr("home.cardCtas", []));
+        setNodeTexts("#view-home .home-guide-title", tr("home.guideTitles", []));
+        setNodeTexts("#view-home .home-guide-text", tr("home.guideTexts", []));
         setNodeTexts("#view-home .home-about p", tr("home.about", []));
         setNodeTexts("#view-privacy .space-y-4 p", tr("content.privacy", []));
         setNodeTexts("#view-about .space-y-4 p", tr("content.about", []));
@@ -430,14 +451,20 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#view-contact a", tr("pages.contactButton", ""));
         setNodeText("#view-contact p.text-xs", tr("pages.contactNote", ""));
 
-        setNodeText("footer h4:nth-of-type(1)", tr("footer.tools", "Tools"));
-        setNodeText("footer h4:nth-of-type(2)", tr("footer.info", "Information"));
+        setNodeTexts("footer .footer-heading", [
+            tr("footer.tools", "Tools"),
+            tr("footer.guides", "Guides"),
+            tr("footer.info", "Information"),
+        ]);
         setNodeText("footer .text-sm.leading-relaxed", tr("footer.description", ""));
         setNodeTexts("footer .space-y-2.text-sm a", [
             tr("nav.double", "Double Dummy"),
             tr("nav.single", "Single Dummy"),
             tr("nav.lead", "Opening Lead"),
             tr("nav.probability", "Reference"),
+            tr("guides.double-dummy-analysis.short", "Double Dummy Analysis"),
+            tr("guides.opening-lead-strategy.short", "Opening Lead Strategy"),
+            tr("guides.suit-break-probability.short", "Suit Break Probability"),
             tr("footer.privacy", "Privacy Policy"),
             tr("footer.about", "About Us"),
             tr("footer.contact", "Contact"),
@@ -478,6 +505,8 @@ document.addEventListener("DOMContentLoaded", () => {
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
+        const activeRoute = ROUTES[currentRoutePath];
+        if (activeRoute?.type === "guide") renderGuide(activeRoute);
         updateRouteLinkHrefs();
         updateXShareLinks();
     }
@@ -489,6 +518,190 @@ document.addEventListener("DOMContentLoaded", () => {
             const route = getRoute(routePath);
             link.href = buildLocalizedPath(currentLanguage, route.path);
         });
+    }
+
+
+    const GUIDE_PUBLISHED = "2026-09-07";
+
+    function guideEl(tag, className, text) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (text !== undefined && text !== null) el.textContent = text;
+        return el;
+    }
+
+    function renderGuideBlock(block) {
+        if (!block || typeof block !== "object") return null;
+        if (block.type === "p") {
+            return guideEl("p", "text-sm text-slate-700 leading-7", block.text);
+        }
+        if (block.type === "note") {
+            return guideEl(
+                "p",
+                "text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3",
+                block.text,
+            );
+        }
+        if (block.type === "ul") {
+            const ul = guideEl("ul", "list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7");
+            (block.items || []).forEach((item) => ul.appendChild(guideEl("li", null, item)));
+            return ul;
+        }
+        if (block.type === "table") {
+            const wrap = guideEl("div", "overflow-x-auto");
+            const table = guideEl("table", "guide-table w-full text-sm text-slate-700");
+            if (block.caption) {
+                table.appendChild(
+                    guideEl("caption", "text-xs text-slate-500 text-left mb-2", block.caption),
+                );
+            }
+            const thead = document.createElement("thead");
+            const headRow = document.createElement("tr");
+            (block.head || []).forEach((cell) => {
+                headRow.appendChild(
+                    guideEl(
+                        "th",
+                        "text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4",
+                        cell,
+                    ),
+                );
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            (block.rows || []).forEach((row) => {
+                const bodyRow = document.createElement("tr");
+                row.forEach((cell) => {
+                    bodyRow.appendChild(
+                        guideEl("td", "border-b border-slate-100 py-2 pr-4 align-top", cell),
+                    );
+                });
+                tbody.appendChild(bodyRow);
+            });
+            table.appendChild(tbody);
+            wrap.appendChild(table);
+            return wrap;
+        }
+        return null;
+    }
+
+    function renderGuide(route) {
+        const container = document.getElementById("view-guide");
+        if (!container) return;
+        const guide = tr(`guides.${route.guideSlug}`, null);
+        container.textContent = "";
+        if (!guide || typeof guide !== "object") return;
+
+        const article = guideEl("article", "max-w-3xl mx-auto");
+
+        const header = guideEl(
+            "div",
+            "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6",
+        );
+        header.appendChild(
+            guideEl("h1", "text-2xl md:text-3xl font-bold text-slate-900 mb-4", guide.title),
+        );
+        header.appendChild(guideEl("p", "text-sm md:text-base text-slate-700 leading-7", guide.lead));
+        article.appendChild(header);
+
+        const sections = Array.isArray(guide.sections) ? guide.sections : [];
+
+        if (sections.length > 1) {
+            const toc = guideEl(
+                "nav",
+                "bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6",
+            );
+            toc.appendChild(
+                guideEl(
+                    "h2",
+                    "text-xs font-bold uppercase tracking-wide text-slate-400 mb-3",
+                    guide.contentsLabel || "Contents",
+                ),
+            );
+            const list = guideEl("ol", "list-decimal pl-5 space-y-1 text-sm");
+            sections.forEach((section, index) => {
+                const item = document.createElement("li");
+                const link = guideEl("a", "text-indigo-600 hover:underline", section.heading);
+                link.href = `#guide-section-${index + 1}`;
+                item.appendChild(link);
+                list.appendChild(item);
+            });
+            toc.appendChild(list);
+            article.appendChild(toc);
+        }
+
+        sections.forEach((section, index) => {
+            const wrapper = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4",
+            );
+            wrapper.id = `guide-section-${index + 1}`;
+            wrapper.appendChild(
+                guideEl("h2", "text-lg font-bold text-slate-900", section.heading),
+            );
+            (section.blocks || []).forEach((block) => {
+                const node = renderGuideBlock(block);
+                if (node) wrapper.appendChild(node);
+            });
+            article.appendChild(wrapper);
+        });
+
+        const faq = Array.isArray(guide.faq) ? guide.faq : [];
+        if (faq.length > 0) {
+            const faqSection = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4",
+            );
+            faqSection.appendChild(
+                guideEl("h2", "text-lg font-bold text-slate-900", guide.faqLabel || "FAQ"),
+            );
+            faq.forEach((item) => {
+                faqSection.appendChild(
+                    guideEl("h3", "text-sm font-bold text-slate-900 pt-2", item.q),
+                );
+                faqSection.appendChild(
+                    guideEl("p", "text-sm text-slate-700 leading-7", item.a),
+                );
+            });
+            article.appendChild(faqSection);
+        }
+
+        const related = Array.isArray(guide.related) ? guide.related : [];
+        if (related.length > 0) {
+            const relatedSection = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm",
+            );
+            relatedSection.appendChild(
+                guideEl(
+                    "h2",
+                    "text-lg font-bold text-slate-900 mb-4",
+                    guide.relatedLabel || "Try it yourself",
+                ),
+            );
+            const list = guideEl("ul", "space-y-3");
+            related.forEach((item) => {
+                if (!item || !item.route) return;
+                const li = document.createElement("li");
+                const link = guideEl(
+                    "a",
+                    "text-indigo-600 font-semibold hover:underline",
+                    item.label,
+                );
+                link.dataset.route = item.route;
+                link.href = buildLocalizedPath(currentLanguage, getRoute(item.route).path);
+                li.appendChild(link);
+                if (item.text) {
+                    li.appendChild(guideEl("p", "text-sm text-slate-600 leading-6", item.text));
+                }
+                list.appendChild(li);
+            });
+            relatedSection.appendChild(list);
+            article.appendChild(relatedSection);
+        }
+
+        container.appendChild(article);
+        updateRouteLinkHrefs();
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -556,6 +769,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.metaKey === "privacy") return tr("pages.privacyTitle", "Privacy Policy");
         if (route.metaKey === "about") return tr("pages.aboutTitle", "About Us");
         if (route.metaKey === "contact") return tr("pages.contactTitle", "Contact");
+        if (route.type === "guide") {
+            return tr(`guides.${route.guideSlug}.title`, WEBSITE_NAME);
+        }
         return WEBSITE_NAME;
     }
 
@@ -618,6 +834,23 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             buildBreadcrumbList(route, canonicalUrl),
         ];
+
+        if (route.type === "guide") {
+            graph.push({
+                "@type": "Article",
+                "@id": `${canonicalUrl}#article`,
+                headline: title,
+                description,
+                url: canonicalUrl,
+                inLanguage: currentLanguage,
+                mainEntityOfPage: { "@id": webpageId },
+                datePublished: GUIDE_PUBLISHED,
+                dateModified: GUIDE_PUBLISHED,
+                author: { "@type": "Organization", name: WEBSITE_NAME, url: `${SITE_ORIGIN}/` },
+                publisher: { "@id": websiteId },
+            });
+            graph[1].mainEntity = { "@id": `${canonicalUrl}#article` };
+        }
 
         if (route.type === "tool") {
             graph.push({
@@ -867,6 +1100,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (route.probabilityMode === "solver") showProbabilitySolver();
                 else setReferenceTab(route.referenceTab || "probability");
             }
+        } else if (route.type === "guide") {
+            applyNavState(route);
+            renderGuide(route);
+            showView(route.viewId);
         } else {
             applyNavState(route);
             showView(route.viewId);

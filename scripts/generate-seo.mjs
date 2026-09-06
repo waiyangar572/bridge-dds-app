@@ -48,6 +48,9 @@ function stripRouteLanguage(routePath) {
 function getMetaKey(routePath) {
     const routeWithoutLang = stripRouteLanguage(routePath);
     if (routeWithoutLang === "" || routeWithoutLang === "/") return "home";
+    if (routeWithoutLang.startsWith("/guide/")) {
+        return `guide-${routeWithoutLang.slice("/guide/".length)}`;
+    }
     if (routeWithoutLang === "/reference/probability") return "probability";
     if (routeWithoutLang === "/reference/imp") return "imp";
     if (routeWithoutLang === "/reference/vp") return "vp";
