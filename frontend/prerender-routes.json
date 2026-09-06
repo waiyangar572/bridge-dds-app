@@ -2,6 +2,7 @@
     "baseUrl": "https://bridge-solver.waiyangar.com",
     "strategy": "static-snapshot-manifest",
     "routes": [
+        "/en",
         "/en/double-dummy",
         "/en/single-dummy",
         "/en/opening-lead",
@@ -12,6 +13,7 @@
         "/en/privacy",
         "/en/about",
         "/en/contact",
+        "/ja",
         "/ja/double-dummy",
         "/ja/single-dummy",
         "/ja/opening-lead",

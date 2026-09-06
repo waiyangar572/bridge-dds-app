@@ -7,12 +7,12 @@
         "redirects": [
             {
                 "source": "/",
-                "destination": "/en/double-dummy",
+                "destination": "/en",
                 "type": 301
             },
             {
                 "source": "/index.html",
-                "destination": "/en/double-dummy",
+                "destination": "/en",
                 "type": 301
             },
             {

@@ -3,11 +3,20 @@
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://bridge-solver.waiyangar.com/en</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en" />
+    <lastmod>2026-09-06T23:19:37+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
     <loc>https://bridge-solver.waiyangar.com/en/double-dummy</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/double-dummy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/double-dummy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/double-dummy" />
-    <lastmod>2026-05-20T00:24:48+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:38+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -16,7 +25,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/single-dummy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/single-dummy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/single-dummy" />
-    <lastmod>2026-05-20T00:24:49+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:39+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -25,7 +34,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/opening-lead" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/opening-lead" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/opening-lead" />
-    <lastmod>2026-05-20T00:24:50+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:40+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -34,7 +43,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/probability-solver" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/probability-solver" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/probability-solver" />
-    <lastmod>2026-05-20T00:24:51+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:41+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -43,7 +52,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/probability" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/probability" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/probability" />
-    <lastmod>2026-05-20T00:24:52+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:42+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -52,7 +61,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/imp" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/imp" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/imp" />
-    <lastmod>2026-05-20T00:24:53+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:43+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -61,7 +70,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/vp" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/vp" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/vp" />
-    <lastmod>2026-05-20T00:24:54+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:43+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -70,7 +79,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/privacy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/privacy" />
-    <lastmod>2026-05-20T00:24:54+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:44+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -79,7 +88,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/about" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/about" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/about" />
-    <lastmod>2026-05-20T00:24:55+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:45+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -88,16 +97,25 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/contact" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/contact" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/contact" />
-    <lastmod>2026-05-20T00:24:56+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:46+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://bridge-solver.waiyangar.com/ja</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en" />
+    <lastmod>2026-09-06T23:19:47+09:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://bridge-solver.waiyangar.com/ja/double-dummy</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/double-dummy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/double-dummy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/double-dummy" />
-    <lastmod>2026-05-20T00:24:57+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:48+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -106,7 +124,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/single-dummy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/single-dummy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/single-dummy" />
-    <lastmod>2026-05-20T00:24:58+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:49+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -115,7 +133,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/opening-lead" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/opening-lead" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/opening-lead" />
-    <lastmod>2026-05-20T00:24:59+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:49+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -124,7 +142,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/probability-solver" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/probability-solver" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/probability-solver" />
-    <lastmod>2026-05-20T00:25:00+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:50+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -133,7 +151,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/probability" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/probability" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/probability" />
-    <lastmod>2026-05-20T00:25:00+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:51+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -142,7 +160,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/imp" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/imp" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/imp" />
-    <lastmod>2026-05-20T00:25:01+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:52+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -151,7 +169,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/reference/vp" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/reference/vp" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/reference/vp" />
-    <lastmod>2026-05-20T00:25:02+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:53+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -160,7 +178,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/privacy" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/privacy" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/privacy" />
-    <lastmod>2026-05-20T00:25:03+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:54+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -169,7 +187,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/about" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/about" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/about" />
-    <lastmod>2026-05-20T00:25:04+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:55+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -178,7 +196,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/contact" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/contact" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/contact" />
-    <lastmod>2026-05-20T00:25:05+09:00</lastmod>
+    <lastmod>2026-09-06T23:19:55+09:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

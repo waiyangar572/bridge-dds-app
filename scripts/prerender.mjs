@@ -246,7 +246,8 @@ async function waitForRouteReady(page, routePath) {
     await page.waitForFunction(
         (expectedPath) => {
             const routeToExpectedState = (path) => {
-                const route = path.replace(/^\/(?:en|ja)(?=\/)/, "") || "/double-dummy";
+                const route = path.replace(/^\/(?:en|ja)(?=\/|$)/, "");
+                if (route === "" || route === "/") return { viewId: "view-home" };
                 if (route === "/single-dummy") return { viewId: "view-single" };
                 if (route === "/opening-lead") return { viewId: "view-lead" };
                 if (route === "/probability-solver") {
@@ -281,6 +282,7 @@ async function waitForRouteReady(page, routePath) {
             const targetPath = expectedPath.replace(/\/$/, "");
             const expectedState = routeToExpectedState(targetPath);
             const viewIds = [
+                "view-home",
                 "view-double",
                 "view-single",
                 "view-lead",
@@ -311,7 +313,8 @@ async function waitForRouteReady(page, routePath) {
 }
 
 function getPrerenderRouteState(routePath) {
-    const route = normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/)/, "") || "/double-dummy";
+    const route = normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/|$)/, "");
+    if (route === "" || route === "/") return { viewId: "view-home" };
     if (route === "/single-dummy") return { viewId: "view-single" };
     if (route === "/opening-lead") return { viewId: "view-lead" };
     if (route === "/probability-solver") {
@@ -336,6 +339,7 @@ async function pruneInactivePrerenderContent(page, routePath) {
     const routeState = getPrerenderRouteState(routePath);
     await page.evaluate(({ viewId, visiblePanelId }) => {
         const viewIds = [
+            "view-home",
             "view-double",
             "view-single",
             "view-lead",

@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const WEBSITE_NAME = "Bridge Solver";
     const SUPPORTED_LANGS = ["en", "ja"];
     const DEFAULT_ROUTE = "/double-dummy";
+    const HOME_ROUTE = "/";
     const LANGUAGE_STORAGE_KEY = "bridge_solver_lang";
     const SUITS = [
         { id: "s", label: "♠", color: "suit-s", name: "Spades" },
@@ -74,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const NAV_KEYS = ["double", "single", "lead", "solver", "probability"];
     const VIEW_IDS = [
+        "view-home",
         "view-double",
         "view-single",
         "view-lead",
@@ -83,6 +85,12 @@ document.addEventListener("DOMContentLoaded", () => {
         "view-contact",
     ];
     const ROUTES = {
+        "/": {
+            path: HOME_ROUTE,
+            type: "page",
+            metaKey: "home",
+            viewId: "view-home",
+        },
         "/double-dummy": {
             type: "tool",
             metaKey: "double-dummy",
@@ -405,6 +413,13 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#view-lead section p", tr("content.lead.overview", ""));
         setNodeTexts("#view-lead section ol li", tr("content.lead.how", []));
         setNodeTexts("#view-lead section dl dd", tr("content.lead.glossary", []));
+        setNodeText("#view-home h1", tr("home.title", "Bridge Solver"));
+        setNodeText("#view-home .home-lead", tr("home.lead", ""));
+        setNodeTexts("#view-home .home-section-title", tr("home.sections", []));
+        setNodeTexts("#view-home .home-card-title", tr("home.cardTitles", []));
+        setNodeTexts("#view-home .home-card-text", tr("home.cardTexts", []));
+        setNodeTexts("#view-home .home-card-cta", tr("home.cardCtas", []));
+        setNodeTexts("#view-home .home-about p", tr("home.about", []));
         setNodeTexts("#view-privacy .space-y-4 p", tr("content.privacy", []));
         setNodeTexts("#view-about .space-y-4 p", tr("content.about", []));
 
@@ -511,6 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getSchemaPageType(route) {
+        if (route.metaKey === "home") return "CollectionPage";
         if (route.metaKey === "about") return "AboutPage";
         if (route.metaKey === "contact") return "ContactPage";
         if (route.metaKey === "privacy") return "PrivacyPolicy";
@@ -549,11 +565,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 "@type": "ListItem",
                 position: 1,
                 name: WEBSITE_NAME,
-                item: `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, DEFAULT_ROUTE)}`,
+                item: `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, HOME_ROUTE)}`,
             },
         ];
 
-        if (route.path !== DEFAULT_ROUTE) {
+        if (route.path !== HOME_ROUTE) {
             itemListElement.push({
                 "@type": "ListItem",
                 position: 2,
@@ -764,7 +780,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function buildLocalizedPath(lang, routePath) {
-        const basePath = routePath === "/" ? DEFAULT_ROUTE : routePath;
+        const basePath = routePath === HOME_ROUTE ? "" : routePath;
         return `/${lang}${basePath}`;
     }
 
@@ -772,14 +788,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const normalized = normalizePath(pathname);
         const parts = normalized.split("/").filter(Boolean);
         if (parts.length === 0) {
-            return { lang: null, routePath: DEFAULT_ROUTE, hasLangPrefix: false };
+            return { lang: null, routePath: HOME_ROUTE, hasLangPrefix: false };
         }
         const maybeLang = parts[0];
         if (SUPPORTED_LANGS.includes(maybeLang)) {
             const routePath = "/" + parts.slice(1).join("/");
             return {
                 lang: maybeLang,
-                routePath: routePath === "/" || routePath === "" ? DEFAULT_ROUTE : routePath,
+                routePath: routePath === "/" || routePath === "" ? HOME_ROUTE : routePath,
                 hasLangPrefix: true,
             };
         }

@@ -16,6 +16,10 @@
         "share": "Share"
     },
     "meta": {
+        "home": {
+            "title": "Bridge Solver | Contract Bridge Analysis Tools",
+            "description": "Free online contract bridge tools: double dummy and single dummy solvers, opening lead analysis, and probability, IMP, and VP reference tables."
+        },
         "double-dummy": {
             "title": "Double Dummy Solver Online | Bridge Solver",
             "description": "Use this double dummy solver online to analyze contract bridge hands, compare NT and suit contracts, and find optimal trick potential."
@@ -113,6 +117,34 @@
         "privacy": "Privacy Policy",
         "about": "About Us",
         "contact": "Contact"
+    },
+    "home": {
+        "title": "Contract Bridge Analysis Tools",
+        "lead": "Bridge Solver is a free browser-based toolkit for analyzing contract bridge hands. Run double dummy and single dummy analysis, compare opening leads, and look up the probability, IMP, and VP tables you need at the table or during review. Nothing to install, and every tool runs from the same card-entry interface.",
+        "sections": [
+            "Analysis Tools",
+            "About Bridge Solver"
+        ],
+        "cardTitles": [
+            "Double Dummy Solver",
+            "Single Dummy Solver",
+            "Opening Lead Analyzer",
+            "Probability Solver",
+            "Reference Tables"
+        ],
+        "cardTexts": [
+            "Enter all 52 cards and see the maximum tricks available in no-trump and in each suit under optimal play by both sides.",
+            "Fix the North-South hands, or describe them by shape and point range, and simulate the trick distribution across the unseen defending hands.",
+            "Compare every candidate opening lead against a given contract and rank them by defensive tricks and by how often each one beats the contract.",
+            "Compute suit-split probabilities conditioned on what you already know about the opponents' hands, instead of reading them off an unconditional table.",
+            "Suit distribution and HCP probability tables, optimal-line all-win percentages, the IMP scale, and the VP scale for any number of boards."
+        ],
+        "about": [
+            "Double dummy analysis assumes all four hands are visible and computes the theoretical trick ceiling of every denomination. It is the baseline that tells you what a deal was worth, which is why it is the standard way to review a board after play.",
+            "Single dummy analysis is closer to the table. Only your side is known, so results come out as a distribution over the possible defending hands rather than a single number, and the same contract can be right or wrong depending on how the missing cards lie.",
+            "Opening lead analysis applies the same simulation to the defence: for a stated contract it evaluates each legal lead and reports how often each one holds the declarer to fewer tricks.",
+            "The reference tables cover the numbers that come up constantly in bidding and play decisions, including how the outstanding cards in a suit are likely to split, how often a given high-card point total occurs, and how a raw score converts to IMPs or victory points."
+        ]
     },
     "pages": {
         "privacyTitle": "Privacy Policy",

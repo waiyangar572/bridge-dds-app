@@ -42,11 +42,12 @@ function getRouteLanguage(routePath) {
 }
 
 function stripRouteLanguage(routePath) {
-    return normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/)/, "");
+    return normalizeRoute(routePath).replace(/^\/(?:en|ja)(?=\/|$)/, "");
 }
 
 function getMetaKey(routePath) {
     const routeWithoutLang = stripRouteLanguage(routePath);
+    if (routeWithoutLang === "" || routeWithoutLang === "/") return "home";
     if (routeWithoutLang === "/reference/probability") return "probability";
     if (routeWithoutLang === "/reference/imp") return "imp";
     if (routeWithoutLang === "/reference/vp") return "vp";
@@ -55,6 +56,7 @@ function getMetaKey(routePath) {
 
 function getPriority(routePath) {
     const metaKey = getMetaKey(routePath);
+    if (metaKey === "home") return "1.0";
     return ["privacy", "about", "contact"].includes(metaKey) ? "0.5" : "0.8";
 }
 
@@ -177,7 +179,7 @@ function buildAtomAlternateLinks(entry) {
 }
 
 function buildRss(entries, baseUrl, updated) {
-    const defaultPageUrl = `${baseUrl}${buildLocalizedRoute(DEFAULT_LANGUAGE, DEFAULT_ROUTE)}`;
+    const defaultPageUrl = `${baseUrl}/${DEFAULT_LANGUAGE}`;
     const items = entries
         .map(
             (entry) => `    <item xml:lang="${entry.lang}">
@@ -208,7 +210,7 @@ ${items}
 }
 
 function buildAtom(entries, baseUrl, updated) {
-    const defaultPageUrl = `${baseUrl}${buildLocalizedRoute(DEFAULT_LANGUAGE, DEFAULT_ROUTE)}`;
+    const defaultPageUrl = `${baseUrl}/${DEFAULT_LANGUAGE}`;
     const entriesXml = entries
         .map(
             (entry) => `  <entry xml:lang="${entry.lang}">
