@@ -67,3 +67,7 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Python bytecode
+__pycache__/
+*.pyc
