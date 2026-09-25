@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -100,8 +101,39 @@ async function statMtime(filePath) {
     return stats?.mtime || null;
 }
 
+function git(args) {
+    return execFileSync("git", args, {
+        cwd: repoRoot,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+}
+
+const updatedAtCache = new Map();
+
+// Checkouts and pulls rewrite mtimes, so a committed file's last commit date is the
+// real update time. Files with uncommitted edits (or outside git) fall back to mtime.
+async function getUpdatedAt(filePath) {
+    if (!updatedAtCache.has(filePath)) {
+        updatedAtCache.set(filePath, resolveUpdatedAt(filePath));
+    }
+    return updatedAtCache.get(filePath);
+}
+
+async function resolveUpdatedAt(filePath) {
+    try {
+        const relativePath = path.relative(repoRoot, filePath);
+        const isDirty = git(["status", "--porcelain", "--", relativePath]) !== "";
+        const committedAt = isDirty ? "" : git(["log", "-1", "--format=%cI", "--", relativePath]);
+        if (committedAt) return new Date(committedAt);
+    } catch {
+        // Not a git checkout; use the filesystem time instead.
+    }
+    return statMtime(filePath);
+}
+
 async function getLatestMtime(filePaths) {
-    const mtimes = await Promise.all(filePaths.map(statMtime));
+    const mtimes = await Promise.all(filePaths.map(getUpdatedAt));
     const existingMtimes = mtimes.filter(Boolean);
     if (existingMtimes.length === 0) return new Date();
     return existingMtimes.reduce((latest, current) =>
