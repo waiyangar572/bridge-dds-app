@@ -1,0 +1,983 @@
+<!DOCTYPE html><html lang="en" data-prerender-ready="true" data-prerender-view="view-guide"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bridge Suit Break Probability Explained | Bridge Solver</title>
+        <meta name="description" content="A priori suit split percentages, vacant spaces, restricted choice, and what &quot;eight ever, nine never&quot; is actually worth once the arithmetic is done.">
+        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+        <link rel="canonical" href="https://bridge-solver.waiyangar.com/en/guide/suit-break-probability" data-seo="canonical">
+        
+        
+        
+        <link rel="alternate" type="application/rss+xml" title="Bridge Solver RSS" href="https://bridge-solver.waiyangar.com/rss.xml">
+        <link rel="alternate" type="application/atom+xml" title="Bridge Solver Atom" href="https://bridge-solver.waiyangar.com/atom.xml">
+        <meta property="og:title" content="Bridge Suit Break Probability Explained | Bridge Solver">
+        <meta property="og:description" content="A priori suit split percentages, vacant spaces, restricted choice, and what &quot;eight ever, nine never&quot; is actually worth once the arithmetic is done.">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Bridge Solver">
+        <meta property="og:url" content="https://bridge-solver.waiyangar.com/en/guide/suit-break-probability">
+        <meta property="og:locale" content="en_US">
+        <meta property="og:locale:alternate" content="ja_JP">
+        <meta property="og:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Bridge Suit Break Probability Explained | Bridge Solver">
+        <meta name="twitter:description" content="A priori suit split percentages, vacant spaces, restricted choice, and what &quot;eight ever, nine never&quot; is actually worth once the arithmetic is done.">
+        <meta name="twitter:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <script async="" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171" crossorigin="anonymous"></script>
+        <script id="seo-json-ld" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://bridge-solver.waiyangar.com/#website","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/","inLanguage":"en"},{"@type":"WebPage","@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#webpage","url":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability","name":"Bridge Suit Break Probability Explained | Bridge Solver","description":"A priori suit split percentages, vacant spaces, restricted choice, and what \"eight ever, nine never\" is actually worth once the arithmetic is done.","inLanguage":"en","isPartOf":{"@id":"https://bridge-solver.waiyangar.com/#website"},"breadcrumb":{"@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#breadcrumb"},"keywords":"bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale","mainEntity":{"@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#article"}},{"@type":"BreadcrumbList","@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Bridge Solver","item":"https://bridge-solver.waiyangar.com/en"},{"@type":"ListItem","position":2,"name":"Suit Breaks, Vacant Spaces, and the Numbers Behind Play Decisions","item":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability"}]},{"@type":"Article","@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#article","headline":"Bridge Suit Break Probability Explained | Bridge Solver","description":"A priori suit split percentages, vacant spaces, restricted choice, and what \"eight ever, nine never\" is actually worth once the arithmetic is done.","url":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability","inLanguage":"en","mainEntityOfPage":{"@id":"https://bridge-solver.waiyangar.com/en/guide/suit-break-probability#webpage"},"datePublished":"2026-09-07","dateModified":"2026-09-07","author":{"@type":"Organization","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/"},"publisher":{"@id":"https://bridge-solver.waiyangar.com/#website"}}]}</script>
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <style>
+            :root {
+                --notion-blue: #0075de;
+                --notion-blue-active: #005bab;
+                --focus-blue: #097fe8;
+                --text-primary: rgba(0, 0, 0, 0.95);
+                --text-secondary: #615d59;
+                --text-muted: #a39e98;
+                --bg-white: #ffffff;
+                --bg-warm: #f6f5f4;
+                --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+                --card-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+                    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+                    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    -apple-system,
+                    system-ui,
+                    "Segoe UI",
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                background-color: var(--bg-white) !important;
+                color: var(--text-primary) !important;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--notion-blue);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            #mob-nav-double:hover {
+                text-decoration: none;
+            }
+            #mob-nav-single:hover {
+                text-decoration: none;
+            }
+            #mob-nav-lead:hover {
+                text-decoration: none;
+            }
+            #nav-double:hover {
+                text-decoration: none;
+            }
+            #nav-single:hover {
+                text-decoration: none;
+            }
+            #nav-lead:hover {
+                text-decoration: none;
+            }
+
+            .site-header {
+                background: var(--bg-white) !important;
+                border-bottom: var(--border-whisper);
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .site-header .site-brand {
+                color: var(--text-primary);
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.25px;
+            }
+
+            .site-header .site-logo {
+                border: var(--border-whisper);
+                background: var(--bg-warm);
+                color: var(--text-primary);
+                border-radius: 8px;
+            }
+
+            .site-header .site-logo i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .site-header .site-nav-btn {
+                color: var(--text-primary);
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.33;
+                border-bottom-width: 2px;
+            }
+
+            .site-header .tab-active {
+                color: var(--notion-blue) !important;
+                border-bottom-color: var(--notion-blue) !important;
+            }
+
+            .site-header .tab-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header .lang-switch {
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                border-radius: 9999px;
+                padding: 2px;
+            }
+
+            .site-header .lang-switch-btn {
+                border-radius: 9999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            .site-header .lang-switch-btn:hover {
+                color: var(--text-primary);
+            }
+
+            .site-header .lang-switch-btn.bg-indigo-600 {
+                background: var(--notion-blue) !important;
+                color: #fff !important;
+            }
+
+            .site-header .lang-switch-btn.text-slate-600 {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header #mobile-nav .text-indigo-600 {
+                color: var(--notion-blue) !important;
+                background: #f2f9ff;
+            }
+
+            .site-header #mobile-menu-btn {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                color: var(--text-secondary);
+            }
+
+            .site-header #mobile-menu-btn:hover {
+                color: var(--text-primary);
+                background: var(--bg-warm);
+            }
+
+            .sd-mode-switch-active {
+                background: #fff;
+                color: var(--notion-blue) !important;
+                box-shadow: var(--card-shadow);
+            }
+
+            .sd-mode-switch-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .sd-mode-switch-inactive:hover {
+                color: var(--text-primary) !important;
+            }
+
+            .shape-major-btn-active {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+            }
+
+            .shape-major-btn-inactive {
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-color: rgba(0, 0, 0, 0.12);
+            }
+
+            .result-panel-head {
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+
+            .result-panel-title {
+                color: var(--text-primary);
+                font-weight: 700;
+            }
+
+            .result-panel-count {
+                color: var(--focus-blue);
+                background: #f2f9ff;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
+
+            .result-sort-select {
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 4px;
+            }
+
+            .result-analysis-card {
+                background: #fff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+                padding: 12px;
+            }
+
+            .result-meta-label {
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.125px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .result-player-label {
+                color: var(--text-secondary);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-avg-value {
+                color: var(--notion-blue);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-value-primary {
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .result-value-accent {
+                color: #dd5b00;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-pill {
+                border-radius: 9999px;
+                padding: 2px 8px;
+                border: var(--border-whisper);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .result-pill-game {
+                background: rgba(26, 174, 57, 0.12);
+                color: #1aae39;
+            }
+
+            .result-pill-slam {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            .share-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .share-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1;
+                transition:
+                    background-color 120ms ease,
+                    color 120ms ease,
+                    border-color 120ms ease;
+            }
+
+            .share-button:hover {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+                text-decoration: none;
+            }
+
+            .share-button i {
+                width: 14px;
+                height: 14px;
+            }
+
+            .suit-nt {
+                color: var(--text-primary);
+            }
+
+            #total-count {
+                color: var(--notion-blue) !important;
+            }
+
+            .tab-active {
+                border-bottom-color: var(--notion-blue);
+                color: var(--notion-blue);
+                background-color: #f2f9ff;
+                font-weight: 600;
+            }
+            .tab-inactive {
+                border-bottom-color: transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            .tab-inactive:hover {
+                color: var(--text-primary);
+                background-color: var(--bg-warm);
+            }
+
+            #btn-run-double,
+            #btn-run-single,
+            #btn-run-lead {
+                background-color: var(--notion-blue) !important;
+                color: #fff !important;
+                border: 1px solid transparent;
+                border-radius: 4px !important;
+                box-shadow: var(--card-shadow) !important;
+                font-size: 15px;
+                font-weight: 600;
+                transition:
+                    transform 0.1s ease,
+                    background-color 0.15s ease;
+            }
+            #btn-run-double:hover,
+            #btn-run-single:hover,
+            #btn-run-lead:hover {
+                background-color: var(--notion-blue-active) !important;
+            }
+            #btn-run-double:active,
+            #btn-run-single:active,
+            #btn-run-lead:active {
+                transform: scale(0.96);
+            }
+
+            .pc-rank-btn {
+                font-size: 0.75rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.1s;
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                user-select: none;
+            }
+            .pc-rank-btn:hover {
+                background-color: var(--bg-warm);
+            }
+            .pc-rank-btn.selected {
+                background-color: var(--notion-blue);
+                color: #fff;
+                border-color: var(--notion-blue);
+                font-weight: 600;
+            }
+            .pc-rank-btn.taken {
+                background-color: var(--bg-warm);
+                color: var(--text-muted);
+                cursor: not-allowed;
+                border-color: transparent;
+            }
+
+            .bg-white,
+            section,
+            .hand-card {
+                border: var(--border-whisper) !important;
+                box-shadow: var(--card-shadow) !important;
+            }
+
+            input,
+            textarea,
+            select {
+                border: 1px solid #dddddd !important;
+                border-radius: 4px !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted) !important;
+            }
+
+            .count-badge,
+            .sd-count-badge,
+            .lead-count-badge {
+                border-radius: 9999px !important;
+                background: #f2f9ff !important;
+                color: var(--focus-blue) !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.125px;
+            }
+
+            .hand-card-mobile-active {
+                border-color: var(--focus-blue) !important;
+                box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.22);
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .suit-s {
+                color: #2a6f97;
+            }
+            .suit-h {
+                color: #c94040;
+            }
+            .suit-d {
+                color: #f97316;
+            }
+            .suit-c {
+                color: #16a34a;
+            }
+
+            .result-table th {
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.125px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+            .result-table td {
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                border-bottom: var(--border-whisper);
+                color: var(--text-primary);
+            }
+            .result-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .qdrop-fit-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .qdrop-fit-toggle:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .qdrop-fit-toggle.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-fit-toggle-caret {
+                font-size: 10px;
+                opacity: 0.8;
+            }
+
+            .qdrop-dialog {
+                position: fixed;
+                inset: 0;
+                z-index: 120;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .qdrop-dialog-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                backdrop-filter: blur(1px);
+            }
+
+            .qdrop-dialog-panel {
+                position: relative;
+                width: min(680px, 100%);
+                max-height: calc(100vh - 48px);
+                overflow: auto;
+                background: #ffffff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow:
+                    rgba(0, 0, 0, 0.1) 0px 20px 45px,
+                    rgba(0, 0, 0, 0.08) 0px 8px 20px;
+                padding: 14px;
+            }
+
+            .qdrop-dialog-close {
+                width: 28px;
+                height: 28px;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: #475569;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            @keyframes qdrop-sheet-in {
+                from {
+                    transform: translateY(24px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .qdrop-dialog {
+                    align-items: flex-end;
+                    justify-content: stretch;
+                    padding: 0;
+                }
+
+                .qdrop-dialog-panel {
+                    width: 100%;
+                    max-height: min(80vh, calc(100vh - 12px));
+                    border-radius: 20px 20px 0 0;
+                    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+                    animation: qdrop-sheet-in 0.2s ease-out;
+                    transition: transform 0.18s ease-out;
+                    will-change: transform;
+                    touch-action: pan-y;
+                }
+
+                .qdrop-dialog-panel.is-dragging {
+                    animation: none;
+                    transition: none;
+                }
+
+                .qdrop-dialog-handle {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: -16px -16px 8px;
+                    padding: 16px 16px 14px;
+                    touch-action: none;
+                }
+
+                .qdrop-dialog-handle::before {
+                    content: "";
+                    display: block;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 9999px;
+                    background: #cbd5e1;
+                }
+            }
+
+            .reference-tab-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 6px 14px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .reference-tab-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .reference-tab-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .prob-section-toggle {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                color: var(--text-primary);
+                text-align: left;
+            }
+
+            .prob-section-toggle:hover {
+                text-decoration: none;
+            }
+
+            .prob-section-toggle-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                color: var(--text-secondary);
+                background: #ffffff;
+                transition:
+                    transform 0.15s ease,
+                    background-color 0.15s ease;
+            }
+
+            .prob-section-toggle:hover .prob-section-toggle-icon {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .prob-section-toggle[aria-expanded="false"] .prob-section-toggle-icon {
+                transform: rotate(-90deg);
+            }
+
+            .vp-boards-input {
+                width: 88px;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .vp-preset-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .vp-preset-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .vp-preset-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-dialog-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 12px;
+                align-items: end;
+            }
+
+            .qdrop-dialog-field {
+                min-width: 92px;
+            }
+
+            .qdrop-dialog-field-label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qdrop-dialog-input {
+                width: 100%;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .qdrop-dialog-note {
+                min-height: 18px;
+            }
+
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: var(--bg-warm);
+                color: var(--text-secondary);
+                padding: 4px;
+                border: var(--border-whisper);
+                font-weight: 500;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: var(--border-whisper);
+                color: var(--text-muted);
+            }
+            .dist-table td.has-val {
+                color: var(--text-primary);
+                font-weight: 600;
+                background-color: #f2f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            *:focus-visible {
+                outline: 2px solid var(--focus-blue);
+                outline-offset: 1px;
+            }
+
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            /* --- アニメーション用クラス --- */
+            @keyframes shake-horizontal {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-3px);
+                }
+                75% {
+                    transform: translateX(3px);
+                }
+            }
+            .shake-animation {
+                animation: shake-horizontal 0.15s ease-in-out 0s 2;
+            }
+
+            @keyframes pop-scale {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            .pop-animation {
+                animation: pop-scale 0.15s ease-out;
+            }
+        </style>
+    <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.bottom-20{bottom:5rem}.right-4{right:1rem}.z-10{z-index:10}.z-50{z-index:50}.z-\[100\]{z-index:100}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-3{margin-top:0.75rem}.mt-2{margin-top:0.5rem}.mt-5{margin-top:1.25rem}.mt-auto{margin-top:auto}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-16{height:4rem}.h-3{height:0.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-\[38px\]{height:38px}.h-10{height:2.5rem}.min-h-screen{min-height:100vh}.w-20{width:5rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-full{width:100%}.w-10{width:2.5rem}.min-w-20{min-width:5rem}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-7xl{max-width:80rem}.max-w-3xl{max-width:48rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.place-items-center{place-items:center}.place-items-stretch{place-items:stretch}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-12{gap:3rem}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-y-2{row-gap:0.5rem}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(241 245 249 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded-lg{border-radius:0.5rem}.rounded-r-lg{border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t{border-top-width:1px}.border-l-4{border-left-width:4px}.border-indigo-100{--tw-border-opacity:1;border-color:rgb(224 231 255 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-indigo-300{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-t-indigo-600{--tw-border-opacity:1;border-top-color:rgb(79 70 229 / var(--tw-border-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-slate-400{--tw-bg-opacity:1;background-color:rgb(148 163 184 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-orange-600{--tw-bg-opacity:1;background-color:rgb(234 88 12 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}.fill-current{fill:currentColor}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-4{padding:1rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.px-8{padding-left:2rem;padding-right:2rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.pb-1{padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pt-4{padding-top:1rem}.pt-8{padding-top:2rem}.pb-3{padding-bottom:0.75rem}.pt-2{padding-top:0.5rem}.pl-5{padding-left:1.25rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-center{text-align:center}.align-top{vertical-align:top}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[11px\]{font-size:11px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:0.05em}.tracking-wide{letter-spacing:0.025em}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-indigo-900{--tw-text-opacity:1;color:rgb(49 46 129 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-rose-700{--tw-text-opacity:1;color:rgb(190 18 60 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-indigo-400{--tw-text-opacity:1;color:rgb(129 140 248 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-indigo-200{--tw-shadow-color:#c7d2fe;--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-200{--tw-shadow-color:#a7f3d0;--tw-shadow:var(--tw-shadow-colored)}.shadow-orange-200{--tw-shadow-color:#fed7aa;--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.last\:mb-0:last-child{margin-bottom:0px}.hover\:border-indigo-300:hover{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-orange-700:hover{--tw-bg-opacity:1;background-color:rgb(194 65 12 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-blue-900:hover{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:no-underline:hover{-webkit-text-decoration-line:none;text-decoration-line:none}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.focus\:border-orange-500:focus{--tw-border-opacity:1;border-color:rgb(249 115 22 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:col-span-2{grid-column:span 2 / span 2}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 768px){.md\:bottom-8{bottom:2rem}.md\:right-8{right:2rem}.md\:col-span-3{grid-column:span 3 / span 3}.md\:col-start-1{grid-column-start:1}.md\:col-start-2{grid-column-start:2}.md\:col-start-3{grid-column-start:3}.md\:row-start-1{grid-row-start:1}.md\:row-start-2{grid-row-start:2}.md\:row-start-3{grid-row-start:3}.md\:-mb-6{margin-bottom:-1.5rem}.md\:-mt-6{margin-top:-1.5rem}.md\:mb-0{margin-bottom:0px}.md\:flex{display:flex}.md\:hidden{display:none}.md\:cursor-default{cursor:default}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:grid-cols-\[1fr_1fr_1fr_auto\]{grid-template-columns:1fr 1fr 1fr auto}.md\:gap-x-4{column-gap:1rem}.md\:gap-y-0{row-gap:0px}.md\:p-8{padding:2rem}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-xs{font-size:0.75rem;line-height:1rem}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (min-width: 1280px){.xl\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1536px){.\32xl\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style><meta name="keywords" content="bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale"><link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/guide/suit-break-probability" data-hreflang="true"><link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/guide/suit-break-probability" data-hreflang="true"><link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/guide/suit-break-probability" data-hreflang="true"></head>
+    <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+        
+        <header class="site-header bg-white z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/en" data-route="/" class="flex items-center gap-2 hover:no-underline">
+                        <div class="site-logo p-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="play" aria-hidden="true" class="lucide lucide-play w-5 h-5 fill-current"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>
+                        </div>
+                        <span id="site-title" class="site-brand">Bridge Solver</span>
+                    </a>
+
+                    <div class="hidden md:flex items-center gap-6">
+                        <nav class="hidden md:flex space-x-8">
+                            <a href="/en/double-dummy" id="nav-double" data-route="/double-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">Double Dummy</a>
+                            <a href="/en/single-dummy" id="nav-single" data-route="/single-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">Single Dummy</a>
+                            <a href="/en/opening-lead" id="nav-lead" data-route="/opening-lead" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">Opening Lead</a>
+                            <a href="/en/probability-solver" id="nav-solver" data-route="/probability-solver" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">Probability Solver</a>
+                            <a href="/en/reference/probability" id="nav-probability" data-route="/reference/probability" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">Reference</a>
+                        </nav>
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1 bg-indigo-600 text-white">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja" class="lang-switch-btn px-2.5 py-1 text-slate-600">
+                                JP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden flex items-center gap-2">
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en-mobile" class="lang-switch-btn px-2 py-1 text-[10px] bg-indigo-600 text-white">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja-mobile" class="lang-switch-btn px-2 py-1 text-[10px] text-slate-600">
+                                JP
+                            </button>
+                        </div>
+                        <button id="mobile-menu-btn" class="p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" aria-hidden="true" class="lucide lucide-menu text-slate-500"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
+                <div class="flex flex-col p-2 space-y-1">
+                    <a href="/en/double-dummy" id="mob-nav-double" data-route="/double-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">Double Dummy</a>
+                    <a href="/en/single-dummy" id="mob-nav-single" data-route="/single-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">Single Dummy</a>
+                    <a href="/en/opening-lead" id="mob-nav-lead" data-route="/opening-lead" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">Opening Lead</a>
+                    <a href="/en/probability-solver" id="mob-nav-solver" data-route="/probability-solver" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">Probability Solver</a>
+                    <a href="/en/reference/probability" id="mob-nav-probability" data-route="/reference/probability" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">Reference</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+            
+
+            <div id="view-guide" class="fade-in"><article class="max-w-3xl mx-auto"><div class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6"><h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Suit Breaks, Vacant Spaces, and the Numbers Behind Play Decisions</h1><p class="text-sm md:text-base text-slate-700 leading-7">Most play decisions come down to comparing two numbers: how likely the suit is to break, and how likely the finesse is. The first is a fixed table anyone can memorise; the second moves with everything you learn during the auction and the play. This guide covers both — the a priori splits, why they come out as unevenly as they do, how to update them as evidence arrives, and what the old maxims are actually worth once the arithmetic is done.</p></div><nav class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6"><h2 class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">Contents</h2><ol class="list-decimal pl-5 space-y-1 text-sm"><li><a class="text-indigo-600 hover:underline" href="#guide-section-1">How the outstanding cards split</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-2">Why an even number of missing cards breaks badly</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-3">Vacant spaces: updating as evidence arrives</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-4">Eight ever, nine never — and what the numbers say</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-5">Restricted choice</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-6">Combining chances</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-7">From table to conditional probability</a></li></ol></nav><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-1"><h2 class="text-lg font-bold text-slate-900">How the outstanding cards split</h2><p class="text-sm text-slate-700 leading-7">Before a card is played, the probability that the missing cards divide in a particular way depends only on how many are missing. These are the numbers every declarer should know cold:</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><caption class="text-xs text-slate-500 text-left mb-2">A priori probability of each split, by the length of your combined fit</caption><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Your fit</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Missing</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Most likely</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Probability</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Next</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Probability</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Six cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">7</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4-3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">62.17%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">5-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">30.52%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Seven cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">48.45%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3-3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">35.53%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Eight cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">5</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">67.83%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4-1</td><td class="border-b border-slate-100 py-2 pr-4 align-top">28.26%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Nine cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3-1</td><td class="border-b border-slate-100 py-2 pr-4 align-top">49.74%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">2-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">40.70%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Ten cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">2-1</td><td class="border-b border-slate-100 py-2 pr-4 align-top">78.00%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3-0</td><td class="border-b border-slate-100 py-2 pr-4 align-top">22.00%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Eleven cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">1-1</td><td class="border-b border-slate-100 py-2 pr-4 align-top">52.00%</td><td class="border-b border-slate-100 py-2 pr-4 align-top">2-0</td><td class="border-b border-slate-100 py-2 pr-4 align-top">48.00%</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">Two rows deserve to be memorised as a pair, because they decide contracts. Missing five cards, the three-two break comes home just over two thirds of the time — this is the number behind almost every "draw trumps and claim" line. Missing four, the even two-two break is the minority case at 40.70%, less likely than three-one.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-2"><h2 class="text-lg font-bold text-slate-900">Why an even number of missing cards breaks badly</h2><p class="text-sm text-slate-700 leading-7">The rule of thumb is that an even number of missing cards tends to split unevenly, and an odd number splits as evenly as it can. It sounds like folklore, and it is straightforward counting.</p><p class="text-sm text-slate-700 leading-7">Splits are decided by counting arrangements of individual cards, not by counting patterns. With four cards missing there are six ways to give two specific cards to West and two to East, but eight ways to produce a three-one split once both defenders are counted — four with West long and four with East long. The weighting by the space left in each hand nudges the balanced case up a little, but not enough to overturn the count: three-one finishes at 49.74% against 40.70% for two-two.</p><p class="text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3">The practical version: missing four cards to the queen, do not plan on the drop. Missing five, plan on the three-two and have a fallback for the four-one.</p><p class="text-sm text-slate-700 leading-7">All of these figures assume you know nothing about the defenders' hands. Once the bidding or the early play says otherwise, they stop being the right numbers — and the shift is often large enough to reverse a decision.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-3"><h2 class="text-lg font-bold text-slate-900">Vacant spaces: updating as evidence arrives</h2><p class="text-sm text-slate-700 leading-7">By the time you face the critical decision you usually know something: a preempt has shown seven cards in a suit, or three rounds of a side suit have been played out. The tool for updating is the vacant-spaces count.</p><p class="text-sm text-slate-700 leading-7">Count the cards still unaccounted for in each defender's hand. If West has shown up with seven spades and East with two, then once those cards are accounted for West has six unknown cards left and East has eleven. A missing queen in another suit is therefore roughly eleven-to-six to sit with East — not even money, and a finesse that looked like a coin flip is a substantial favourite in one direction.</p><p class="text-sm text-slate-700 leading-7">This is why good declarers cash side suits before taking a critical finesse. Every round played reveals more about the shape behind the decision, and the finesse is not going anywhere. The cost of the delay is the risk of a ruff; the benefit is a better-informed guess.</p><p class="text-sm text-slate-700 leading-7">The same reasoning applies to the auction. A defender who opened a weak two has already told you about six cards, and applying the a priori table after that is simply using the wrong table.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-4"><h2 class="text-lg font-bold text-slate-900">Eight ever, nine never — and what the numbers say</h2><p class="text-sm text-slate-700 leading-7">The best-known maxim in card play says that with eight cards missing the queen you should always finesse, and with nine you should play for the drop. Like most maxims it compresses a real calculation, and it is worth seeing what the calculation gives. The reference tables on this site model the standard holding — A K J T and small opposite small cards — and report the all-win probability of the best line:</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><caption class="text-xs text-slate-500 text-left mb-2">All-win probability with the queen missing, best line, by fit and division</caption><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Fit</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Division</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">Best line</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">All-win probability</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Eight cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4-4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Cash the ace, then finesse</td><td class="border-b border-slate-100 py-2 pr-4 align-top">52.83%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Eight cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">5-3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Cash the ace, then finesse</td><td class="border-b border-slate-100 py-2 pr-4 align-top">50.87%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Eight cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Take two finesses</td><td class="border-b border-slate-100 py-2 pr-4 align-top">48.04%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Nine cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">5-4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Cash the ace; finesse if a 4-0 shows onside, otherwise cash the king</td><td class="border-b border-slate-100 py-2 pr-4 align-top">57.91%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Nine cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6-3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Cash the ace; finesse if a 4-0 shows onside, otherwise cash the king</td><td class="border-b border-slate-100 py-2 pr-4 align-top">57.91%</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">Nine cards</td><td class="border-b border-slate-100 py-2 pr-4 align-top">7-2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Cash the ace and king</td><td class="border-b border-slate-100 py-2 pr-4 align-top">53.13%</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">The maxim survives, but the margins are far narrower than its confident phrasing suggests. The recommended nine-card line is worth 57.91%, and the eight-card finesse 52.83% — real edges, but small enough that a single inference from the bidding can overturn them. "Nine never" is a default for when you know nothing, not a law.</p><p class="text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3">If a defender has shown length elsewhere, the vacant-spaces count almost always outweighs the few percentage points separating these lines. Evidence beats maxims.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-5"><h2 class="text-lg font-bold text-slate-900">Restricted choice</h2><p class="text-sm text-slate-700 leading-7">One inference deserves singling out because it is genuinely counter-intuitive. Missing the queen and the jack, if a defender drops one of them on the first round, the odds favour finessing against the other rather than playing for the drop.</p><p class="text-sm text-slate-700 leading-7">The reason is that a defender holding both honours could have played either one, while a defender holding only that card had no choice. The card you saw is therefore about twice as likely to have come from the singleton holding, and the finesse becomes the percentage play. The principle generalises: when a defender makes a play he could have made in more than one way, the fact that he chose that particular way is evidence about what he holds.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-6"><h2 class="text-lg font-bold text-slate-900">Combining chances</h2><p class="text-sm text-slate-700 leading-7">A single percentage is rarely the end of the analysis, because most contracts have more than one route home. The skill is ordering the chances so that a failure of the first still leaves the second available.</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>Test the suit that can be abandoned. If a three-three break would solve everything and a finesse is the fallback, play the suit you can still recover from first.</li><li>Count the tricks you need, not the tricks available. At teams, a line that brings home the contract 90% of the time and the overtrick 60% beats one that delivers both 75% of the time.</li><li>Prefer the line that survives the bad break. Where two lines are close, the one that still delivers on a four-one is usually the better practical choice, because bad breaks are where contracts die.</li></ul></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-7"><h2 class="text-lg font-bold text-slate-900">From table to conditional probability</h2><p class="text-sm text-slate-700 leading-7">A printed table can only answer the unconditional question. Once you have information — a preempt, a shape shown by a raise, three rounds of a side suit — the number you need is conditional, and it is in no book, because it depends on exactly what you know.</p><p class="text-sm text-slate-700 leading-7">That is the gap the Probability Solver fills: you state the constraints you have actually established, and it computes the split probabilities that follow from them rather than the ones that would apply to an unknown deal.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4"><h2 class="text-lg font-bold text-slate-900">Frequently asked questions</h2><h3 class="text-sm font-bold text-slate-900 pt-2">Is the three-two break really 68%?</h3><p class="text-sm text-slate-700 leading-7">67.83%, before any evidence. That figure assumes you know nothing about the defenders' hands; after an opposing preempt or a revealing auction it can move a long way in either direction.</p><h3 class="text-sm font-bold text-slate-900 pt-2">Why is two-two less likely than three-one when only four cards are out?</h3><p class="text-sm text-slate-700 leading-7">Because there are more ways for the cards to fall three-one than two-two once both defenders are counted. Splits are decided by counting arrangements of individual cards, not patterns, and the count favours the uneven case: 49.74% against 40.70%.</p><h3 class="text-sm font-bold text-slate-900 pt-2">Does the vacant-spaces calculation apply to honours as well as shape?</h3><p class="text-sm text-slate-700 leading-7">It applies to the location of any specific unseen card, honours included. It is a good approximation rather than an exact posterior, because the bidding carries information about strength as well as shape, and vacant spaces only track the shape half.</p><h3 class="text-sm font-bold text-slate-900 pt-2">When should I abandon "nine never"?</h3><p class="text-sm text-slate-700 leading-7">As soon as you have evidence. The line is worth a few percentage points over the alternative on an unknown deal, and a defender who has shown six cards in another suit shifts the odds by considerably more than that.</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm"><h2 class="text-lg font-bold text-slate-900 mb-4">Try it yourself</h2><ul class="space-y-3"><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/reference/probability" href="/en/reference/probability">Reference Tables</a><p class="text-sm text-slate-600 leading-6">Suit splits, HCP distribution, optimal-line percentages, and the IMP and VP scales.</p></li><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/probability-solver" href="/en/probability-solver">Probability Solver</a><p class="text-sm text-slate-600 leading-6">Compute split probabilities conditioned on what you already know.</p></li></ul></section></article></div>
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
+                        <p class="text-sm leading-relaxed mb-4">A modern browser-based contract bridge analysis platform.</p>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/en/double-dummy" data-route="/double-dummy" class="hover:text-white">Double Dummy</a>
+                            </li>
+                            <li>
+                                <a href="/en/single-dummy" data-route="/single-dummy" class="hover:text-white">Single Dummy</a>
+                            </li>
+                            <li>
+                                <a href="/en/opening-lead" data-route="/opening-lead" class="hover:text-white">Opening Lead</a>
+                            </li>
+                            <li>
+                                <a href="/en/reference/probability" data-route="/reference/probability" class="hover:text-white">Reference</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Guides</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/en/guide/double-dummy-analysis" data-route="/guide/double-dummy-analysis" class="hover:text-white">Double Dummy Analysis</a>
+                            </li>
+                            <li>
+                                <a href="/en/guide/opening-lead-strategy" data-route="/guide/opening-lead-strategy" class="hover:text-white">Opening Lead Strategy</a>
+                            </li>
+                            <li>
+                                <a href="/en/guide/suit-break-probability" data-route="/guide/suit-break-probability" class="hover:text-white">Suit Break Probability</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Information</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/en/privacy" data-route="/privacy" class="hover:text-white">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="/en/about" data-route="/about" class="hover:text-white">About Us</a>
+                            </li>
+                            <li>
+                                <a href="/en/contact" data-route="/contact" class="hover:text-white">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                    © 2024 Bridge Solver
+                </div>
+            </div>
+        </footer>
+
+        <div id="toast" class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 transition-all duration-300 translate-x-full opacity-0">
+            <div class="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" aria-hidden="true" class="lucide lucide-info w-5 h-5 text-indigo-400"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                <span id="toast-msg">Notification</span>
+            </div>
+        </div>
+
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                <span id="loading-label" class="font-bold text-slate-700">Analyzing...</span>
+            </div>
+        </div>
+
+        <script src="/script.js"></script>
+    
+
+</body></html>

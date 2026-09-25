@@ -132,36 +132,17 @@ def _build_constraint_context(
 
 
 def _query_to_event(query: dict[str, Any]) -> BaseEvent:
-    if query.get("event") is not None:
-        event = _event_from_payload(query["event"])
-        if event is None:
-            raise ValueError("query has no complete conditions")
-        return event
-    if query.get("conditions") is not None:
-        event = _event_from_payload(query)
-        if event is None:
-            raise ValueError("query has no complete conditions")
-        return event
-
-    join = (query.get("join") or "single").lower()
-    first = _atom_to_event(query.get("a") or {})
-    if first is None:
+    event_payload = query.get("event")
+    if event_payload is None:
+        raise ValueError("query event is required")
+    event = _event_from_payload(event_payload)
+    if event is None:
         raise ValueError("query has no complete conditions")
-    if join == "single":
-        return first
-
-    second = _atom_to_event(query.get("b") or {})
-    if second is None:
-        return first
-    if join == "and":
-        return first & second
-    if join == "or":
-        return OrEvent.of(first, second)
-    raise ValueError(f"unsupported query join: {join!r}")
+    return event
 
 
 def _event_from_payload(payload: dict[str, Any]) -> BaseEvent | None:
-    operator = (payload.get("op") or payload.get("join") or "").lower()
+    operator = (payload.get("op") or "").lower()
     conditions = payload.get("conditions")
 
     if conditions is not None:

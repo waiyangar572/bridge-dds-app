@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "generate:seo": "node scripts/generate-seo.mjs",
+    "prerender": "node scripts/prerender.mjs",
+    "build:seo": "npm run prerender && npm run generate:seo"
+  },
   "dependencies": {
     "playwright": "^1.59.1"
   }

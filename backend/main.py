@@ -113,20 +113,12 @@ class ConditionalHandConstraintRequest(BaseModel):
     )
 
 
-class ConditionalAtomRequest(BaseModel):
-    hand: str = ""
-    type: str = ""
-    value: str = ""
-
-
 class ConditionalQueryRequest(BaseModel):
     name: str = ""
-    join: str = "single"
-    a: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
-    b: ConditionalAtomRequest = Field(default_factory=ConditionalAtomRequest)
-    event: Optional[Dict[str, Any]] = None
-    conditions: Optional[List[Dict[str, Any]]] = None
-    op: Optional[str] = None
+    event: Dict[str, Any]
+
+    class Config:
+        extra = "forbid"
 
 
 class ConditionalProbabilityRequest(BaseModel):
@@ -284,7 +276,9 @@ def analyse_deal(deal_pbn: DealPBN):
 def conditional_probability(request: ConditionalProbabilityRequest):
     try:
         if calculate_conditional_probability is None:
-            raise RuntimeError("conditional probability engine is not available")
+            raise RuntimeError(
+                "conditional probability engine is not available"
+            )
         payload = request.dict(exclude_none=True)
         logger.info(
             "conditional_probability_post constraints=%s queries=%s payload=%s",

@@ -1,0 +1,983 @@
+<!DOCTYPE html><html lang="ja" data-prerender-ready="true" data-prerender-view="view-guide"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ダブルダミー分析とは | Bridge Solver</title>
+        <meta name="description" content="ダブルダミーソルバーが実際に計算しているもの、テーブルでの結果と数値がずれる理由、そして24HCPあってもノートランプゲームが成立しないディールの実例を解説します。">
+        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+        <link rel="canonical" href="https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis" data-seo="canonical">
+        
+        
+        
+        <link rel="alternate" type="application/rss+xml" title="Bridge Solver RSS" href="https://bridge-solver.waiyangar.com/rss.xml">
+        <link rel="alternate" type="application/atom+xml" title="Bridge Solver Atom" href="https://bridge-solver.waiyangar.com/atom.xml">
+        <meta property="og:title" content="ダブルダミー分析とは | Bridge Solver">
+        <meta property="og:description" content="ダブルダミーソルバーが実際に計算しているもの、テーブルでの結果と数値がずれる理由、そして24HCPあってもノートランプゲームが成立しないディールの実例を解説します。">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Bridge Solver">
+        <meta property="og:url" content="https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis">
+        <meta property="og:locale" content="ja_JP">
+        <meta property="og:locale:alternate" content="en_US">
+        <meta property="og:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="ダブルダミー分析とは | Bridge Solver">
+        <meta name="twitter:description" content="ダブルダミーソルバーが実際に計算しているもの、テーブルでの結果と数値がずれる理由、そして24HCPあってもノートランプゲームが成立しないディールの実例を解説します。">
+        <meta name="twitter:image" content="https://bridge-solver.waiyangar.com/favicon-96x96.png">
+        <script async="" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1447220083344171" crossorigin="anonymous"></script>
+        <script id="seo-json-ld" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://bridge-solver.waiyangar.com/#website","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/","inLanguage":"ja"},{"@type":"WebPage","@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#webpage","url":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis","name":"ダブルダミー分析とは | Bridge Solver","description":"ダブルダミーソルバーが実際に計算しているもの、テーブルでの結果と数値がずれる理由、そして24HCPあってもノートランプゲームが成立しないディールの実例を解説します。","inLanguage":"ja","isPartOf":{"@id":"https://bridge-solver.waiyangar.com/#website"},"breadcrumb":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#breadcrumb"},"keywords":"bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale","mainEntity":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#article"}},{"@type":"BreadcrumbList","@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Bridge Solver","item":"https://bridge-solver.waiyangar.com/ja"},{"@type":"ListItem","position":2,"name":"ダブルダミー分析でわかること・わからないこと","item":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis"}]},{"@type":"Article","@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#article","headline":"ダブルダミー分析とは | Bridge Solver","description":"ダブルダミーソルバーが実際に計算しているもの、テーブルでの結果と数値がずれる理由、そして24HCPあってもノートランプゲームが成立しないディールの実例を解説します。","url":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis","inLanguage":"ja","mainEntityOfPage":{"@id":"https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis#webpage"},"datePublished":"2026-09-07","dateModified":"2026-09-07","author":{"@type":"Organization","name":"Bridge Solver","url":"https://bridge-solver.waiyangar.com/"},"publisher":{"@id":"https://bridge-solver.waiyangar.com/#website"}}]}</script>
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <style>
+            :root {
+                --notion-blue: #0075de;
+                --notion-blue-active: #005bab;
+                --focus-blue: #097fe8;
+                --text-primary: rgba(0, 0, 0, 0.95);
+                --text-secondary: #615d59;
+                --text-muted: #a39e98;
+                --bg-white: #ffffff;
+                --bg-warm: #f6f5f4;
+                --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+                --card-shadow:
+                    rgba(0, 0, 0, 0.04) 0px 4px 18px, rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+                    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+                    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
+            }
+
+            body {
+                font-family:
+                    Inter,
+                    -apple-system,
+                    system-ui,
+                    "Segoe UI",
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                background-color: var(--bg-white) !important;
+                color: var(--text-primary) !important;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--notion-blue);
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            #mob-nav-double:hover {
+                text-decoration: none;
+            }
+            #mob-nav-single:hover {
+                text-decoration: none;
+            }
+            #mob-nav-lead:hover {
+                text-decoration: none;
+            }
+            #nav-double:hover {
+                text-decoration: none;
+            }
+            #nav-single:hover {
+                text-decoration: none;
+            }
+            #nav-lead:hover {
+                text-decoration: none;
+            }
+
+            .site-header {
+                background: var(--bg-white) !important;
+                border-bottom: var(--border-whisper);
+                box-shadow: none !important;
+                position: static !important;
+            }
+
+            .site-header .site-brand {
+                color: var(--text-primary);
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.25px;
+            }
+
+            .site-header .site-logo {
+                border: var(--border-whisper);
+                background: var(--bg-warm);
+                color: var(--text-primary);
+                border-radius: 8px;
+            }
+
+            .site-header .site-logo i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .site-header .site-nav-btn {
+                color: var(--text-primary);
+                font-size: 15px;
+                font-weight: 600;
+                line-height: 1.33;
+                border-bottom-width: 2px;
+            }
+
+            .site-header .tab-active {
+                color: var(--notion-blue) !important;
+                border-bottom-color: var(--notion-blue) !important;
+            }
+
+            .site-header .tab-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header .lang-switch {
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                border-radius: 9999px;
+                padding: 2px;
+            }
+
+            .site-header .lang-switch-btn {
+                border-radius: 9999px;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            .site-header .lang-switch-btn:hover {
+                color: var(--text-primary);
+            }
+
+            .site-header .lang-switch-btn.bg-indigo-600 {
+                background: var(--notion-blue) !important;
+                color: #fff !important;
+            }
+
+            .site-header .lang-switch-btn.text-slate-600 {
+                color: var(--text-secondary) !important;
+            }
+
+            .site-header #mobile-nav .text-indigo-600 {
+                color: var(--notion-blue) !important;
+                background: #f2f9ff;
+            }
+
+            .site-header #mobile-menu-btn {
+                border: var(--border-whisper);
+                border-radius: 8px;
+                color: var(--text-secondary);
+            }
+
+            .site-header #mobile-menu-btn:hover {
+                color: var(--text-primary);
+                background: var(--bg-warm);
+            }
+
+            .sd-mode-switch-active {
+                background: #fff;
+                color: var(--notion-blue) !important;
+                box-shadow: var(--card-shadow);
+            }
+
+            .sd-mode-switch-inactive {
+                color: var(--text-secondary) !important;
+            }
+
+            .sd-mode-switch-inactive:hover {
+                color: var(--text-primary) !important;
+            }
+
+            .shape-major-btn-active {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+            }
+
+            .shape-major-btn-inactive {
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-color: rgba(0, 0, 0, 0.12);
+            }
+
+            .result-panel-head {
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+
+            .result-panel-title {
+                color: var(--text-primary);
+                font-weight: 700;
+            }
+
+            .result-panel-count {
+                color: var(--focus-blue);
+                background: #f2f9ff;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                font-weight: 600;
+                padding: 2px 8px;
+            }
+
+            .result-sort-select {
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 4px;
+            }
+
+            .result-analysis-card {
+                background: #fff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+                padding: 12px;
+            }
+
+            .result-meta-label {
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.125px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .result-player-label {
+                color: var(--text-secondary);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-avg-value {
+                color: var(--notion-blue);
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-value-primary {
+                color: var(--text-primary);
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .result-value-accent {
+                color: #dd5b00;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .result-pill {
+                border-radius: 9999px;
+                padding: 2px 8px;
+                border: var(--border-whisper);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .result-pill-game {
+                background: rgba(26, 174, 57, 0.12);
+                color: #1aae39;
+            }
+
+            .result-pill-slam {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            .share-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .share-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                border: var(--border-whisper);
+                background: #fff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1;
+                transition:
+                    background-color 120ms ease,
+                    color 120ms ease,
+                    border-color 120ms ease;
+            }
+
+            .share-button:hover {
+                background: #f2f9ff;
+                color: var(--focus-blue);
+                border-color: rgba(9, 127, 232, 0.25);
+                text-decoration: none;
+            }
+
+            .share-button i {
+                width: 14px;
+                height: 14px;
+            }
+
+            .suit-nt {
+                color: var(--text-primary);
+            }
+
+            #total-count {
+                color: var(--notion-blue) !important;
+            }
+
+            .tab-active {
+                border-bottom-color: var(--notion-blue);
+                color: var(--notion-blue);
+                background-color: #f2f9ff;
+                font-weight: 600;
+            }
+            .tab-inactive {
+                border-bottom-color: transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+            .tab-inactive:hover {
+                color: var(--text-primary);
+                background-color: var(--bg-warm);
+            }
+
+            #btn-run-double,
+            #btn-run-single,
+            #btn-run-lead {
+                background-color: var(--notion-blue) !important;
+                color: #fff !important;
+                border: 1px solid transparent;
+                border-radius: 4px !important;
+                box-shadow: var(--card-shadow) !important;
+                font-size: 15px;
+                font-weight: 600;
+                transition:
+                    transform 0.1s ease,
+                    background-color 0.15s ease;
+            }
+            #btn-run-double:hover,
+            #btn-run-single:hover,
+            #btn-run-lead:hover {
+                background-color: var(--notion-blue-active) !important;
+            }
+            #btn-run-double:active,
+            #btn-run-single:active,
+            #btn-run-lead:active {
+                transform: scale(0.96);
+            }
+
+            .pc-rank-btn {
+                font-size: 0.75rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.1s;
+                border: var(--border-whisper);
+                background: var(--bg-white);
+                user-select: none;
+            }
+            .pc-rank-btn:hover {
+                background-color: var(--bg-warm);
+            }
+            .pc-rank-btn.selected {
+                background-color: var(--notion-blue);
+                color: #fff;
+                border-color: var(--notion-blue);
+                font-weight: 600;
+            }
+            .pc-rank-btn.taken {
+                background-color: var(--bg-warm);
+                color: var(--text-muted);
+                cursor: not-allowed;
+                border-color: transparent;
+            }
+
+            .bg-white,
+            section,
+            .hand-card {
+                border: var(--border-whisper) !important;
+                box-shadow: var(--card-shadow) !important;
+            }
+
+            input,
+            textarea,
+            select {
+                border: 1px solid #dddddd !important;
+                border-radius: 4px !important;
+                color: rgba(0, 0, 0, 0.9) !important;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                color: var(--text-muted) !important;
+            }
+
+            .count-badge,
+            .sd-count-badge,
+            .lead-count-badge {
+                border-radius: 9999px !important;
+                background: #f2f9ff !important;
+                color: var(--focus-blue) !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.125px;
+            }
+
+            .hand-card-mobile-active {
+                border-color: var(--focus-blue) !important;
+                box-shadow: 0 0 0 2px rgba(9, 127, 232, 0.22);
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .suit-s {
+                color: #2a6f97;
+            }
+            .suit-h {
+                color: #c94040;
+            }
+            .suit-d {
+                color: #f97316;
+            }
+            .suit-c {
+                color: #16a34a;
+            }
+
+            .result-table th {
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.125px;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                background: var(--bg-warm);
+                border-bottom: var(--border-whisper);
+            }
+            .result-table td {
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                border-bottom: var(--border-whisper);
+                color: var(--text-primary);
+            }
+            .result-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .qdrop-fit-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .qdrop-fit-toggle:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .qdrop-fit-toggle.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-fit-toggle-caret {
+                font-size: 10px;
+                opacity: 0.8;
+            }
+
+            .qdrop-dialog {
+                position: fixed;
+                inset: 0;
+                z-index: 120;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .qdrop-dialog-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                backdrop-filter: blur(1px);
+            }
+
+            .qdrop-dialog-panel {
+                position: relative;
+                width: min(680px, 100%);
+                max-height: calc(100vh - 48px);
+                overflow: auto;
+                background: #ffffff;
+                border: var(--border-whisper);
+                border-radius: 12px;
+                box-shadow:
+                    rgba(0, 0, 0, 0.1) 0px 20px 45px,
+                    rgba(0, 0, 0, 0.08) 0px 8px 20px;
+                padding: 14px;
+            }
+
+            .qdrop-dialog-close {
+                width: 28px;
+                height: 28px;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                background: #ffffff;
+                color: #475569;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            @keyframes qdrop-sheet-in {
+                from {
+                    transform: translateY(24px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .qdrop-dialog {
+                    align-items: flex-end;
+                    justify-content: stretch;
+                    padding: 0;
+                }
+
+                .qdrop-dialog-panel {
+                    width: 100%;
+                    max-height: min(80vh, calc(100vh - 12px));
+                    border-radius: 20px 20px 0 0;
+                    padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+                    animation: qdrop-sheet-in 0.2s ease-out;
+                    transition: transform 0.18s ease-out;
+                    will-change: transform;
+                    touch-action: pan-y;
+                }
+
+                .qdrop-dialog-panel.is-dragging {
+                    animation: none;
+                    transition: none;
+                }
+
+                .qdrop-dialog-handle {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: -16px -16px 8px;
+                    padding: 16px 16px 14px;
+                    touch-action: none;
+                }
+
+                .qdrop-dialog-handle::before {
+                    content: "";
+                    display: block;
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 9999px;
+                    background: #cbd5e1;
+                }
+            }
+
+            .reference-tab-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 6px 14px;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.2;
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .reference-tab-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .reference-tab-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .prob-section-toggle {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                color: var(--text-primary);
+                text-align: left;
+            }
+
+            .prob-section-toggle:hover {
+                text-decoration: none;
+            }
+
+            .prob-section-toggle-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: var(--border-whisper);
+                border-radius: 9999px;
+                color: var(--text-secondary);
+                background: #ffffff;
+                transition:
+                    transform 0.15s ease,
+                    background-color 0.15s ease;
+            }
+
+            .prob-section-toggle:hover .prob-section-toggle-icon {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .prob-section-toggle[aria-expanded="false"] .prob-section-toggle-icon {
+                transform: rotate(-90deg);
+            }
+
+            .vp-boards-input {
+                width: 88px;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .vp-preset-btn {
+                border: var(--border-whisper);
+                background: #ffffff;
+                color: var(--text-secondary);
+                border-radius: 9999px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+
+            .vp-preset-btn:hover {
+                background: var(--bg-warm);
+                color: var(--text-primary);
+            }
+
+            .vp-preset-btn.is-active {
+                background: #1f2937;
+                border-color: #1f2937;
+                color: #ffffff;
+            }
+
+            .qdrop-dialog-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 12px;
+                align-items: end;
+            }
+
+            .qdrop-dialog-field {
+                min-width: 92px;
+            }
+
+            .qdrop-dialog-field-label {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qdrop-dialog-input {
+                width: 100%;
+                border: var(--border-whisper);
+                border-radius: 8px;
+                background: #ffffff;
+                color: var(--text-primary);
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            .qdrop-dialog-note {
+                min-height: 18px;
+            }
+
+            .dist-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+                table-layout: fixed;
+            }
+            .dist-table th {
+                background-color: var(--bg-warm);
+                color: var(--text-secondary);
+                padding: 4px;
+                border: var(--border-whisper);
+                font-weight: 500;
+            }
+            .dist-table td {
+                text-align: center;
+                padding: 4px;
+                border: var(--border-whisper);
+                color: var(--text-muted);
+            }
+            .dist-table td.has-val {
+                color: var(--text-primary);
+                font-weight: 600;
+                background-color: #f2f9ff;
+            }
+            .dist-table td.high-val {
+                background-color: #f2f9ff;
+                color: var(--focus-blue);
+            }
+
+            *:focus-visible {
+                outline: 2px solid var(--focus-blue);
+                outline-offset: 1px;
+            }
+
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            /* --- アニメーション用クラス --- */
+            @keyframes shake-horizontal {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-3px);
+                }
+                75% {
+                    transform: translateX(3px);
+                }
+            }
+            .shake-animation {
+                animation: shake-horizontal 0.15s ease-in-out 0s 2;
+            }
+
+            @keyframes pop-scale {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.15);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            .pop-animation {
+                animation: pop-scale 0.15s ease-out;
+            }
+        </style>
+    <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.bottom-20{bottom:5rem}.right-4{right:1rem}.z-10{z-index:10}.z-50{z-index:50}.z-\[100\]{z-index:100}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-3{margin-top:0.75rem}.mt-2{margin-top:0.5rem}.mt-5{margin-top:1.25rem}.mt-auto{margin-top:auto}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-16{height:4rem}.h-3{height:0.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-\[38px\]{height:38px}.h-10{height:2.5rem}.min-h-screen{min-height:100vh}.w-20{width:5rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-full{width:100%}.w-10{width:2.5rem}.min-w-20{min-width:5rem}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-7xl{max-width:80rem}.max-w-3xl{max-width:48rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.place-items-center{place-items:center}.place-items-stretch{place-items:stretch}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-12{gap:3rem}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-y-2{row-gap:0.5rem}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(241 245 249 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded-lg{border-radius:0.5rem}.rounded-r-lg{border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t{border-top-width:1px}.border-l-4{border-left-width:4px}.border-indigo-100{--tw-border-opacity:1;border-color:rgb(224 231 255 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-indigo-300{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-t-indigo-600{--tw-border-opacity:1;border-top-color:rgb(79 70 229 / var(--tw-border-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-slate-400{--tw-bg-opacity:1;background-color:rgb(148 163 184 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-orange-600{--tw-bg-opacity:1;background-color:rgb(234 88 12 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}.fill-current{fill:currentColor}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-4{padding:1rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.px-8{padding-left:2rem;padding-right:2rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.pb-1{padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pt-4{padding-top:1rem}.pt-8{padding-top:2rem}.pb-3{padding-bottom:0.75rem}.pt-2{padding-top:0.5rem}.pl-5{padding-left:1.25rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-center{text-align:center}.align-top{vertical-align:top}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[11px\]{font-size:11px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:0.05em}.tracking-wide{letter-spacing:0.025em}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-indigo-900{--tw-text-opacity:1;color:rgb(49 46 129 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-rose-700{--tw-text-opacity:1;color:rgb(190 18 60 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-indigo-400{--tw-text-opacity:1;color:rgb(129 140 248 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-indigo-200{--tw-shadow-color:#c7d2fe;--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-200{--tw-shadow-color:#a7f3d0;--tw-shadow:var(--tw-shadow-colored)}.shadow-orange-200{--tw-shadow-color:#fed7aa;--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.last\:mb-0:last-child{margin-bottom:0px}.hover\:border-indigo-300:hover{--tw-border-opacity:1;border-color:rgb(165 180 252 / var(--tw-border-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-orange-700:hover{--tw-bg-opacity:1;background-color:rgb(194 65 12 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-blue-900:hover{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:no-underline:hover{-webkit-text-decoration-line:none;text-decoration-line:none}.focus\:border-emerald-500:focus{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.focus\:border-orange-500:focus{--tw-border-opacity:1;border-color:rgb(249 115 22 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:col-span-2{grid-column:span 2 / span 2}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 768px){.md\:bottom-8{bottom:2rem}.md\:right-8{right:2rem}.md\:col-span-3{grid-column:span 3 / span 3}.md\:col-start-1{grid-column-start:1}.md\:col-start-2{grid-column-start:2}.md\:col-start-3{grid-column-start:3}.md\:row-start-1{grid-row-start:1}.md\:row-start-2{grid-row-start:2}.md\:row-start-3{grid-row-start:3}.md\:-mb-6{margin-bottom:-1.5rem}.md\:-mt-6{margin-top:-1.5rem}.md\:mb-0{margin-bottom:0px}.md\:flex{display:flex}.md\:hidden{display:none}.md\:cursor-default{cursor:default}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:grid-cols-\[1fr_1fr_1fr_auto\]{grid-template-columns:1fr 1fr 1fr auto}.md\:gap-x-4{column-gap:1rem}.md\:gap-y-0{row-gap:0px}.md\:p-8{padding:2rem}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-xs{font-size:0.75rem;line-height:1rem}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (min-width: 1280px){.xl\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1536px){.\32xl\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style><meta name="keywords" content="bridge solver, contract bridge, double dummy, single dummy, opening lead, probability table, IMP scale, VP scale"><link rel="alternate" hreflang="en" href="https://bridge-solver.waiyangar.com/en/guide/double-dummy-analysis" data-hreflang="true"><link rel="alternate" hreflang="ja" href="https://bridge-solver.waiyangar.com/ja/guide/double-dummy-analysis" data-hreflang="true"><link rel="alternate" hreflang="x-default" href="https://bridge-solver.waiyangar.com/en/guide/double-dummy-analysis" data-hreflang="true"></head>
+    <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+        
+        <header class="site-header bg-white z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/ja" data-route="/" class="flex items-center gap-2 hover:no-underline">
+                        <div class="site-logo p-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="play" aria-hidden="true" class="lucide lucide-play w-5 h-5 fill-current"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>
+                        </div>
+                        <span id="site-title" class="site-brand">Bridge Solver</span>
+                    </a>
+
+                    <div class="hidden md:flex items-center gap-6">
+                        <nav class="hidden md:flex space-x-8">
+                            <a href="/ja/double-dummy" id="nav-double" data-route="/double-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">ダブルダミー分析</a>
+                            <a href="/ja/single-dummy" id="nav-single" data-route="/single-dummy" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">シングルダミー分析</a>
+                            <a href="/ja/opening-lead" id="nav-lead" data-route="/opening-lead" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">オープニングリード分析</a>
+                            <a href="/ja/probability-solver" id="nav-solver" data-route="/probability-solver" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">確率ソルバー</a>
+                            <a href="/ja/reference/probability" id="nav-probability" data-route="/reference/probability" class="site-nav-btn tab-inactive px-3 py-2 text-sm font-medium border-b-2 transition-colors">早見表</a>
+                        </nav>
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en" class="lang-switch-btn px-2.5 py-1 text-slate-600">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja" class="lang-switch-btn px-2.5 py-1 bg-indigo-600 text-white">
+                                JP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden flex items-center gap-2">
+                        <div class="lang-switch flex items-center">
+                            <button type="button" id="lang-en-mobile" class="lang-switch-btn px-2 py-1 text-[10px] text-slate-600">
+                                EN
+                            </button>
+                            <button type="button" id="lang-ja-mobile" class="lang-switch-btn px-2 py-1 text-[10px] bg-indigo-600 text-white">
+                                JP
+                            </button>
+                        </div>
+                        <button id="mobile-menu-btn" class="p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" aria-hidden="true" class="lucide lucide-menu text-slate-500"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-nav" class="hidden md:hidden bg-white border-b border-slate-200">
+                <div class="flex flex-col p-2 space-y-1">
+                    <a href="/ja/double-dummy" id="mob-nav-double" data-route="/double-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">ダブルダミー分析</a>
+                    <a href="/ja/single-dummy" id="mob-nav-single" data-route="/single-dummy" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">シングルダミー分析</a>
+                    <a href="/ja/opening-lead" id="mob-nav-lead" data-route="/opening-lead" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">オープニングリード分析</a>
+                    <a href="/ja/probability-solver" id="mob-nav-solver" data-route="/probability-solver" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">確率ソルバー</a>
+                    <a href="/ja/reference/probability" id="mob-nav-probability" data-route="/reference/probability" class="block text-left px-3 py-2 text-sm font-medium rounded hover:bg-slate-50 text-slate-600">早見表</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+            
+
+            <div id="view-guide" class="fade-in"><article class="max-w-3xl mx-auto"><div class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6"><h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">ダブルダミー分析でわかること・わからないこと</h1><p class="text-sm md:text-base text-slate-700 leading-7">ダブルダミーソルバーが答えているのは、非常に限定された問いです。52枚すべてが見えていて、両サイドが最善を尽くしたとき、各ディクレアラーは各デノミネーションで何トリック取れるか。この数値はディールの検討にきわめて有用である一方、「テーブルでどうなるかの予測」として読まれてしまいがちです。この記事では、ソルバーが計算しているものを整理し、24HCPあってもノートランプゲームが成立しないディールを実例として解析し、この数値が語ること・語らないことの境界を示します。</p></div><nav class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6"><h2 class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">目次</h2><ol class="list-decimal pl-5 space-y-1 text-sm"><li><a class="text-indigo-600 hover:underline" href="#guide-section-1">ダブルダミーソルバーが計算しているもの</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-2">実例：24HCPでもノートランプゲームがない</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-3">この数値がテーブルでの結果と一致しない理由</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-4">本当に有効な使いどころ</a></li><li><a class="text-indigo-600 hover:underline" href="#guide-section-5">ダブルダミーとシングルダミー、どちらを使うか</a></li></ol></nav><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-1"><h2 class="text-lg font-bold text-slate-900">ダブルダミーソルバーが計算しているもの</h2><p class="text-sm text-slate-700 leading-7">「ダブルダミー」とは、誰も実際にはプレーしない形式のゲームを指します。すべてのカードが表向きの状態です。ディクレアラーはディフェンス側26枚すべての位置を知っており、各ディフェンダーも残り3ハンドを知っています。この条件下では、ディールは厳密な値を持ちます。互いに最善を尽くす限り、どちらの側もそれ以上改善できないトリック数です。ダブルダミーソルバーが返すのは、この数値です。</p><p class="text-sm text-slate-700 leading-7">計算方法はシミュレーションではなく探索です。ソルバーは合法手のツリーを展開し、両サイドが最善を続ける前提で各局面を評価します。アルファベータ枝刈りと置換表により、本来なら天文学的な規模の探索がミリ秒で終わります。完全に確定したディールを探索するため、結果は決定的です。同じ52枚からは常に同じ表が得られ、標本誤差を考慮する必要もありません。</p><p class="text-sm text-slate-700 leading-7">結果は5つのデノミネーション × 4人のディクレアラー、計20マスの表として提示されます。列を縦に読めば、あるディクレアラーにとって各デノミネーションがどうなるかがわかります。行を横に読めば、同じコントラクトがテーブルのどちら側から出たときにどうなるかがわかります。これは思われているよりも頻繁に効いてきます。どちらのディフェンダーがリードするかというだけの理由で、片方からならメイク、もう片方からならダウン1、ということが起こるからです。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-2"><h2 class="text-lg font-bold text-slate-900">実例：24HCPでもノートランプゲームがない</h2><p class="text-sm text-slate-700 leading-7">N/Sは合計24HCPを持ち、両メジャーに4-4フィットがあります。</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><caption class="text-xs text-slate-500 text-left mb-2">ディール全体</caption><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">ハンド</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">♠</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">♥</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">♦</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">♣</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">North</td><td class="border-b border-slate-100 py-2 pr-4 align-top">K J 8 5</td><td class="border-b border-slate-100 py-2 pr-4 align-top">A 9 7 4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6 3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">K 8 2</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">East</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6 2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">T 8</td><td class="border-b border-slate-100 py-2 pr-4 align-top">J T 7 5 2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Q J T 3</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">South</td><td class="border-b border-slate-100 py-2 pr-4 align-top">A Q 9 4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">K 6 5 2</td><td class="border-b border-slate-100 py-2 pr-4 align-top">A 8 4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">9 5</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">West</td><td class="border-b border-slate-100 py-2 pr-4 align-top">T 7 3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">Q J 3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">K Q 9</td><td class="border-b border-slate-100 py-2 pr-4 align-top">A 7 6 4</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">ゲーム判断の主たる基準をHCPに置くペアは、ここで3NTに到達することが多いはずです。ソルバーの答えは次のとおりです。</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><caption class="text-xs text-slate-500 text-left mb-2">両サイド最善playで取れるトリック数</caption><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">デノミネーション</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">North</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">South</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">East</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">West</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">ノートランプ</td><td class="border-b border-slate-100 py-2 pr-4 align-top">8</td><td class="border-b border-slate-100 py-2 pr-4 align-top">8</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4</td><td class="border-b border-slate-100 py-2 pr-4 align-top">4</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">スペード</td><td class="border-b border-slate-100 py-2 pr-4 align-top">10</td><td class="border-b border-slate-100 py-2 pr-4 align-top">10</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">ハート</td><td class="border-b border-slate-100 py-2 pr-4 align-top">10</td><td class="border-b border-slate-100 py-2 pr-4 align-top">10</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3</td><td class="border-b border-slate-100 py-2 pr-4 align-top">3</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">ダイヤ</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">クラブ</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td><td class="border-b border-slate-100 py-2 pr-4 align-top">6</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">最善ディフェンスに対して3NTはダウン1、一方で4♠と4♥はいずれもぴったりメイクします。スートコントラクトでの2トリックの差は、どこからか湧いて出たものではありません。ノートランプではN/Sに育てられるロングスートがなく、ディフェンス側がトリックを取り切るのを止める手段もありません。メジャーコントラクトなら短いハンドの小さいカードがラフに使え、ディフェンス側のクラブとダイヤの勝負カードが勝負カードでなくなります。</p><p class="text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3">重要なのは、このディールが特殊だということではありません。HCPが測っているものと、トリック獲得力が測っているものが別だということです。ダブルダミーの表は同じ52枚に対して全デノミネーションを値付けするため、この2つを分離できます。</p><p class="text-sm text-slate-700 leading-7">両マイナーがどちらのサイドからも6トリックである点にも注目してください。両ペアが同じデノミネーションで同じトリック数を取れるとき、そのディールは純粋な競り合いに近く、どちらにも安いセーブがないことが表から一目でわかります。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-3"><h2 class="text-lg font-bold text-slate-900">この数値がテーブルでの結果と一致しない理由</h2><p class="text-sm text-slate-700 leading-7">ダブルダミーの結果でもっとも多い誤用は、これを予測値として扱うことです。予測値ではありませんし、その理由は両方向に働きます。</p><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>ソルバーのディフェンダーはすべてを見ています。コントラクトを落とす唯一のリード、ディスカードを防ぐ唯一のスイッチ、コミュニケーションを断つダックを、ビッドやパートナーのシグナルという手がかりなしに見つけます。第1トリックを手探りでリードする人間のディフェンダーは、はるかに難しいゲームをプレーしています。</li><li>ソルバーのディクレアラーもすべてを見ています。両面フィネスの読み違いをせず、フォールスカードにも引っかからず、必要のないセーフティプレーも取りません。クイーンの位置探しに懸かるコントラクトは、ダブルダミーでは確実にメイクし、実戦では五分五分になります。</li><li>この2つの効果はディールごとに相殺しません。手探りのオープニングリードを見つけられるかどうかで決まるディールでは、ダブルダミーの結果はディクレアラーの実際の見込みを低く見積もります。両面の読みで決まるディールでは、逆に高く見積もります。</li></ul><p class="text-sm text-slate-700 leading-7">したがってダブルダミーの結果は、テーブルでの期待値ではなく「そのディールの価値」として読むのが適切です。自分のカードしかわからない状態でコントラクトがどうなるかを知りたいなら、それは別の計算、すなわちシングルダミーのシミュレーションになります。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-4"><h2 class="text-lg font-bold text-slate-900">本当に有効な使いどころ</h2><ul class="list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7"><li>デノミネーションの比較。これがもっとも強力な用途です。同じディールに対して全デノミネーションが値付けされるので、「4-4のメジャーフィットは本当に5-3より良かったのか」といった問いに厳密な答えが出ます。</li><li>セーブとパーの判定。表の両サイドを読めば、5マイナーのダブルドが相手にゲームをプレーさせるより安かったかどうかがわかります。</li><li>コントラクトの誤りとプレーの誤りの切り分け。到達したコントラクトがダブルダミーで1トリック足りていないなら、どんな技術でもメイクできなかったということであり、検討すべきはプレーではなくビッドです。</li><li>多数のディールによる判断力の較正。同種のハンドを繰り返し解析すると、5枚目のトランプ、サイドスートのシングルトン、短いスートに向かい合った無駄なオナーが実際どれだけの価値を持つのかについて、感覚が育ちます。</li></ul></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4" id="guide-section-5"><h2 class="text-lg font-bold text-slate-900">ダブルダミーとシングルダミー、どちらを使うか</h2><p class="text-sm text-slate-700 leading-7">2つの分析は別の問いに答えており、使い分けは基本的に「何が見えている前提か」で決まります。</p><div class="overflow-x-auto"><table class="guide-table w-full text-sm text-slate-700"><thead><tr><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4"></th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">ダブルダミー</th><th class="text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4">シングルダミー</th></tr></thead><tbody><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">既知の情報</td><td class="border-b border-slate-100 py-2 pr-4 align-top">52枚すべて</td><td class="border-b border-slate-100 py-2 pr-4 align-top">自分サイドのカードと、他ハンドへの条件</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">手法</td><td class="border-b border-slate-100 py-2 pr-4 align-top">全探索</td><td class="border-b border-slate-100 py-2 pr-4 align-top">条件を満たすディールのシミュレーション</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">出力</td><td class="border-b border-slate-100 py-2 pr-4 align-top">各デノミネーションにつき厳密な1つの数値</td><td class="border-b border-slate-100 py-2 pr-4 align-top">トリック数の分布</td></tr><tr><td class="border-b border-slate-100 py-2 pr-4 align-top">答える問い</td><td class="border-b border-slate-100 py-2 pr-4 align-top">このディールの価値はいくらだったか</td><td class="border-b border-slate-100 py-2 pr-4 align-top">残りがわからない状態で何を選ぶべきか</td></tr></tbody></table></div><p class="text-sm text-slate-700 leading-7">ディールが終わっていて真実を知りたいときはダブルダミーを使ってください。まだ判断の途中であるとき、つまり際どいゲームをビッドするか、2つのコントラクトのどちらを選ぶか、あるスートに賭ける価値があるかを決めるときは、シングルダミーを使ってください。実際にわかっている情報と矛盾しないすべてのレイアウトにわたって、その判断を値付けしてくれます。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4"><h2 class="text-lg font-bold text-slate-900">よくある質問</h2><h3 class="text-sm font-bold text-slate-900 pt-2">ダブルダミーの結果は、ディクレアラーが取れるトリック数の上限ですか。</h3><p class="text-sm text-slate-700 leading-7">最善ディフェンスに対してのみ上限です。実際のディフェンダーは決定的なリードを外すことが十分な頻度で起こるため、テーブルではダブルダミーの数値より多く取れることが珍しくありません。逆に、ソルバーが直面しない読みをディクレアラーが迫られるディールでは、実際のトリック数は下回ります。</p><h3 class="text-sm font-bold text-slate-900 pt-2">同じコントラクトなのに、誰がディクレアラーかでトリック数が変わるのはなぜですか。</h3><p class="text-sm text-slate-700 leading-7">オープニングリードが別のハンドから出るからです。K J x のような保持に対しては、リードが手前から通ってくるほうがディフェンス側にとってはるかに有利であり、片方向ではリードから守られているテナスが、逆方向では晒されます。各ペアについて2つの列があるのは、この差を一目で見るためです。</p><h3 class="text-sm font-bold text-slate-900 pt-2">52枚すべてを入力しなければいけませんか。</h3><p class="text-sm text-slate-700 leading-7">ダブルダミー分析についてはそのとおりです。この計算は完全に確定したディールに対してのみ定義されます。自分サイドしかわからない場合は、残りを多数回埋めて分布を返すシングルダミーソルバーを使ってください。</p><h3 class="text-sm font-bold text-slate-900 pt-2">ソルバーはどのオープニングリードを前提にしていますか。</h3><p class="text-sm text-slate-700 leading-7">4ハンドすべてを知ったうえでの最善リードです。これはまさにテーブルのディフェンダーには置けない前提であり、ダブルダミーの結果とテーブルでの結果を隔てる最大の要因です。</p></section><section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm"><h2 class="text-lg font-bold text-slate-900 mb-4">実際に試す</h2><ul class="space-y-3"><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/double-dummy" href="/ja/double-dummy">ダブルダミー分析</a><p class="text-sm text-slate-600 leading-6">ディールを入力すると、デノミネーション別・ディクレアラー別の完全な表が得られます。</p></li><li><a class="text-indigo-600 font-semibold hover:underline" data-route="/single-dummy" href="/ja/single-dummy">シングルダミー分析</a><p class="text-sm text-slate-600 leading-6">自分のハンドを固定し、見えていないハンドにわたるトリック分布をシミュレートします。</p></li></ul></section></article></div>
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 py-12 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-4">Bridge Solver</h3>
+                        <p class="text-sm leading-relaxed mb-4">モダンなブラウザで動作するコントラクトブリッジ分析プラットフォーム。</p>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/double-dummy" data-route="/double-dummy" class="hover:text-white">ダブルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/single-dummy" data-route="/single-dummy" class="hover:text-white">シングルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/opening-lead" data-route="/opening-lead" class="hover:text-white">オープニングリード分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/reference/probability" data-route="/reference/probability" class="hover:text-white">早見表</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Guides</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/guide/double-dummy-analysis" data-route="/guide/double-dummy-analysis" class="hover:text-white">ダブルダミー分析</a>
+                            </li>
+                            <li>
+                                <a href="/ja/guide/opening-lead-strategy" data-route="/guide/opening-lead-strategy" class="hover:text-white">オープニングリード戦略</a>
+                            </li>
+                            <li>
+                                <a href="/ja/guide/suit-break-probability" data-route="/guide/suit-break-probability" class="hover:text-white">スート分割確率</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-heading text-white font-bold mb-4">Information</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="/ja/privacy" data-route="/privacy" class="hover:text-white">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="/ja/about" data-route="/about" class="hover:text-white">About Us</a>
+                            </li>
+                            <li>
+                                <a href="/ja/contact" data-route="/contact" class="hover:text-white">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                    © 2024 Bridge Solver
+                </div>
+            </div>
+        </footer>
+
+        <div id="toast" class="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 transition-all duration-300 translate-x-full opacity-0">
+            <div class="bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" aria-hidden="true" class="lucide lucide-info w-5 h-5 text-indigo-400"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                <span id="toast-msg">Notification</span>
+            </div>
+        </div>
+
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                <span id="loading-label" class="font-bold text-slate-700">解析中...</span>
+            </div>
+        </div>
+
+        <script src="/script.js"></script>
+    
+
+</body></html>

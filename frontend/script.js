@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const WEBSITE_NAME = "Bridge Solver";
     const SUPPORTED_LANGS = ["en", "ja"];
     const DEFAULT_ROUTE = "/double-dummy";
+    const HOME_ROUTE = "/";
     const LANGUAGE_STORAGE_KEY = "bridge_solver_lang";
     const SUITS = [
         { id: "s", label: "♠", color: "suit-s", name: "Spades" },
@@ -39,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let latestSDDistribution = null;
     let latestSDCount = 0;
     let latestConditionalResult = null;
+    let condState = { north: [], south: [], east: [], west: [] };
     let referenceViewTab = "probability";
     const IMP_SCALE_ROWS = [
         { min: 0, max: 10, imp: 0 },
@@ -68,9 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
         { min: 4000, max: null, imp: 24 },
     ];
     let vpBoardCount = 16;
+    let spaShellHydrationPromise = null;
+    let documentClickHandlerBound = false;
 
     const NAV_KEYS = ["double", "single", "lead", "solver", "probability"];
     const VIEW_IDS = [
+        "view-home",
+        "view-guide",
         "view-double",
         "view-single",
         "view-lead",
@@ -80,6 +86,12 @@ document.addEventListener("DOMContentLoaded", () => {
         "view-contact",
     ];
     const ROUTES = {
+        "/": {
+            path: HOME_ROUTE,
+            type: "page",
+            metaKey: "home",
+            viewId: "view-home",
+        },
         "/double-dummy": {
             type: "tool",
             metaKey: "double-dummy",
@@ -157,19 +169,41 @@ document.addEventListener("DOMContentLoaded", () => {
             metaKey: "contact",
             viewId: "view-contact",
         },
+        "/guide/double-dummy-analysis": {
+            type: "guide",
+            metaKey: "guide-double-dummy-analysis",
+            guideSlug: "double-dummy-analysis",
+            viewId: "view-guide",
+        },
+        "/guide/opening-lead-strategy": {
+            type: "guide",
+            metaKey: "guide-opening-lead-strategy",
+            guideSlug: "opening-lead-strategy",
+            viewId: "view-guide",
+        },
+        "/guide/suit-break-probability": {
+            type: "guide",
+            metaKey: "guide-suit-break-probability",
+            guideSlug: "suit-break-probability",
+            viewId: "view-guide",
+        },
     };
 
     // --- Init ---
-    lucide.createIcons();
-    if (document.getElementById("view-double")) {
-        initDoubleDummyUI();
-        initSingleDummyUI();
-        initLeadSolverUI();
-        initProbabilityUI();
+    if (window.lucide?.createIcons) {
+        window.lucide.createIcons();
     }
+    initializeExistingViews();
     initShapePresetMajorToggles();
     setupEventListeners();
     bootstrapApp();
+
+    function initializeExistingViews() {
+        if (document.getElementById("view-double")) initDoubleDummyUI();
+        if (document.getElementById("view-single")) initSingleDummyUI();
+        if (document.getElementById("view-lead")) initLeadSolverUI();
+        if (document.getElementById("view-probability")) initProbabilityUI();
+    }
 
     function markPrerenderReady() {
         window.__PRERENDER_READY__ = true;
@@ -364,6 +398,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tr("probability.conditional.calculateExact", "Calculate exact probability"),
         );
 
+        setNodeText("#double-page-title", tr("content.double.heading", "Double Dummy Solver Online"));
+        setNodeText("#double-page-lead", tr("content.double.lead", ""));
+        setNodeText("#single-page-title", tr("content.single.heading", "Single Dummy Bridge Analyzer"));
+        setNodeText("#single-page-lead", tr("content.single.lead", ""));
+        setNodeText("#lead-page-title", tr("content.lead.heading", "Bridge Opening Lead Calculator"));
+        setNodeText("#lead-page-lead", tr("content.lead.lead", ""));
         setNodeTexts("#view-double section h3, #view-single section h3, #view-lead section h3", [
             currentLanguage === "ja"
                 ? "このツールについて (Overview)"
@@ -392,24 +432,39 @@ document.addEventListener("DOMContentLoaded", () => {
         setNodeText("#view-lead section p", tr("content.lead.overview", ""));
         setNodeTexts("#view-lead section ol li", tr("content.lead.how", []));
         setNodeTexts("#view-lead section dl dd", tr("content.lead.glossary", []));
+        setNodeText("#view-home h1", tr("home.title", "Bridge Solver"));
+        setNodeText("#view-home .home-lead", tr("home.lead", ""));
+        setNodeTexts("#view-home .home-section-title", tr("home.sections", []));
+        setNodeTexts("#view-home .home-card-title", tr("home.cardTitles", []));
+        setNodeTexts("#view-home .home-card-text", tr("home.cardTexts", []));
+        setNodeTexts("#view-home .home-card-cta", tr("home.cardCtas", []));
+        setNodeTexts("#view-home .home-guide-title", tr("home.guideTitles", []));
+        setNodeTexts("#view-home .home-guide-text", tr("home.guideTexts", []));
+        setNodeTexts("#view-home .home-about p", tr("home.about", []));
         setNodeTexts("#view-privacy .space-y-4 p", tr("content.privacy", []));
         setNodeTexts("#view-about .space-y-4 p", tr("content.about", []));
 
-        setNodeText("#view-privacy h2", tr("pages.privacyTitle", "Privacy Policy"));
-        setNodeText("#view-about h2", tr("pages.aboutTitle", "About Us"));
-        setNodeText("#view-contact h2", tr("pages.contactTitle", "Contact"));
+        setNodeText("#view-privacy h1", tr("pages.privacyTitle", "Privacy Policy"));
+        setNodeText("#view-about h1", tr("pages.aboutTitle", "About Us"));
+        setNodeText("#view-contact h1", tr("pages.contactTitle", "Contact"));
         setNodeText("#view-contact p.text-sm", tr("pages.contactLead", ""));
         setNodeText("#view-contact a", tr("pages.contactButton", ""));
         setNodeText("#view-contact p.text-xs", tr("pages.contactNote", ""));
 
-        setNodeText("footer h4:nth-of-type(1)", tr("footer.tools", "Tools"));
-        setNodeText("footer h4:nth-of-type(2)", tr("footer.info", "Information"));
+        setNodeTexts("footer .footer-heading", [
+            tr("footer.tools", "Tools"),
+            tr("footer.guides", "Guides"),
+            tr("footer.info", "Information"),
+        ]);
         setNodeText("footer .text-sm.leading-relaxed", tr("footer.description", ""));
         setNodeTexts("footer .space-y-2.text-sm a", [
             tr("nav.double", "Double Dummy"),
             tr("nav.single", "Single Dummy"),
             tr("nav.lead", "Opening Lead"),
             tr("nav.probability", "Reference"),
+            tr("guides.double-dummy-analysis.short", "Double Dummy Analysis"),
+            tr("guides.opening-lead-strategy.short", "Opening Lead Strategy"),
+            tr("guides.suit-break-probability.short", "Suit Break Probability"),
             tr("footer.privacy", "Privacy Policy"),
             tr("footer.about", "About Us"),
             tr("footer.contact", "Contact"),
@@ -450,7 +505,203 @@ document.addEventListener("DOMContentLoaded", () => {
         updateImpScaleResult();
         setVpBoardCount(vpBoardCount);
         updateReferenceTabUI();
+        const activeRoute = ROUTES[currentRoutePath];
+        if (activeRoute?.type === "guide") renderGuide(activeRoute);
+        updateRouteLinkHrefs();
         updateXShareLinks();
+    }
+
+    function updateRouteLinkHrefs() {
+        document.querySelectorAll("a[data-route]").forEach((link) => {
+            const routePath = link.dataset.route;
+            if (!routePath) return;
+            const route = getRoute(routePath);
+            link.href = buildLocalizedPath(currentLanguage, route.path);
+        });
+    }
+
+
+    const GUIDE_PUBLISHED = "2026-09-07";
+
+    function guideEl(tag, className, text) {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (text !== undefined && text !== null) el.textContent = text;
+        return el;
+    }
+
+    function renderGuideBlock(block) {
+        if (!block || typeof block !== "object") return null;
+        if (block.type === "p") {
+            return guideEl("p", "text-sm text-slate-700 leading-7", block.text);
+        }
+        if (block.type === "note") {
+            return guideEl(
+                "p",
+                "text-sm text-slate-700 leading-7 border-l-4 border-indigo-200 bg-indigo-50 rounded-r-lg px-4 py-3",
+                block.text,
+            );
+        }
+        if (block.type === "ul") {
+            const ul = guideEl("ul", "list-disc pl-5 space-y-2 text-sm text-slate-700 leading-7");
+            (block.items || []).forEach((item) => ul.appendChild(guideEl("li", null, item)));
+            return ul;
+        }
+        if (block.type === "table") {
+            const wrap = guideEl("div", "overflow-x-auto");
+            const table = guideEl("table", "guide-table w-full text-sm text-slate-700");
+            if (block.caption) {
+                table.appendChild(
+                    guideEl("caption", "text-xs text-slate-500 text-left mb-2", block.caption),
+                );
+            }
+            const thead = document.createElement("thead");
+            const headRow = document.createElement("tr");
+            (block.head || []).forEach((cell) => {
+                headRow.appendChild(
+                    guideEl(
+                        "th",
+                        "text-left font-bold text-slate-900 border-b border-slate-300 py-2 pr-4",
+                        cell,
+                    ),
+                );
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            (block.rows || []).forEach((row) => {
+                const bodyRow = document.createElement("tr");
+                row.forEach((cell) => {
+                    bodyRow.appendChild(
+                        guideEl("td", "border-b border-slate-100 py-2 pr-4 align-top", cell),
+                    );
+                });
+                tbody.appendChild(bodyRow);
+            });
+            table.appendChild(tbody);
+            wrap.appendChild(table);
+            return wrap;
+        }
+        return null;
+    }
+
+    function renderGuide(route) {
+        const container = document.getElementById("view-guide");
+        if (!container) return;
+        const guide = tr(`guides.${route.guideSlug}`, null);
+        container.textContent = "";
+        if (!guide || typeof guide !== "object") return;
+
+        const article = guideEl("article", "max-w-3xl mx-auto");
+
+        const header = guideEl(
+            "div",
+            "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6",
+        );
+        header.appendChild(
+            guideEl("h1", "text-2xl md:text-3xl font-bold text-slate-900 mb-4", guide.title),
+        );
+        header.appendChild(guideEl("p", "text-sm md:text-base text-slate-700 leading-7", guide.lead));
+        article.appendChild(header);
+
+        const sections = Array.isArray(guide.sections) ? guide.sections : [];
+
+        if (sections.length > 1) {
+            const toc = guideEl(
+                "nav",
+                "bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-6",
+            );
+            toc.appendChild(
+                guideEl(
+                    "h2",
+                    "text-xs font-bold uppercase tracking-wide text-slate-400 mb-3",
+                    guide.contentsLabel || "Contents",
+                ),
+            );
+            const list = guideEl("ol", "list-decimal pl-5 space-y-1 text-sm");
+            sections.forEach((section, index) => {
+                const item = document.createElement("li");
+                const link = guideEl("a", "text-indigo-600 hover:underline", section.heading);
+                link.href = `#guide-section-${index + 1}`;
+                item.appendChild(link);
+                list.appendChild(item);
+            });
+            toc.appendChild(list);
+            article.appendChild(toc);
+        }
+
+        sections.forEach((section, index) => {
+            const wrapper = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4",
+            );
+            wrapper.id = `guide-section-${index + 1}`;
+            wrapper.appendChild(
+                guideEl("h2", "text-lg font-bold text-slate-900", section.heading),
+            );
+            (section.blocks || []).forEach((block) => {
+                const node = renderGuideBlock(block);
+                if (node) wrapper.appendChild(node);
+            });
+            article.appendChild(wrapper);
+        });
+
+        const faq = Array.isArray(guide.faq) ? guide.faq : [];
+        if (faq.length > 0) {
+            const faqSection = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm mb-6 space-y-4",
+            );
+            faqSection.appendChild(
+                guideEl("h2", "text-lg font-bold text-slate-900", guide.faqLabel || "FAQ"),
+            );
+            faq.forEach((item) => {
+                faqSection.appendChild(
+                    guideEl("h3", "text-sm font-bold text-slate-900 pt-2", item.q),
+                );
+                faqSection.appendChild(
+                    guideEl("p", "text-sm text-slate-700 leading-7", item.a),
+                );
+            });
+            article.appendChild(faqSection);
+        }
+
+        const related = Array.isArray(guide.related) ? guide.related : [];
+        if (related.length > 0) {
+            const relatedSection = guideEl(
+                "section",
+                "bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm",
+            );
+            relatedSection.appendChild(
+                guideEl(
+                    "h2",
+                    "text-lg font-bold text-slate-900 mb-4",
+                    guide.relatedLabel || "Try it yourself",
+                ),
+            );
+            const list = guideEl("ul", "space-y-3");
+            related.forEach((item) => {
+                if (!item || !item.route) return;
+                const li = document.createElement("li");
+                const link = guideEl(
+                    "a",
+                    "text-indigo-600 font-semibold hover:underline",
+                    item.label,
+                );
+                link.dataset.route = item.route;
+                link.href = buildLocalizedPath(currentLanguage, getRoute(item.route).path);
+                li.appendChild(link);
+                if (item.text) {
+                    li.appendChild(guideEl("p", "text-sm text-slate-600 leading-6", item.text));
+                }
+                list.appendChild(li);
+            });
+            relatedSection.appendChild(list);
+            article.appendChild(relatedSection);
+        }
+
+        container.appendChild(article);
+        updateRouteLinkHrefs();
     }
 
     function upsertLink(rel, href, attrs = {}) {
@@ -488,6 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getSchemaPageType(route) {
+        if (route.metaKey === "home") return "CollectionPage";
         if (route.metaKey === "about") return "AboutPage";
         if (route.metaKey === "contact") return "ContactPage";
         if (route.metaKey === "privacy") return "PrivacyPolicy";
@@ -517,6 +769,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (route.metaKey === "privacy") return tr("pages.privacyTitle", "Privacy Policy");
         if (route.metaKey === "about") return tr("pages.aboutTitle", "About Us");
         if (route.metaKey === "contact") return tr("pages.contactTitle", "Contact");
+        if (route.type === "guide") {
+            return tr(`guides.${route.guideSlug}.title`, WEBSITE_NAME);
+        }
         return WEBSITE_NAME;
     }
 
@@ -526,11 +781,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 "@type": "ListItem",
                 position: 1,
                 name: WEBSITE_NAME,
-                item: `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, DEFAULT_ROUTE)}`,
+                item: `${SITE_ORIGIN}${buildLocalizedPath(currentLanguage, HOME_ROUTE)}`,
             },
         ];
 
-        if (route.path !== DEFAULT_ROUTE) {
+        if (route.path !== HOME_ROUTE) {
             itemListElement.push({
                 "@type": "ListItem",
                 position: 2,
@@ -579,6 +834,23 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             buildBreadcrumbList(route, canonicalUrl),
         ];
+
+        if (route.type === "guide") {
+            graph.push({
+                "@type": "Article",
+                "@id": `${canonicalUrl}#article`,
+                headline: title,
+                description,
+                url: canonicalUrl,
+                inLanguage: currentLanguage,
+                mainEntityOfPage: { "@id": webpageId },
+                datePublished: GUIDE_PUBLISHED,
+                dateModified: GUIDE_PUBLISHED,
+                author: { "@type": "Organization", name: WEBSITE_NAME, url: `${SITE_ORIGIN}/` },
+                publisher: { "@id": websiteId },
+            });
+            graph[1].mainEntity = { "@id": `${canonicalUrl}#article` };
+        }
 
         if (route.type === "tool") {
             graph.push({
@@ -741,7 +1013,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function buildLocalizedPath(lang, routePath) {
-        const basePath = routePath === "/" ? DEFAULT_ROUTE : routePath;
+        const basePath = routePath === HOME_ROUTE ? "" : routePath;
         return `/${lang}${basePath}`;
     }
 
@@ -749,14 +1021,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const normalized = normalizePath(pathname);
         const parts = normalized.split("/").filter(Boolean);
         if (parts.length === 0) {
-            return { lang: null, routePath: DEFAULT_ROUTE, hasLangPrefix: false };
+            return { lang: null, routePath: HOME_ROUTE, hasLangPrefix: false };
         }
         const maybeLang = parts[0];
         if (SUPPORTED_LANGS.includes(maybeLang)) {
             const routePath = "/" + parts.slice(1).join("/");
             return {
                 lang: maybeLang,
-                routePath: routePath === "/" || routePath === "" ? DEFAULT_ROUTE : routePath,
+                routePath: routePath === "/" || routePath === "" ? HOME_ROUTE : routePath,
                 hasLangPrefix: true,
             };
         }
@@ -828,6 +1100,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (route.probabilityMode === "solver") showProbabilitySolver();
                 else setReferenceTab(route.referenceTab || "probability");
             }
+        } else if (route.type === "guide") {
+            applyNavState(route);
+            renderGuide(route);
+            showView(route.viewId);
         } else {
             applyNavState(route);
             showView(route.viewId);
@@ -875,6 +1151,51 @@ document.addEventListener("DOMContentLoaded", () => {
             navigateTo(popRoutePath, false);
             markPrerenderReady();
         });
+    }
+
+    function hasFullSpaShell() {
+        return VIEW_IDS.every((id) => document.getElementById(id));
+    }
+
+    async function hydrateFullSpaShell() {
+        if (hasFullSpaShell()) return;
+        if (spaShellHydrationPromise) {
+            await spaShellHydrationPromise;
+            return;
+        }
+
+        spaShellHydrationPromise = (async () => {
+            const response = await fetch("/spa-shell.html", { cache: "no-cache" });
+            if (!response.ok) throw new Error(`SPA shell not available: ${response.status}`);
+
+            const html = await response.text();
+            const shellDoc = new DOMParser().parseFromString(html, "text/html");
+            shellDoc.querySelectorAll("noscript").forEach((node) => node.remove());
+            document.body.replaceWith(shellDoc.body);
+
+            if (window.lucide?.createIcons) {
+                window.lucide.createIcons();
+            }
+            initializeExistingViews();
+            initShapePresetMajorToggles();
+            setupEventListeners();
+            applyTranslations();
+            renderRoute(getRoute(currentRoutePath));
+        })();
+
+        try {
+            await spaShellHydrationPromise;
+        } finally {
+            spaShellHydrationPromise = null;
+        }
+    }
+
+    async function navigateWithinSpa(route) {
+        const targetRoute = getRoute(route);
+        if (!document.getElementById(targetRoute.viewId)) {
+            await hydrateFullSpaShell();
+        }
+        navigateTo(route);
     }
 
     function triggerAnimation(elementId, animationClass, duration) {
@@ -1476,6 +1797,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Calculate exact combinatorial probabilities from known cards, HCP, and suit-length ranges.",
             ),
         );
+        renderConditionalInstructions();
+    }
+
+    function renderConditionalInstructions() {
+        const solverContent = document.getElementById("probability-solver-content");
+        if (!solverContent) return;
+        let section = document.getElementById("cond-instructions");
+        if (!section) {
+            section = document.createElement("section");
+            section.id = "cond-instructions";
+            section.className =
+                "mt-8 bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm text-sm text-slate-700 leading-7";
+            solverContent.appendChild(section);
+        }
+        const steps = tr("probability.conditional.instructions.steps", [
+            "Choose feature or full hand for each seat.",
+            "Add the event you want to calculate.",
+            "Click calculate to get the exact probability.",
+        ]);
+        const notes = tr("probability.conditional.instructions.notes", [
+            "Feature mode accepts HCP ranges, shape ranges, presets, and known cards.",
+            "Full hand mode requires exactly 13 cards for that seat.",
+        ]);
+        section.innerHTML = `
+            <h3 class="text-lg font-bold text-slate-900 mb-3">${tr("probability.conditional.instructions.title", "How to use")}</h3>
+            <ol class="list-decimal list-inside space-y-2 mb-5">
+                ${steps.map((step) => `<li>${step}</li>`).join("")}
+            </ol>
+            <h4 class="text-base font-bold text-slate-900 mb-2">${tr("probability.conditional.instructions.notesTitle", "Input notes")}</h4>
+            <ul class="list-disc list-inside space-y-2">
+                ${notes.map((note) => `<li>${note}</li>`).join("")}
+            </ul>
+        `;
     }
 
     function updateImpScaleResult() {
@@ -2403,6 +2757,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function rangeFromInputs(prefix, fallbackMin, fallbackMax) {
+        const rangeInput = document.getElementById(prefix);
+        if (rangeInput) {
+            const [rawMin, rawMax] = String(rangeInput.value || "")
+                .split("-")
+                .map((value) => Number.parseInt(value, 10));
+            return {
+                min: Number.isFinite(rawMin) ? rawMin : fallbackMin,
+                max: Number.isFinite(rawMax) ? rawMax : fallbackMax,
+            };
+        }
         const min = Number.parseInt(document.getElementById(`${prefix}-min`)?.value, 10);
         const max = Number.parseInt(document.getElementById(`${prefix}-max`)?.value, 10);
         return {
@@ -2413,6 +2777,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initConditionalProbabilityUI({ resetQueries = false } = {}) {
         renderConditionalHandPanels();
+        renderCardInterface("cond-container", toggleCardConditional, condState);
+        updateConditionalCardUI();
         const queryContainer = document.getElementById("cond-queries");
         if (resetQueries && queryContainer) queryContainer.innerHTML = "";
         if (
@@ -2446,35 +2812,46 @@ document.addEventListener("DOMContentLoaded", () => {
                             <option value="hand">${tr("probability.conditional.modeHand", "Full hand")}</option>
                         </select>
                     </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMin", "HCP min")}
-                                <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" class="block w-full p-2 border rounded text-sm mt-1" />
-                            </label>
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpMax", "HCP max")}
-                                <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" class="block w-full p-2 border rounded text-sm mt-1" />
-                            </label>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.suitRanges", "Suit length ranges")}</label>
-                            <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm mt-1 mb-2">
-                                <option value="any">${tr("select.any", "Any")}</option>
-                                <option value="balanced">${tr("select.balanced", "Balanced")}</option>
-                                <option value="semiBalanced">${tr("select.semiBalanced", "Semi-balanced")}</option>
-                                <option value="unbalanced">${tr("select.unbalanced", "Unbalanced")}</option>
-                            </select>
-                            <div class="grid grid-cols-4 gap-2 mt-1">
-                                ${SUITS.map(
-                                    (suit) => `
-                                    <div>
-                                        <div class="${suit.color} text-center font-bold">${suit.label}</div>
-                                        <input id="cond-${hand}-${suit.id}-min" type="number" min="0" max="13" value="0" class="w-full p-1 border rounded text-xs text-center mb-1" />
-                                        <input id="cond-${hand}-${suit.id}-max" type="number" min="0" max="13" value="13" class="w-full p-1 border rounded text-xs text-center" />
-                                    </div>`,
-                                ).join("")}
+                        <div data-cond-feature-only class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.hcpRange", "HCP Range")}</label>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input id="cond-${hand}-hcp-min" type="number" min="0" max="37" value="0" placeholder="${tr("probability.conditional.min", "Min")}" class="w-full p-2 border rounded text-sm" />
+                                    <span class="text-slate-400">-</span>
+                                    <input id="cond-${hand}-hcp-max" type="number" min="0" max="37" value="37" placeholder="${tr("probability.conditional.max", "Max")}" class="w-full p-2 border rounded text-sm" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase mb-1 block">${tr("probability.conditional.shapeRange", "Shape Range")}</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    ${SUITS.map(
+                                        (suit) => `
+                                        <div class="text-center">
+                                            <span class="text-xs font-bold ${suit.color}">${suit.label}</span>
+                                            <input id="cond-${hand}-${suit.id}" type="text" class="w-full p-1 text-center border rounded text-xs mt-1" placeholder="0-13" />
+                                        </div>`,
+                                    ).join("")}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-500 uppercase mb-1 block">${tr("probability.conditional.shapeType", "Shape Type")}</label>
+                                <select id="cond-${hand}-preset" class="w-full p-2 border rounded text-sm bg-white text-slate-700">
+                                    <option value="any">${tr("select.any", "Any")}</option>
+                                    <option value="balanced">${tr("select.balanced", "Balanced")}</option>
+                                    <option value="semiBalanced">${tr("select.semiBalanced", "Semi-balanced")}</option>
+                                    <option value="unbalanced">${tr("select.unbalanced", "Unbalanced")}</option>
+                                </select>
                             </div>
                         </div>
-                        <label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
+                        <label data-cond-cards-label class="text-xs font-semibold text-slate-500 uppercase">${tr("probability.conditional.knownCards", "Known cards")}</label>
                         <input id="cond-${hand}-cards" class="w-full p-2 border rounded text-sm" placeholder="SA HK -DQ C2" />
+                        <div data-cond-hand-only class="hidden space-y-2">
+                            <div class="flex items-center justify-between text-xs text-slate-500">
+                                <span>${tr("probability.conditional.selectFullHand", "Select 13 cards")}</span>
+                                <span class="cond-count-badge count-badge bg-slate-400 text-white text-[10px] px-2 py-0.5 rounded-full">0 / 13</span>
+                            </div>
+                            <div id="cond-container-${hand}" class="space-y-1"></div>
+                        </div>
                         </div>
                 </div>`;
         }).join("");
@@ -2484,6 +2861,83 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
         initShapePresetMajorToggles();
+        HANDS.forEach(updateConditionalHandModeUI);
+        container.querySelectorAll('[id^="cond-"][id$="-mode"]').forEach((select) => {
+            select.addEventListener("change", () => {
+                const hand = select.id.replace(/^cond-/, "").replace(/-mode$/, "");
+                updateConditionalHandModeUI(hand);
+            });
+        });
+    }
+
+    function updateConditionalHandModeUI(hand) {
+        const modeSelect = document.getElementById(`cond-${hand}-mode`);
+        if (!modeSelect) return;
+        const isHandMode = modeSelect.value === "hand";
+        const panel = modeSelect.closest(".bg-white");
+        if (!panel) return;
+        panel.querySelectorAll("[data-cond-feature-only]").forEach((el) => {
+            el.classList.toggle("hidden", isHandMode);
+        });
+        panel.querySelectorAll("[data-cond-hand-only]").forEach((el) => {
+            el.classList.toggle("hidden", !isHandMode);
+        });
+        const cardsLabel = panel.querySelector("[data-cond-cards-label]");
+        if (cardsLabel) {
+            cardsLabel.textContent = isHandMode
+                ? tr("probability.conditional.fullHand", "Full hand")
+                : tr("probability.conditional.knownCards", "Known cards");
+        }
+        const cardsInput = document.getElementById(`cond-${hand}-cards`);
+        if (cardsInput) {
+            if (isHandMode && condState[hand].length === 0) {
+                condState[hand] = parseCardsText(cardsInput.value)
+                    .filter((card) => !card.startsWith("-"))
+                    .slice(0, 13);
+                syncConditionalHandInput(hand);
+            }
+            cardsInput.placeholder = isHandMode ? "SA SK SQ SJ ST S9 S8 S7 S6 S5 S4 S3 S2" : "SA HK -DQ C2";
+            cardsInput.classList.toggle("hidden", isHandMode);
+        }
+        updateConditionalCardUI();
+    }
+
+    function syncConditionalHandInput(hand) {
+        const input = document.getElementById(`cond-${hand}-cards`);
+        if (!input) return;
+        input.value = condState[hand].map(cardTextFromId).join(" ");
+    }
+
+    function getConditionalHandCards(hand) {
+        const mode = document.getElementById(`cond-${hand}-mode`)?.value || "feature";
+        if (mode === "hand") return [...(condState[hand] || [])];
+        return parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
+    }
+
+    function toggleCardConditional(hand, cardId) {
+        const btnId = `btn-cond-container-${hand}-${cardId}`;
+        const currentOwner = findCardOwner(condState, cardId);
+        if (currentOwner === hand) {
+            condState[hand] = condState[hand].filter((card) => card !== cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
+        } else if (currentOwner) {
+            triggerAnimation(btnId, "shake-animation", 300);
+            return;
+        } else {
+            if (condState[hand].length >= 13) {
+                showToast(tr("toasts.limit13", "You can assign up to 13 cards per hand."));
+                triggerAnimation(btnId, "shake-animation", 300);
+                return;
+            }
+            condState[hand].push(cardId);
+            triggerAnimation(btnId, "pop-animation", 150);
+        }
+        syncConditionalHandInput(hand);
+        updateConditionalCardUI();
+    }
+
+    function updateConditionalCardUI() {
+        updateCardUI("cond-container", condState);
     }
 
     function conditionInputHtml(prefix) {
@@ -2692,7 +3146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const seen = new Set();
         const constraints = {};
         for (const hand of HANDS) {
-            const cards = parseCardsText(document.getElementById(`cond-${hand}-cards`)?.value);
+            const cards = getConditionalHandCards(hand);
             for (const card of cards) {
                 if (card.startsWith("-")) continue;
                 if (seen.has(card))
@@ -2880,16 +3334,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function serializeConditionalState() {
         const hands = HANDS.reduce((acc, hand) => {
+            const mode = document.getElementById(`cond-${hand}-mode`)?.value || "feature";
             acc[hand] = {
-                mode: document.getElementById(`cond-${hand}-mode`)?.value || "feature",
-                cards: document.getElementById(`cond-${hand}-cards`)?.value || "",
+                mode,
+                cards:
+                    mode === "hand"
+                        ? condState[hand].map(cardTextFromId).join(" ")
+                        : document.getElementById(`cond-${hand}-cards`)?.value || "",
                 hcpMin: numericInputValue(`cond-${hand}-hcp-min`, "0"),
                 hcpMax: numericInputValue(`cond-${hand}-hcp-max`, "37"),
                 preset: getShapePresetValue(`cond-${hand}-preset`),
                 suits: SUITS.reduce((suitAcc, suit) => {
+                    const range = rangeFromInputs(`cond-${hand}-${suit.id}`, 0, 13);
                     suitAcc[suit.id] = {
-                        min: numericInputValue(`cond-${hand}-${suit.id}-min`, "0"),
-                        max: numericInputValue(`cond-${hand}-${suit.id}-max`, "13"),
+                        min: String(range.min),
+                        max: String(range.max),
                     };
                     return suitAcc;
                 }, {}),
@@ -2934,22 +3393,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.hands) {
             HANDS.forEach((hand) => {
                 const config = state.hands[hand] || {};
+                const parsedCards = parseCardsText(config.cards || "").filter(
+                    (card) => !card.startsWith("-"),
+                );
+                condState[hand] = config.mode === "hand" ? parsedCards.slice(0, 13) : [];
                 setInputValue(`cond-${hand}-mode`, config.mode || "feature");
-                setInputValue(`cond-${hand}-cards`, config.cards || "");
+                setInputValue(
+                    `cond-${hand}-cards`,
+                    config.mode === "hand" ? condState[hand].map(cardTextFromId).join(" ") : config.cards || "",
+                );
                 setInputValue(`cond-${hand}-hcp-min`, config.hcpMin ?? "0");
                 setInputValue(`cond-${hand}-hcp-max`, config.hcpMax ?? "37");
                 setInputValue(`cond-${hand}-preset`, config.preset || "any");
                 SUITS.forEach((suit) => {
-                    setInputValue(
-                        `cond-${hand}-${suit.id}-min`,
-                        config.suits?.[suit.id]?.min ?? "0",
-                    );
-                    setInputValue(
-                        `cond-${hand}-${suit.id}-max`,
-                        config.suits?.[suit.id]?.max ?? "13",
-                    );
+                    const min = config.suits?.[suit.id]?.min ?? "0";
+                    const max = config.suits?.[suit.id]?.max ?? "13";
+                    setInputValue(`cond-${hand}-${suit.id}`, `${min}-${max}`);
                 });
+                updateConditionalHandModeUI(hand);
             });
+            updateConditionalCardUI();
         }
 
         const container = document.getElementById("cond-queries");
@@ -3148,6 +3611,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     leadBadge.classList.replace("bg-slate-400", "bg-emerald-500");
                 else leadBadge.classList.replace("bg-emerald-500", "bg-slate-400");
             }
+            const condBadge = document
+                .getElementById(`cond-container-${hand}`)
+                ?.closest("[data-cond-hand-only]")
+                ?.querySelector(".cond-count-badge");
+            if (condBadge && containerPrefix === "cond-container") {
+                condBadge.innerText = `${stateObj[hand].length} / 13`;
+                if (stateObj[hand].length === 13)
+                    condBadge.classList.replace("bg-slate-400", "bg-emerald-500");
+                else condBadge.classList.replace("bg-emerald-500", "bg-slate-400");
+            }
 
             const myCards = stateObj[hand];
             SUITS.forEach((suit) => {
@@ -3163,7 +3636,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         btn.classList.add("selected");
                     } else {
                         // Logic to show 'taken' grey out
-                        if (containerPrefix === "container") {
+                        if (containerPrefix === "container" || containerPrefix === "cond-container") {
                             // Double Dummy: Check any other hand
                             if (findCardOwner(stateObj, cardId)) btn.classList.add("taken");
                         } else if (containerPrefix === "sd-container") {
@@ -4073,7 +4546,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         }
 
-        document.addEventListener("click", (e) => {
+        const handleDocumentClick = async (e) => {
             const shareTarget = e.target.closest("[data-share-result]");
             if (shareTarget) {
                 e.preventDefault();
@@ -4096,9 +4569,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const route = routeTarget.dataset.route;
             if (!route) return;
             e.preventDefault();
-            navigateTo(route);
-            if (mobileNav) mobileNav.classList.add("hidden");
-        });
+            await navigateWithinSpa(route);
+            document.getElementById("mobile-nav")?.classList.add("hidden");
+        };
+
+        if (!documentClickHandlerBound) {
+            document.addEventListener("click", handleDocumentClick);
+            documentClickHandlerBound = true;
+        }
 
         const switchers = ["lang-en", "lang-ja", "lang-en-mobile", "lang-ja-mobile"];
         switchers.forEach((id) => {
@@ -4143,9 +4621,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.querySelectorAll("[data-reference-tab]").forEach((btn) => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 if (!(btn instanceof HTMLElement)) return;
-                navigateTo(getReferenceTabRoute(btn.dataset.referenceTab || "probability"));
+                const route = getReferenceTabRoute(btn.dataset.referenceTab || "probability");
+                const targetRoute = getRoute(route);
+                const targetPanelId =
+                    targetRoute.referenceTab === "imp"
+                        ? "reference-panel-imp"
+                        : targetRoute.referenceTab === "vp"
+                          ? "reference-panel-vp"
+                          : "reference-panel-probability";
+                if (!document.getElementById(targetPanelId)) {
+                    await hydrateFullSpaShell();
+                }
+                await navigateWithinSpa(route);
             });
         });
 
