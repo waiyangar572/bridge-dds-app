@@ -1,6 +1,6 @@
 {
     "hosting": {
-        "predeploy": ["npm run generate:seo"],
+        "predeploy": ["npm run generate:seo", "npm run commit:seo"],
         "public": "frontend",
         "trailingSlash": false,
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
